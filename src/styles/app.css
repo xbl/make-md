@@ -84,6 +84,7 @@ button {
 
 .app-shell__editor {
   min-width: 0;
+  overflow: auto;
 }
 
 .app-shell__status {
@@ -160,20 +161,30 @@ button {
 .editor-pane {
   display: grid;
   min-height: 0;
-  padding: 48px 64px 64px;
-  max-width: 860px;
   width: 100%;
-  margin: 0 auto;
+  max-width: 100%;
+  padding: 32px 48px 48px;
   box-sizing: border-box;
+}
+
+.editor-view {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  min-width: 0;
 }
 
 .editor-view,
 .editor-view .ProseMirror {
   outline: none;
   min-height: calc(100vh - 160px);
-  line-height: 1.75;
-  font-size: 18px;
+  line-height: 1.65;
+  font-size: 15px;
   color: var(--editor-text);
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  max-width: 100%;
 }
 
 .editor-view .ProseMirror strong {
@@ -210,8 +221,11 @@ button {
 
 .editor-view .ProseMirror table.md-table {
   width: 100%;
+  max-width: 100%;
   border-collapse: collapse;
   margin: 1em 0;
+  table-layout: fixed;
+  display: table;
 }
 
 .editor-view .ProseMirror table.md-table th,
@@ -219,6 +233,10 @@ button {
   border: 1px solid var(--border);
   padding: 8px 12px;
   text-align: left;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  vertical-align: top;
 }
 
 .editor-view .ProseMirror table.md-table th {
@@ -279,37 +297,63 @@ button {
 
 .editor-view .ProseMirror h1,
 .editor-view .ProseMirror h2,
-.editor-view .ProseMirror h3 {
-  line-height: 1.3;
-  margin: 1.4em 0 0.6em;
+.editor-view .ProseMirror h3,
+.editor-view .ProseMirror h4,
+.editor-view .ProseMirror h5,
+.editor-view .ProseMirror h6 {
+  line-height: 1.35;
+  margin: 1.2em 0 0.5em;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .editor-view .ProseMirror h1 {
-  font-size: 2em;
+  font-size: 1.6em;
+  margin-top: 0;
 }
 
 .editor-view .ProseMirror h2 {
-  font-size: 1.5em;
+  font-size: 1.35em;
 }
 
 .editor-view .ProseMirror h3 {
-  font-size: 1.25em;
+  font-size: 1.2em;
+}
+
+.editor-view .ProseMirror h4 {
+  font-size: 1.1em;
+}
+
+.editor-view .ProseMirror h5 {
+  font-size: 1.05em;
+}
+
+.editor-view .ProseMirror h6 {
+  font-size: 1em;
+  color: var(--text-secondary);
 }
 
 .editor-view .ProseMirror p {
-  margin: 0.75em 0;
+  margin: 0.6em 0;
+  white-space: pre-wrap;
 }
 
 .editor-view .ProseMirror ul,
 .editor-view .ProseMirror ol {
-  margin: 0.75em 0;
+  margin: 0.6em 0;
   padding-left: 1.4em;
 }
 
+.editor-view .ProseMirror li,
 .editor-view .ProseMirror blockquote {
-  margin: 1em 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.editor-view .ProseMirror blockquote {
+  margin: 0.8em 0;
   padding-left: 1em;
   border-left: 3px solid rgba(87, 108, 255, 0.5);
   color: rgba(232, 237, 245, 0.85);
@@ -353,12 +397,16 @@ button {
 .editor-view .ProseMirror pre,
 .editor-view .ProseMirror .code-block-wrapper pre {
   margin: 1em 0;
-  padding: 14px 16px;
+  padding: 12px 14px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--code-bg);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.9em;
+  font-size: 13px;
+  line-height: 1.5;
   overflow-x: auto;
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: normal;
 }
 
 .editor-empty__actions {
@@ -516,3 +564,92 @@ button {
   color: rgba(237, 242, 247, 0.65);
   font-size: 13px;
 }
+
+.sidebar-tabs {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 18px;
+  gap: 12px;
+}
+
+.sidebar-tabs__bar {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-tabs__tab {
+  flex: 1;
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.sidebar-tabs__tab--active {
+  background: var(--accent-strong);
+}
+
+.panel__body--nested {
+  padding-top: 4px;
+}
+
+.file-tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.file-tree__item {
+  margin: 0;
+}
+
+.file-tree__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.file-tree__row:hover,
+.file-tree__row--file.nav-item--active {
+  background: var(--accent);
+}
+
+.file-tree__chevron {
+  display: inline-block;
+  width: 12px;
+  font-size: 12px;
+  transition: transform 0.15s ease;
+}
+
+.file-tree__chevron--open {
+  transform: rotate(90deg);
+}
+
+.file-tree__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.outline-panel {
+  min-height: 120px;
+}
+

@@ -1,0 +1,64 @@
+import { defineStore } from "pinia";
+import { listMarkdownTree, type TreeNode } from "@/lib/workspace-service";
+
+export type SidebarTab = "files" | "outline";
+
+export const useFolderWorkspaceStore = defineStore("folder-workspace", {
+  state: () => ({
+    rootPath: "" as string,
+    tree: null as TreeNode | null,
+    expandedPaths: [] as string[],
+    selectedPath: "" as string,
+    activeTab: "files" as SidebarTab,
+  }),
+  getters: {
+    hasFolder(state): boolean {
+      return Boolean(state.rootPath);
+    },
+  },
+  actions: {
+    isExpanded(path: string) {
+      return this.expandedPaths.includes(path);
+    },
+    toggleExpanded(path: string) {
+      if (this.isExpanded(path)) {
+        this.expandedPaths = this.expandedPaths.filter((item) => item !== path);
+      } else {
+        this.expandedPaths = [...this.expandedPaths, path];
+      }
+    },
+    findNode(path: string, node: TreeNode | null = this.tree): TreeNode | null {
+      if (!node) {
+        return null;
+      }
+      if (node.path === path) {
+        return node;
+      }
+      for (const child of node.children) {
+        const found = this.findNode(path, child);
+        if (found) {
+          return found;
+        }
+      }
+      return null;
+    },
+    async setRootPath(root: string) {
+      this.rootPath = root;
+      this.expandedPaths = [root];
+      await this.refreshTree();
+    },
+    async refreshTree() {
+      if (!this.rootPath) {
+        this.tree = null;
+        return;
+      }
+      this.tree = await listMarkdownTree(this.rootPath);
+    },
+    setActiveTab(tab: SidebarTab) {
+      this.activeTab = tab;
+    },
+    setSelectedPath(path: string) {
+      this.selectedPath = path;
+    },
+  },
+});

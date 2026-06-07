@@ -39,6 +39,20 @@ export async function saveRecentFile(path: string) {
   return invoke<string[]>("save_recent_file", { path });
 }
 
+export async function pickFolder(): Promise<string | null> {
+  if (!isTauri()) {
+    return null;
+  }
+  const selected = await open({
+    directory: true,
+    multiple: false,
+  });
+  if (!selected || Array.isArray(selected)) {
+    return null;
+  }
+  return normalizeFilePath(selected);
+}
+
 export async function pickMarkdownFile(): Promise<string | null> {
   if (!isTauri()) {
     return null;

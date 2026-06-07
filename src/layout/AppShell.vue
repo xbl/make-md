@@ -7,7 +7,7 @@
     }"
   >
     <aside v-show="!ui.sidebarCollapsed && !ui.focusMode" class="app-shell__sidebar" data-testid="sidebar">
-      <Sidebar />
+      <SidebarTabs />
     </aside>
 
     <section class="app-shell__main">
@@ -24,16 +24,19 @@
 import { onBeforeUnmount, onMounted } from "vue";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { isTauri } from "@tauri-apps/api/core";
-import Sidebar from "@/components/Sidebar.vue";
+import SidebarTabs from "@/components/SidebarTabs.vue";
 import TabStrip from "@/components/TabStrip.vue";
 import EditorPane from "@/components/EditorPane.vue";
 import StatusBar from "@/components/StatusBar.vue";
 import CommandPalette from "@/components/CommandPalette.vue";
 import { useDocumentsStore } from "@/stores/documents";
 import { useUiStore } from "@/stores/ui";
+import { useFolderWorkspaceStore } from "@/stores/folder-workspace";
+import { pickFolder } from "@/lib/file-service";
 
 const documents = useDocumentsStore();
 const ui = useUiStore();
+const folderWorkspace = useFolderWorkspaceStore();
 let unlistenClose: (() => void) | null = null;
 
 function handleKeydown(event: KeyboardEvent) {
@@ -87,6 +90,18 @@ function handleKeydown(event: KeyboardEvent) {
   if (event.key === "s") {
     event.preventDefault();
     void documents.saveActiveFile();
+    return;
+  }
+
+  if (event.key === "o" && event.shiftKey) {
+    event.preventDefault();
+    void (async () => {
+      const path = await pickFolder();
+      if (path) {
+        await folderWorkspace.setRootPath(path);
+        folderWorkspace.setActiveTab("files");
+      }
+    })();
     return;
   }
 
