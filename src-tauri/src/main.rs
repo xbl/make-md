@@ -14,7 +14,8 @@ fn main() {
             recovery::save_recovery_snapshot,
             recovery::load_recovery_snapshot,
             recovery::clear_recovery_snapshot,
-            workspace::tree::list_markdown_tree
+            workspace::tree::list_markdown_tree,
+            workspace::watch::watch_folder,
         ])
         .run(tauri::generate_context!())
         .expect("failed to run make-md");
