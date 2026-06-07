@@ -12,6 +12,7 @@ import {
   createCodeBlockPlugin,
 } from "@/editor/code-block-input";
 import { createSyntaxHighlightPlugin } from "@/editor/syntax-highlight/plugin";
+import { createInlineCodeDecorationsPlugin } from "@/editor/inline-code-decorations";
 
 type PluginOptions = {
   getDocPath?: () => string | undefined;
@@ -26,6 +27,7 @@ export function createEditorPlugins(options: PluginOptions = {}) {
     createFindReplacePlugin(),
     createCodeBlockPlugin(),
     createSyntaxHighlightPlugin(),
+    createInlineCodeDecorationsPlugin(),
     history(),
     keymap(createCodeBlockKeymap()),
     keymap(baseKeymap),

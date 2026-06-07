@@ -31,6 +31,10 @@
   --editor-text: #242422;
   --code-bg: #f0efea;
   --code-text: #3d3d38;
+  --ic-kw: #0550ae;
+  --ic-str: #0a6634;
+  --ic-num: #953800;
+  --ic-op: #57606a;
   --quote-border: #c4bdb0;
   --quote-text: #5a5a54;
   --find-match: rgba(255, 212, 120, 0.55);
@@ -77,6 +81,10 @@
   --editor-text: #e4e4de;
   --code-bg: rgba(255, 255, 255, 0.06);
   --code-text: #d8d8d0;
+  --ic-kw: #79c0ff;
+  --ic-str: #7ee787;
+  --ic-num: #ffa657;
+  --ic-op: #8b949e;
   --quote-border: #5a5a54;
   --quote-text: #b0b0a8;
   --find-match: rgba(255, 212, 120, 0.3);
@@ -638,6 +646,22 @@ button {
   border-radius: 3px;
   background: var(--code-bg);
   color: var(--code-text);
+}
+
+.editor-view .ProseMirror .ic-kw {
+  color: var(--ic-kw);
+}
+
+.editor-view .ProseMirror .ic-str {
+  color: var(--ic-str);
+}
+
+.editor-view .ProseMirror .ic-num {
+  color: var(--ic-num);
+}
+
+.editor-view .ProseMirror .ic-op {
+  color: var(--ic-op);
 }
 
 .editor-view .ProseMirror a {
