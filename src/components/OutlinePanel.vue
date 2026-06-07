@@ -44,7 +44,10 @@ function refreshOutline() {
 }
 
 watch(
-  () => [editorStore.docVersion, documents.activeSession?.id, documents.activeSession?.content] as const,
+  () =>
+    editorStore.view
+      ? ([editorStore.docVersion, documents.activeSession?.id] as const)
+      : ([documents.activeSession?.id, documents.activeSession?.content] as const),
   () => {
     if (timer) {
       clearTimeout(timer);

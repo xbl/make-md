@@ -3,6 +3,7 @@ import { setActivePinia, createPinia } from "pinia";
 import { parseMarkdown } from "../../src/editor/markdown-parser";
 import { extractOutline } from "../../src/lib/outline";
 import { useEditorStore } from "../../src/stores/editor";
+import { useDocumentsStore } from "../../src/stores/documents";
 
 describe("editor store outline bridge", () => {
   beforeEach(() => {
@@ -20,5 +21,15 @@ describe("editor store outline bridge", () => {
     expect(store.docVersion).toBe(0);
     store.bumpDocVersion();
     expect(store.docVersion).toBe(1);
+  });
+
+  it("creates a new untitled document and activates it", () => {
+    const documents = useDocumentsStore();
+    const session = documents.createNewDocument();
+
+    expect(documents.activeSessionId).toBe(session.id);
+    expect(documents.activeSession?.path).toBe("");
+    expect(documents.activeSession?.content).toBe("");
+    expect(documents.sessions).toHaveLength(1);
   });
 });

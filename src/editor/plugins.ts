@@ -3,6 +3,7 @@ import { keymap } from "prosemirror-keymap";
 import { baseKeymap } from "prosemirror-commands";
 import { createEditorInputRules } from "@/editor/input-rules";
 import { createFindReplacePlugin } from "@/editor/find-replace-plugin";
+import { createMermaidPlugin } from "@/editor/mermaid-plugin";
 import { createImageAssetPlugin } from "@/lib/image-asset-plugin";
 
 type PluginOptions = {
@@ -11,7 +12,13 @@ type PluginOptions = {
 };
 
 export function createEditorPlugins(options: PluginOptions = {}) {
-  const plugins = [createEditorInputRules(), createFindReplacePlugin(), history(), keymap(baseKeymap)];
+  const plugins = [
+    createEditorInputRules(),
+    createMermaidPlugin(),
+    createFindReplacePlugin(),
+    history(),
+    keymap(baseKeymap),
+  ];
 
   if (options.getDocPath) {
     plugins.splice(

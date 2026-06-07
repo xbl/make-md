@@ -56,11 +56,14 @@ function mountEditor() {
         return;
       }
       view.updateState(nextState);
-      editorStore.bumpDocVersion();
-      syncSessionContent();
+      if (transaction.docChanged) {
+        editorStore.bumpDocVersion();
+        syncSessionContent();
+      }
     },
   });
   editorStore.setView(view);
+  view.focus();
 }
 
 onMounted(async () => {

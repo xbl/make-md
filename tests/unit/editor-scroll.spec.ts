@@ -16,11 +16,6 @@ describe("scrollEditorToPosition", () => {
     document.body.appendChild(sidebar);
     document.body.appendChild(editorScroll);
 
-    const scrollTo = vi.fn((options: ScrollToOptions) => {
-      editorScroll.scrollTop = options.top ?? 0;
-    });
-    editorScroll.scrollTo = scrollTo as typeof editorScroll.scrollTo;
-
     Object.defineProperty(editorScroll, "clientHeight", { value: 300 });
     Object.defineProperty(editorScroll, "getBoundingClientRect", {
       value: () => ({ top: 100, left: 0, width: 800, height: 300 }),
@@ -38,7 +33,7 @@ describe("scrollEditorToPosition", () => {
     scrollEditorToPosition(view, 1);
 
     expect(sidebar.scrollTop).toBe(120);
-    expect(scrollTo).toHaveBeenCalled();
+    expect(editorScroll.scrollTop).toBeGreaterThan(0);
 
     document.body.removeChild(sidebar);
     document.body.removeChild(editorScroll);

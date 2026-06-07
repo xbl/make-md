@@ -3,25 +3,40 @@ import type { EditorView } from "prosemirror-view";
 
 const EDITOR_SCROLL_SELECTOR = ".app-shell__editor";
 
-export function scrollEditorToPosition(view: EditorView, pos: number) {
-  const selection = TextSelection.near(view.state.doc.resolve(pos + 1));
-  view.dispatch(view.state.tr.setSelection(selection));
+let outlineNavigationLock = false;
+let outlineNavigationTimer: ReturnType<typeof setTimeout> | null = null;
 
-  const scrollContainer = document.querySelector(EDITOR_SCROLL_SELECTOR);
-  if (!(scrollContainer instanceof HTMLElement)) {
-    view.dom.focus({ preventScroll: true });
+export function scrollEditorToPosition(view: EditorView, pos: number) {
+  if (outlineNavigationLock) {
     return;
   }
 
-  const coords = view.coordsAtPos(selection.from);
-  const containerRect = scrollContainer.getBoundingClientRect();
-  const offsetInContainer = coords.top - containerRect.top + scrollContainer.scrollTop;
-  const targetScrollTop = offsetInContainer - scrollContainer.clientHeight * 0.28;
+  outlineNavigationLock = true;
+  if (outlineNavigationTimer) {
+    clearTimeout(outlineNavigationTimer);
+  }
+  outlineNavigationTimer = setTimeout(() => {
+    outlineNavigationLock = false;
+  }, 250);
 
-  scrollContainer.scrollTo({
-    top: Math.max(0, targetScrollTop),
-    behavior: "smooth",
-  });
+  const resolved = view.state.doc.resolve(Math.min(pos + 1, view.state.doc.content.size));
+  const selection = TextSelection.near(resolved);
+
+  const scrollContainer = document.querySelector(EDITOR_SCROLL_SELECTOR);
+  if (scrollContainer instanceof HTMLElement) {
+    const coords = view.coordsAtPos(resolved.pos);
+    const containerRect = scrollContainer.getBoundingClientRect();
+    const offsetInContainer = coords.top - containerRect.top + scrollContainer.scrollTop;
+    const targetScrollTop = offsetInContainer - scrollContainer.clientHeight * 0.28;
+
+    scrollContainer.scrollTop = Math.max(0, targetScrollTop);
+  }
+
+  if (!view.state.selection.eq(selection)) {
+    view.dispatch(
+      view.state.tr.setSelection(selection).setMeta("addToHistory", false),
+    );
+  }
 
   view.dom.focus({ preventScroll: true });
 }

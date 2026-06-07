@@ -708,9 +708,24 @@ button {
   white-space: pre;
 }
 
-.editor-view .ProseMirror .code-block-wrapper--mermaid pre {
+.editor-view .ProseMirror pre[data-params="mermaid" i],
+.editor-view .ProseMirror .code-block-wrapper[data-language="mermaid" i] pre,
+.editor-view .ProseMirror .code-block-wrapper[data-language="Mermaid" i] pre {
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   border-bottom: 0;
+}
+
+.editor-view .ProseMirror pre[data-params="mermaid" i]:has(+ .mermaid-preview--ready),
+.editor-view .ProseMirror .code-block-wrapper[data-language="mermaid" i] pre:has(+ .mermaid-preview--ready),
+.editor-view .ProseMirror .code-block-wrapper[data-language="Mermaid" i] pre:has(+ .mermaid-preview--ready) {
+  display: none;
+}
+
+.editor-view .ProseMirror pre[data-params="mermaid" i] + .mermaid-preview--ready,
+.editor-view .ProseMirror .code-block-wrapper[data-language="mermaid" i] pre + .mermaid-preview--ready,
+.editor-view .ProseMirror .code-block-wrapper[data-language="Mermaid" i] pre + .mermaid-preview--ready {
+  border-top: 1px solid var(--border);
+  border-radius: var(--radius-md);
 }
 
 .editor-view .ProseMirror .mermaid-preview {
