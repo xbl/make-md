@@ -1,5 +1,6 @@
 <template>
   <div class="editor-pane">
+    <FindReplaceBar v-if="activeSession" />
     <EditorView v-if="activeSession" />
     <div v-else class="editor-empty">
       <p class="editor-empty__title">Open a Markdown file to start writing</p>
@@ -20,6 +21,7 @@
 import { computed } from "vue";
 import { useDocumentsStore } from "@/stores/documents";
 import EditorView from "@/editor/EditorView.vue";
+import FindReplaceBar from "@/components/FindReplaceBar.vue";
 
 const documents = useDocumentsStore();
 const activeSession = computed(() => documents.activeSession);

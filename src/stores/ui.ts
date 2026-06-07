@@ -7,6 +7,8 @@ export const useUiStore = defineStore("ui", {
     commandPaletteOpen: false,
     sidebarCollapsed: false,
     focusMode: false,
+    findReplaceOpen: false,
+    findReplaceMode: "find" as "find" | "replace",
     theme: (localStorage.getItem("make-md:theme") as EditorTheme) || "dark",
   }),
   actions: {
@@ -26,6 +28,13 @@ export const useUiStore = defineStore("ui", {
     },
     applyTheme() {
       document.documentElement.dataset.theme = this.theme;
+    },
+    openFindReplace(mode: "find" | "replace" = "find") {
+      this.findReplaceMode = mode;
+      this.findReplaceOpen = true;
+    },
+    closeFindReplace() {
+      this.findReplaceOpen = false;
     },
   },
 });

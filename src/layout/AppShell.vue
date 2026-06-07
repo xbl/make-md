@@ -63,7 +63,25 @@ function handleKeydown(event: KeyboardEvent) {
     return;
   }
 
-  if (event.key === "e") {
+  if (event.key === "f" && mod && event.altKey) {
+    event.preventDefault();
+    ui.openFindReplace("replace");
+    return;
+  }
+
+  if (event.key === "f" && mod) {
+    event.preventDefault();
+    ui.openFindReplace("find");
+    return;
+  }
+
+  if (event.key === "Escape" && ui.findReplaceOpen) {
+    event.preventDefault();
+    ui.closeFindReplace();
+    return;
+  }
+
+  if (event.key === "e" && mod && !event.shiftKey) {
     event.preventDefault();
     void documents.exportActiveHtml();
     return;

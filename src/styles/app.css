@@ -704,7 +704,47 @@ button {
   cursor: pointer;
 }
 
-.outline-panel__button:hover {
-  background: var(--accent);
+.find-match {
+  background: rgba(255, 214, 102, 0.35);
+  border-radius: 3px;
+}
+
+.find-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
+}
+
+.find-bar__input {
+  min-width: 160px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: inherit;
+  background: transparent;
+}
+
+.find-bar__button,
+.find-bar__toggle {
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 12px;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+}
+
+.find-bar__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
