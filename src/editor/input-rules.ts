@@ -1,6 +1,7 @@
 import { inputRules, wrappingInputRule, textblockTypeInputRule, InputRule } from "prosemirror-inputrules";
 import type { NodeType } from "prosemirror-model";
 import { markdownSchema } from "@/editor/schema";
+import { createCodeBlockInputRules } from "@/editor/code-block-input";
 
 function blockInputRule(
   regexp: RegExp,
@@ -25,6 +26,7 @@ export function createEditorInputRules() {
 
   return inputRules({
     rules: [
+      ...createCodeBlockInputRules(),
       blockInputRule(/^(#{1,6})\s$/, heading, (match) => ({
         level: match[1].length,
       })),

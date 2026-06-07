@@ -69,6 +69,52 @@ describe("inline mark input rules", () => {
     document.body.removeChild(mount);
   });
 
+  it("allows completing **bold** after **ddd*", () => {
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc: markdownSchema.nodes.doc.create(null, [markdownSchema.nodes.paragraph.create()]),
+      plugins: [inputRules({ rules: createInlineMarkInputRulesFromSchema(markdownSchema) })],
+    });
+
+    const view = new EditorView(mount, { state });
+    typeInto(view, "**ddd");
+    typeInto(view, "*");
+    expect(view.state.doc.textContent).toBe("**ddd*");
+
+    typeInto(view, "*");
+    expect(hasMark(view, "strong")).toBe(true);
+    expect(view.state.doc.textContent).toBe("ddd");
+
+    view.destroy();
+    document.body.removeChild(mount);
+  });
+
+  it("allows completing ~~strike~~ after ~~ddd~", () => {
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc: markdownSchema.nodes.doc.create(null, [markdownSchema.nodes.paragraph.create()]),
+      plugins: [inputRules({ rules: createInlineMarkInputRulesFromSchema(markdownSchema) })],
+    });
+
+    const view = new EditorView(mount, { state });
+    typeInto(view, "~~ddd");
+    typeInto(view, "~");
+    expect(view.state.doc.textContent).toBe("~~ddd~");
+
+    typeInto(view, "~");
+    expect(hasMark(view, "strike")).toBe(true);
+    expect(view.state.doc.textContent).toBe("ddd");
+
+    view.destroy();
+    document.body.removeChild(mount);
+  });
+
   it("converts [text](url) while typing", () => {
     const mount = document.createElement("div");
     document.body.appendChild(mount);

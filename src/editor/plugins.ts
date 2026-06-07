@@ -7,6 +7,10 @@ import { createMermaidPlugin } from "@/editor/mermaid-plugin";
 import { createInlineMarkPlugin } from "@/editor/inline-mark/plugin";
 import { markdownSchema } from "@/editor/schema";
 import { createImageAssetPlugin } from "@/lib/image-asset-plugin";
+import {
+  createCodeBlockKeymap,
+  createCodeBlockPlugin,
+} from "@/editor/code-block-input";
 
 type PluginOptions = {
   getDocPath?: () => string | undefined;
@@ -19,7 +23,9 @@ export function createEditorPlugins(options: PluginOptions = {}) {
     ...createInlineMarkPlugin(markdownSchema),
     createMermaidPlugin(),
     createFindReplacePlugin(),
+    createCodeBlockPlugin(),
     history(),
+    keymap(createCodeBlockKeymap()),
     keymap(baseKeymap),
   ];
 

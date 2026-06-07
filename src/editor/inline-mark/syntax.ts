@@ -13,7 +13,7 @@ export const INLINE_MARKDOWN_PATTERN =
 
 export const INPUT_RULE_PATTERNS = {
   strong: /\*\*([^*\n]+)\*\*$/,
-  em: /(?<!\*)\*([^*\n]+)\*(?!\*)$/,
+  em: /(?<!\*)\*(?!\*)([^*\n]+)(?<!\*)\*(?!\*)$/,
   strike: /~~([^~\n]+)~~$/,
   code: /`([^`\n]+)`$/,
   link: /\[([^\]\n]+)\]\(([^)\n]+)\)$/,
