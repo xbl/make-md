@@ -310,4 +310,28 @@ describe("inline mark syntax decorations", () => {
     view.destroy();
     document.body.removeChild(mount);
   });
+
+  it("adds editing decoration when cursor is inside code", () => {
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+
+    const paragraph = markdownSchema.nodes.paragraph.create(
+      null,
+      [markdownSchema.text("文字", [markdownSchema.marks.code.create()])],
+    );
+    const doc = markdownSchema.nodes.doc.create(null, [paragraph]);
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc,
+      selection: TextSelection.create(doc, 2),
+      plugins: [createInlineMarkSyntaxPlugin()],
+    });
+
+    const view = new EditorView(mount, { state });
+    const deco = mount.querySelector(".pm-mark-editing--code");
+    expect(deco).not.toBeNull();
+
+    view.destroy();
+    document.body.removeChild(mount);
+  });
 });

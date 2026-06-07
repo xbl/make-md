@@ -764,9 +764,11 @@ button {
   font-family: var(--font-mono);
   font-size: 0.88em;
   padding: 0.1em 0.3em;
-  border-radius: 3px;
-  background: var(--code-bg);
-  color: var(--code-text);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  box-shadow: inset 0 0 0 999px var(--accent-soft);
 }
 
 .editor-view .ProseMirror .pm-mark-editing--code::before,
