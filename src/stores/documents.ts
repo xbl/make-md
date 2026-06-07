@@ -207,6 +207,27 @@ export const useDocumentsStore = defineStore("documents", {
     labelForSession(session: Session) {
       return sessionLabel(session);
     },
+    retargetSessionPath(oldPath: string, newPath: string) {
+      const session = this.sessions.find((item) => item.id === oldPath || item.path === oldPath);
+      if (!session) {
+        return;
+      }
+      const content = session.content;
+      const nextSession = createDocumentSession({
+        id: newPath,
+        path: newPath,
+        content,
+      });
+      if (session.isDirty()) {
+        nextSession.markDirty();
+      }
+      this.sessions = this.sessions
+        .filter((item) => item.id !== oldPath && item.path !== oldPath)
+        .concat(nextSession);
+      if (this.activeSessionId === oldPath) {
+        this.activeSessionId = newPath;
+      }
+    },
     async exportActiveHtml() {
       const session = this.activeSession;
       if (!session) {

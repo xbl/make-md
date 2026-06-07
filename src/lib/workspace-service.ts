@@ -51,3 +51,38 @@ export function stopFolderWatch() {
     refreshTimer = null;
   }
 }
+
+export async function createWorkspaceFile(parent: string, name: string) {
+  if (!isTauri()) {
+    throw new Error("Desktop app required");
+  }
+  return invoke<string>("create_file", { parent, name });
+}
+
+export async function renameWorkspaceFile(from: string, to: string) {
+  if (!isTauri()) {
+    throw new Error("Desktop app required");
+  }
+  return invoke<string>("rename_file", { from, to });
+}
+
+export async function deleteWorkspaceFile(path: string) {
+  if (!isTauri()) {
+    throw new Error("Desktop app required");
+  }
+  return invoke<void>("delete_file", { path });
+}
+
+export async function moveWorkspaceFile(from: string, toDir: string) {
+  if (!isTauri()) {
+    throw new Error("Desktop app required");
+  }
+  return invoke<string>("move_file", { from, toDir });
+}
+
+export async function revealInFinder(path: string) {
+  if (!isTauri()) {
+    throw new Error("Desktop app required");
+  }
+  return invoke<void>("reveal_in_finder", { path });
+}
