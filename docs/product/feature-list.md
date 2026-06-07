@@ -1,125 +1,125 @@
-# Product Feature List
+# 产品功能清单
 
-Last updated: 2026-06-07
+最后更新：2026-06-07
 
-Status legend:
-- `complete`: shipped and usable in the product
-- `partial`: shipped in part, but still has notable gaps
-- `not_started`: planned or listed in menus/specs, but not implemented yet
+状态说明：
+- `complete`：已完成并可在产品中正常使用
+- `partial`：已部分完成，但仍存在明确缺口
+- `not_started`：已规划、已出现在菜单或设计中，但尚未实现
 
-## Editor Core
+## 编辑器核心
 
-| Feature | Status | Notes |
+| 功能 | 状态 | 说明 |
 |---|---|---|
-| Typora-style live Markdown editing | `complete` | ProseMirror-based editor with live rich rendering instead of source/code split view. |
-| Block input shortcuts | `complete` | Supports headings, bullet lists, blockquotes, code fences, task lists, and horizontal rules. |
-| Inline mark typing and paste parsing | `complete` | Supports bold, italic, inline code, strike, and link patterns while typing and pasting. |
-| Inline formatting shortcuts | `complete` | Bold, italic, inline code, strike, link, and clear formatting are wired through editor commands. |
-| Heading conversion commands | `complete` | Heading 1-6 and paragraph conversion are implemented. |
-| Blockquote command | `partial` | Markdown parsing/rendering exists, but menu/shortcut command execution is not fully wired yet. |
-| Ordered list command | `partial` | Document model and parser support exist, but menu/shortcut command execution is not fully wired yet. |
-| Unordered list command | `partial` | Document model and parser support exist, but menu/shortcut command execution is not fully wired yet. |
-| Increase/decrease heading level | `partial` | Command ids and menu entries exist, but runtime behavior still needs completion. |
-| Code fence language selection | `complete` | Entering code fences can prompt for language; existing fences can update language. |
-| Fenced code syntax highlight | `partial` | Overlay/highlight plumbing exists and visibility bug was fixed, but behavior is still being aligned and verified. |
-| Inline code heuristic coloring | `complete` | Inline code token decoration exists in the editor. |
-| Mermaid blocks | `complete` | Mermaid block rendering is supported. |
-| Tables in document model/parser | `complete` | Table parsing/rendering exists. |
-| Insert table command | `not_started` | `paragraph.table` remains disabled in the shared command manifest. |
-| Math blocks / formulas | `not_started` | Explicitly called out as next-phase work. |
-| Footnotes | `not_started` | Explicitly called out as next-phase work. |
-| Front matter editing | `not_started` | Explicitly called out as next-phase work. |
-| TOC support | `not_started` | Explicitly called out as next-phase work. |
+| Typora 风格实时 Markdown 编辑 | `complete` | 基于 ProseMirror，实现所见即所得编辑，而不是源码/预览分栏。 |
+| 块级输入快捷语法 | `complete` | 已支持标题、无序列表、引用、代码块、任务列表、分隔线。 |
+| 行内语法输入与粘贴解析 | `complete` | 已支持粗体、斜体、行内代码、删除线、链接的输入与粘贴解析。 |
+| 行内格式快捷键 | `complete` | 粗体、斜体、行内代码、删除线、链接、清除格式已接入编辑器命令。 |
+| 标题转换命令 | `complete` | 已实现 1-6 级标题与正文段落互转。 |
+| 引用块命令 | `partial` | 文档模型与解析已支持，但菜单/快捷键对应的运行时命令还未完全接通。 |
+| 有序列表命令 | `partial` | 文档模型与解析已支持，但菜单/快捷键对应的运行时命令还未完全接通。 |
+| 无序列表命令 | `partial` | 文档模型与解析已支持，但菜单/快捷键对应的运行时命令还未完全接通。 |
+| 标题升级/降级 | `partial` | 命令 ID 和菜单项已存在，但实际行为还未补完。 |
+| 代码块语言选择 | `complete` | 输入代码块时可选择语言，已有代码块也可更新语言。 |
+| 围栏代码语法高亮 | `partial` | 高亮覆盖层与显示修复已存在，但整体行为仍在继续对齐和验证。 |
+| 行内代码启发式着色 | `complete` | 编辑器内已支持行内代码 token 着色。 |
+| Mermaid 图表块 | `complete` | 已支持 Mermaid 块渲染。 |
+| 表格文档模型与解析 | `complete` | 已支持表格解析与渲染。 |
+| 插入表格命令 | `not_started` | `paragraph.table` 在共享命令清单中仍为禁用状态。 |
+| 数学公式块 | `not_started` | 已在下一阶段计划中列出，但尚未实现。 |
+| 脚注 | `not_started` | 已在下一阶段计划中列出，但尚未实现。 |
+| Front matter 编辑 | `not_started` | 已在下一阶段计划中列出，但尚未实现。 |
+| TOC 目录支持 | `not_started` | 已在下一阶段计划中列出，但尚未实现。 |
 
-## Search And Replace
+## 查找与替换
 
-| Feature | Status | Notes |
+| 功能 | 状态 | 说明 |
 |---|---|---|
-| Find bar | `complete` | In-document find UI and state plugin exist. |
-| Replace bar | `complete` | Replace one and replace all are implemented. |
-| Find next / previous commands | `complete` | Editor command events now drive next/previous navigation. |
-| Case-sensitive search | `complete` | Supported in the find/replace UI. |
-| Whole-word search | `complete` | Supported in the find/replace UI. |
+| 查找栏 | `complete` | 已有文内查找 UI 和状态插件。 |
+| 替换栏 | `complete` | 已支持替换一个与全部替换。 |
+| 查找下一个 / 上一个命令 | `complete` | 已通过编辑器命令事件驱动前后跳转。 |
+| 区分大小写搜索 | `complete` | 查找替换 UI 已支持。 |
+| 整词匹配搜索 | `complete` | 查找替换 UI 已支持。 |
 
-## Workspace And File Management
+## 工作区与文件管理
 
-| Feature | Status | Notes |
+| 功能 | 状态 | 说明 |
 |---|---|---|
-| Open single Markdown file | `complete` | File workflow is implemented. |
-| Open folder workspace | `complete` | Folder tree browsing is implemented. |
-| File tree navigation | `complete` | Sidebar file tree exists. |
-| File create / rename / delete / move | `complete` | Phase 2 workspace file operations shipped. |
-| File watching / refresh | `complete` | Workspace watch layer exists in Tauri. |
-| Multi-tab editing | `complete` | Tab strip and multiple document sessions exist. |
-| Recent files | `complete` | Rust-backed recent file handling exists. |
-| Unsaved change prompts | `complete` | Prompt flow exists for dirty documents. |
+| 打开单个 Markdown 文件 | `complete` | 文件工作流已实现。 |
+| 打开文件夹工作区 | `complete` | 已支持文件树浏览。 |
+| 文件树导航 | `complete` | 侧边栏文件树已实现。 |
+| 文件新建 / 重命名 / 删除 / 移动 | `complete` | Phase 2 工作区文件操作已交付。 |
+| 文件监听与刷新 | `complete` | Tauri 侧已存在工作区监听能力。 |
+| 多标签编辑 | `complete` | 已有标签栏和多文档会话。 |
+| 最近文件 | `complete` | 已有 Rust 侧最近文件处理。 |
+| 未保存变更提示 | `complete` | 已实现脏文档提示流程。 |
 
-## Outline And Navigation
+## 大纲与导航
 
-| Feature | Status | Notes |
+| 功能 | 状态 | 说明 |
 |---|---|---|
-| Document outline panel | `complete` | Outline sidebar tab is shipped. |
-| Click heading to navigate | `complete` | Outline items navigate to headings. |
-| Sidebar section switching | `complete` | Files and Outline tabs exist. |
+| 文档大纲面板 | `complete` | 大纲侧边栏标签页已交付。 |
+| 点击标题跳转 | `complete` | 大纲项可跳转到标题位置。 |
+| 侧边栏分区切换 | `complete` | 已有 Files 与 Outline 标签切换。 |
 
-## Images And Assets
+## 图片与资源
 
-| Feature | Status | Notes |
+| 功能 | 状态 | 说明 |
 |---|---|---|
-| Paste image into document | `complete` | Images are stored into local assets alongside the document. |
-| Drop image into document | `complete` | Drag/drop asset flow exists. |
-| Relative asset path handling | `complete` | Image asset helpers and plugin exist. |
-| Insert image dialog / command | `not_started` | `format.image` remains disabled in the shared command manifest. |
+| 粘贴图片到文档 | `complete` | 图片会保存到文档旁的本地资源目录。 |
+| 拖拽图片到文档 | `complete` | 已支持拖放图片资源流程。 |
+| 相对资源路径处理 | `complete` | 已有图片资源辅助逻辑与插件。 |
+| 插入图片对话框 / 命令 | `not_started` | `format.image` 在共享命令清单中仍为禁用状态。 |
 
-## Menus, Shortcuts, And Commands
+## 菜单、快捷键与命令
 
-| Feature | Status | Notes |
+| 功能 | 状态 | 说明 |
 |---|---|---|
-| Native application menu | `complete` | Tauri native menu is installed with File/Edit/Paragraph/Format/View/Export sections. |
-| Command palette | `complete` | Command palette UI and registry exist. |
-| Shared command catalog | `complete` | Manifest/registry-backed command ids are used across surfaces. |
-| Keyboard shortcut customization | `complete` | Preferences panel supports recording and resetting shortcuts. |
-| Native menu to runtime bridge | `complete` | Menu events are forwarded into frontend command execution. |
-| Menu coverage for common format commands | `complete` | Bold, italic, inline code, strike, link, clear, headings, find-next/previous are wired. |
-| Menu coverage for paragraph/list transforms | `partial` | Quote, lists, and heading level adjustments are listed but not fully wired. |
-| Underline command | `not_started` | Listed but disabled. |
+| 原生应用菜单 | `complete` | 已接入 Tauri 原生菜单，含 File/Edit/Paragraph/Format/View/Export。 |
+| 命令面板 | `complete` | 命令面板 UI 与命令注册表已存在。 |
+| 共享命令目录 | `complete` | 各入口已复用统一的 manifest/registry 命令 ID。 |
+| 快捷键自定义 | `complete` | 偏好设置面板已支持录制和重置快捷键。 |
+| 原生菜单到运行时桥接 | `complete` | 菜单事件已可转发到前端命令执行。 |
+| 常用格式命令菜单覆盖 | `complete` | 粗体、斜体、行内代码、删除线、链接、清除格式、标题、查找前后跳转已接通。 |
+| 段落/列表变换菜单覆盖 | `partial` | 引用、列表、标题层级调整虽已列出，但尚未全部接通。 |
+| 下划线命令 | `not_started` | 已列出，但仍为禁用状态。 |
 
-## View And Productivity
+## 视图与效率
 
-| Feature | Status | Notes |
+| 功能 | 状态 | 说明 |
 |---|---|---|
-| Focus mode | `complete` | Focus mode is shipped. |
-| Sidebar toggle | `complete` | Sidebar show/hide is shipped. |
-| Command palette shortcut | `complete` | Shortcut and handler exist. |
-| Files / Outline focus commands | `partial` | View command ids exist; behavior should be validated end to end. |
-| Theme toggle | `complete` | README documents light/dark theme support. |
+| 专注模式 | `complete` | 已交付。 |
+| 侧边栏显示切换 | `complete` | 已交付。 |
+| 命令面板快捷键 | `complete` | 快捷键与处理逻辑已存在。 |
+| Files / Outline 聚焦命令 | `partial` | View 类命令 ID 已存在，但端到端行为仍需继续验证。 |
+| 主题切换 | `complete` | README 已说明支持浅色/深色主题。 |
 
-## Export
+## 导出
 
-| Feature | Status | Notes |
+| 功能 | 状态 | 说明 |
 |---|---|---|
-| Export HTML | `complete` | Standalone HTML export exists. |
-| Export PDF | `complete` | PDF export exists, with macOS browser dependency noted in README. |
-| Syntax-highlighted HTML export | `partial` | Design/spec expects hljs export alignment; current implementation should continue to be verified against editor behavior. |
+| 导出 HTML | `complete` | 已支持独立 HTML 导出。 |
+| 导出 PDF | `complete` | 已支持 PDF 导出，README 中注明 macOS 浏览器依赖。 |
+| 带语法高亮的 HTML 导出 | `partial` | 设计期望与编辑器高亮保持一致，当前仍需持续核对实现对齐情况。 |
 
-## Reliability
+## 稳定性与恢复
 
-| Feature | Status | Notes |
+| 功能 | 状态 | 说明 |
 |---|---|---|
-| Autosave | `complete` | Autosave module exists. |
-| Crash recovery snapshots | `complete` | Rust-backed recovery exists. |
-| Session recovery flow | `complete` | Recovery support is present in both frontend and Tauri layers. |
+| 自动保存 | `complete` | 已有 autosave 模块。 |
+| 崩溃恢复快照 | `complete` | 已有 Rust 侧恢复能力。 |
+| 会话恢复流程 | `complete` | 前端与 Tauri 层均已接入恢复支持。 |
 
-## Preferences And Settings
+## 偏好设置
 
-| Feature | Status | Notes |
+| 功能 | 状态 | 说明 |
 |---|---|---|
-| Preferences dialog | `complete` | Settings panel is shipped. |
-| Shortcut recording UI | `complete` | Users can record and reset bindings. |
-| Settings integrated with native menu | `complete` | Preferences command is reachable from the native menu. |
-| Internationalization | `not_started` | Discussed as a next area, but no i18n layer is present yet. |
+| 偏好设置对话框 | `complete` | 设置面板已交付。 |
+| 快捷键录制 UI | `complete` | 用户可录制与重置快捷键。 |
+| 设置接入原生菜单 | `complete` | 可从原生菜单打开偏好设置。 |
+| 国际化 | `not_started` | 已讨论为下一步方向，但当前尚无 i18n 基础设施。 |
 
-## Verification Notes
+## 维护说明
 
-- This document reflects the current product state inferred from `README.md`, shipped UI/components, command manifest, and active implementation plans.
-- When a feature changes state, update the row in the relevant module instead of appending ad hoc notes elsewhere.
+- 该文档基于 `README.md`、当前已交付 UI/组件、命令清单以及进行中的实现计划整理。
+- 某项功能状态变化时，应直接更新对应模块中的条目，而不是在别处追加零散备注。
