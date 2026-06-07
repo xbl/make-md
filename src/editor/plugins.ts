@@ -3,7 +3,26 @@ import { keymap } from "prosemirror-keymap";
 import { baseKeymap } from "prosemirror-commands";
 import { createEditorInputRules } from "@/editor/input-rules";
 import { createFindReplacePlugin } from "@/editor/find-replace-plugin";
+import { createImageAssetPlugin } from "@/lib/image-asset-plugin";
 
-export function createEditorPlugins() {
-  return [createEditorInputRules(), createFindReplacePlugin(), history(), keymap(baseKeymap)];
+type PluginOptions = {
+  getDocPath?: () => string | undefined;
+  onImageError?: (message: string) => void;
+};
+
+export function createEditorPlugins(options: PluginOptions = {}) {
+  const plugins = [createEditorInputRules(), createFindReplacePlugin(), history(), keymap(baseKeymap)];
+
+  if (options.getDocPath) {
+    plugins.splice(
+      1,
+      0,
+      createImageAssetPlugin({
+        getDocPath: options.getDocPath,
+        onError: options.onImageError ?? (() => {}),
+      }),
+    );
+  }
+
+  return plugins;
 }

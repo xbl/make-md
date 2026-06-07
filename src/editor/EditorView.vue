@@ -43,7 +43,10 @@ function mountEditor() {
   const state = EditorState.create({
     schema: markdownSchema,
     doc,
-    plugins: createEditorPlugins(),
+    plugins: createEditorPlugins({
+      getDocPath: () => activeSession.value?.path || undefined,
+      onImageError: (message) => window.alert(message),
+    }),
   });
 
   view?.destroy();

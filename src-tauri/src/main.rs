@@ -21,6 +21,8 @@ fn main() {
             workspace::files::delete_file,
             workspace::files::move_file,
             workspace::files::reveal_in_finder,
+            workspace::assets::copy_image_asset,
+            workspace::assets::copy_image_bytes,
         ])
         .run(tauri::generate_context!())
         .expect("failed to run make-md");
