@@ -11,6 +11,7 @@ import {
   createCodeBlockKeymap,
   createCodeBlockPlugin,
 } from "@/editor/code-block-input";
+import { createSyntaxHighlightPlugin } from "@/editor/syntax-highlight/plugin";
 
 type PluginOptions = {
   getDocPath?: () => string | undefined;
@@ -24,6 +25,7 @@ export function createEditorPlugins(options: PluginOptions = {}) {
     createMermaidPlugin(),
     createFindReplacePlugin(),
     createCodeBlockPlugin(),
+    createSyntaxHighlightPlugin(),
     history(),
     keymap(createCodeBlockKeymap()),
     keymap(baseKeymap),

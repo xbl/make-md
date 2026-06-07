@@ -12,6 +12,12 @@ export function createCodeBlockNodeView(
   const pre = document.createElement("pre");
   const code = document.createElement("code");
   pre.appendChild(code);
+
+  const overlay = document.createElement("div");
+  overlay.className = "hljs-overlay";
+  overlay.setAttribute("aria-hidden", "true");
+
+  wrapper.appendChild(overlay);
   wrapper.appendChild(pre);
 
   const language = node.attrs.params ?? "";

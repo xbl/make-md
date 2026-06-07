@@ -816,6 +816,31 @@ button {
   white-space: pre;
 }
 
+.editor-view .ProseMirror .code-block-wrapper:not([data-language="mermaid" i]):not([data-language="Mermaid" i]) pre {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+.editor-view .ProseMirror .code-block-wrapper:not([data-language="mermaid" i]):not([data-language="Mermaid" i]) pre code {
+  color: transparent;
+  caret-color: var(--code-text);
+}
+
+.editor-view .ProseMirror .hljs-overlay {
+  position: absolute;
+  inset: 0;
+  padding: 10px 12px;
+  pointer-events: none;
+  overflow: hidden;
+  white-space: pre;
+  font-size: 12px;
+  line-height: 1.55;
+  font-family: var(--font-mono);
+  z-index: 0;
+  border-radius: var(--radius-md);
+}
+
 .editor-view .ProseMirror pre[data-params="mermaid" i],
 .editor-view .ProseMirror .code-block-wrapper[data-language="mermaid" i] pre,
 .editor-view .ProseMirror .code-block-wrapper[data-language="Mermaid" i] pre {
