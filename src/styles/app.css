@@ -2,9 +2,11 @@
 
 :root {
   color-scheme: light;
-  --font-ui: "IBM Plex Sans", "PingFang SC", "Hiragino Sans GB", sans-serif;
-  --font-editor: "Source Serif 4", "Noto Serif SC", "Songti SC", serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-ui: "IBM Plex Sans", "PingFang SC", "Noto Sans SC", "Hiragino Sans GB", sans-serif;
+  --font-body: "PingFang SC", "Noto Sans SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-heading: "IBM Plex Sans", "PingFang SC", "Noto Sans SC", "Hiragino Sans GB", sans-serif;
+  --font-editor: var(--font-body);
+  --font-mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, monospace;
 
   --bg-paper: #fafaf8;
   --bg-sidebar: #f3f2ee;
@@ -41,8 +43,8 @@
 
   --text-ui: 12px;
   --text-sm: 13px;
-  --text-editor: 14px;
-  --leading-editor: 1.72;
+  --text-editor: 15px;
+  --leading-editor: 1.78;
 
   font-family: var(--font-ui);
   font-size: var(--text-ui);
@@ -564,44 +566,52 @@ button {
 .editor-view .ProseMirror h4,
 .editor-view .ProseMirror h5,
 .editor-view .ProseMirror h6 {
-  font-family: var(--font-editor);
-  line-height: 1.35;
-  margin: 1.4em 0 0.4em;
+  font-family: var(--font-heading);
+  line-height: 1.4;
+  margin: 1.6em 0 0.55em;
   font-weight: 600;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.01em;
   color: var(--text-primary);
   word-break: break-word;
 }
 
 .editor-view .ProseMirror h1 {
-  font-size: 1.45em;
+  font-size: 1.65em;
+  font-weight: 700;
+  letter-spacing: -0.025em;
   margin-top: 0;
 }
 
 .editor-view .ProseMirror h2 {
-  font-size: 1.22em;
+  font-size: 1.38em;
+  font-weight: 600;
+  padding-bottom: 0.2em;
+  border-bottom: 1px solid var(--border);
 }
 
 .editor-view .ProseMirror h3 {
-  font-size: 1.1em;
+  font-size: 1.2em;
 }
 
 .editor-view .ProseMirror h4 {
-  font-size: 1.02em;
+  font-size: 1.08em;
 }
 
 .editor-view .ProseMirror h5 {
-  font-size: 0.96em;
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
 .editor-view .ProseMirror h6 {
-  font-size: 0.92em;
-  color: var(--text-secondary);
+  font-size: 0.94em;
   font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
 }
 
 .editor-view .ProseMirror p {
-  margin: 0.45em 0;
+  margin: 0.65em 0;
 }
 
 .editor-view .ProseMirror ul,
