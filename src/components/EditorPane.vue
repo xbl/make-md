@@ -1,18 +1,17 @@
 <template>
   <div class="editor-pane">
-    <header class="editor-pane__hero">
-      <div>
-        <p class="editor-pane__eyebrow">Typora-style writing surface</p>
-        <h1 class="editor-pane__title">Start typing to build the editor core.</h1>
+    <EditorView v-if="activeSession" />
+    <div v-else class="editor-empty">
+      <p class="editor-empty__title">Open a Markdown file to start writing</p>
+      <div class="editor-empty__actions">
+        <button type="button" class="editor-empty__action" @click="newFile">
+          New file
+        </button>
+        <button type="button" class="editor-empty__action editor-empty__action--ghost" @click="openFile">
+          Open file…
+        </button>
       </div>
-      <button type="button" class="editor-pane__ghost">Command Palette</button>
-    </header>
-
-    <div class="editor-pane__canvas">
-      <EditorView v-if="activeSession" />
-      <div v-else class="editor-placeholder">
-        The ProseMirror editor will mount here.
-      </div>
+      <p class="editor-empty__hint">⌘N new · ⌘O open · ⌘S save · ⌘⇧P commands</p>
     </div>
   </div>
 </template>
@@ -24,4 +23,12 @@ import EditorView from "@/editor/EditorView.vue";
 
 const documents = useDocumentsStore();
 const activeSession = computed(() => documents.activeSession);
+
+function newFile() {
+  documents.createNewDocument();
+}
+
+async function openFile() {
+  await documents.openFileDialog();
+}
 </script>

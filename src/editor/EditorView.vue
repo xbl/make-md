@@ -10,6 +10,7 @@ import { markdownSchema } from "@/editor/schema";
 import { parseMarkdown } from "@/editor/markdown-parser";
 import { serializeMarkdown } from "@/editor/markdown-serializer";
 import { createEditorPlugins } from "@/editor/plugins";
+import { createEditorNodeViews } from "@/editor/code-block-view";
 import { useDocumentsStore } from "@/stores/documents";
 
 const mountRef = ref<HTMLDivElement | null>(null);
@@ -23,7 +24,8 @@ function syncSessionContent() {
   if (!session || !view) {
     return;
   }
-  session.updateContent(serializeMarkdown(view.state.doc));
+  const content = serializeMarkdown(view.state.doc);
+  documents.scheduleAutosave(content);
 }
 
 function mountEditor() {
@@ -41,6 +43,7 @@ function mountEditor() {
   view?.destroy();
   view = new PMEditorView(mountRef.value, {
     state,
+    nodeViews: createEditorNodeViews(),
     dispatchTransaction(transaction) {
       const nextState = view?.state.apply(transaction);
       if (!nextState || !view) {
@@ -66,6 +69,7 @@ watch(
 );
 
 onBeforeUnmount(() => {
+  void documents.flushAutosave();
   view?.destroy();
   view = null;
 });

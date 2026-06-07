@@ -1,8 +1,101 @@
 import { schema as basicSchema } from "prosemirror-schema-basic";
 import { addListNodes } from "prosemirror-schema-list";
-import { Schema } from "prosemirror-model";
+import { Schema, type NodeSpec } from "prosemirror-model";
 
-const nodes = addListNodes(basicSchema.spec.nodes, "paragraph block*", "block");
+const codeBlockSpec: NodeSpec = {
+  content: "text*",
+  marks: "",
+  group: "block",
+  code: true,
+  defining: true,
+  attrs: {
+    params: { default: "" },
+  },
+  parseDOM: [{ tag: "pre", preserveWhitespace: "full" }],
+  toDOM(node) {
+    return ["pre", { "data-params": node.attrs.params ?? "" }, ["code", 0]];
+  },
+};
+
+const tableNodes: Record<string, NodeSpec> = {
+  table: {
+    content: "table_row+",
+    group: "block",
+    isolating: true,
+    parseDOM: [{ tag: "table" }],
+    toDOM() {
+      return ["table", { class: "md-table" }, ["tbody", 0]];
+    },
+  },
+  table_row: {
+    content: "(table_cell | table_header)+",
+    parseDOM: [{ tag: "tr" }],
+    toDOM() {
+      return ["tr", 0];
+    },
+  },
+  table_header: {
+    content: "paragraph+",
+    isolating: true,
+    parseDOM: [{ tag: "th" }],
+    toDOM() {
+      return ["th", 0];
+    },
+  },
+  table_cell: {
+    content: "paragraph+",
+    isolating: true,
+    parseDOM: [{ tag: "td" }],
+    toDOM() {
+      return ["td", 0];
+    },
+  },
+};
+
+const taskNodes: Record<string, NodeSpec> = {
+  task_list: {
+    content: "task_item+",
+    group: "block",
+    parseDOM: [{ tag: "ul[data-task-list]" }],
+    toDOM() {
+      return ["ul", { "data-task-list": "true", class: "task-list" }, 0];
+    },
+  },
+  task_item: {
+    content: "paragraph block*",
+    defining: true,
+    attrs: {
+      checked: { default: false },
+    },
+    parseDOM: [
+      {
+        tag: "li[data-task-item]",
+        getAttrs(dom) {
+          if (!(dom instanceof HTMLElement)) {
+            return false;
+          }
+          return { checked: dom.dataset.checked === "true" };
+        },
+      },
+    ],
+    toDOM(node) {
+      return [
+        "li",
+        {
+          "data-task-item": "true",
+          "data-checked": String(node.attrs.checked),
+          class: node.attrs.checked ? "task-item is-checked" : "task-item",
+        },
+        0,
+      ];
+    },
+  },
+};
+
+const nodes = addListNodes(basicSchema.spec.nodes, "paragraph block*", "block")
+  .update("code_block", codeBlockSpec)
+  .append(tableNodes)
+  .append(taskNodes);
 
 export const markdownSchema = new Schema({
   nodes,

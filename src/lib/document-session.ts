@@ -11,7 +11,9 @@ export function createDocumentSession(input: DocumentSessionInput) {
 
   return {
     id: input.id,
-    path: input.path,
+    get path() {
+      return input.path;
+    },
     get content() {
       return content;
     },

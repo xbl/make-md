@@ -1,13 +1,26 @@
+import { invoke, isTauri } from "@tauri-apps/api/core";
+
 const PREFIX = "make-md:recovery:";
 
 export async function saveRecoverySnapshot(id: string, content: string) {
-  localStorage.setItem(PREFIX + id, content);
+  if (!isTauri()) {
+    localStorage.setItem(PREFIX + id, content);
+    return;
+  }
+  await invoke("save_recovery_snapshot", { id, content });
 }
 
 export async function loadRecoverySnapshot(id: string): Promise<string | null> {
-  return localStorage.getItem(PREFIX + id);
+  if (!isTauri()) {
+    return localStorage.getItem(PREFIX + id);
+  }
+  return invoke<string | null>("load_recovery_snapshot", { id });
 }
 
 export async function clearRecoverySnapshot(id: string) {
-  localStorage.removeItem(PREFIX + id);
+  if (!isTauri()) {
+    localStorage.removeItem(PREFIX + id);
+    return;
+  }
+  await invoke("clear_recovery_snapshot", { id });
 }

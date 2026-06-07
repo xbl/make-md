@@ -1,28 +1,120 @@
 <template>
-  <div class="app-shell">
-    <aside class="app-shell__sidebar" data-testid="sidebar">
+  <div
+    class="app-shell"
+    :class="{
+      'app-shell--sidebar-collapsed': ui.sidebarCollapsed,
+      'app-shell--focus': ui.focusMode,
+    }"
+  >
+    <aside v-show="!ui.sidebarCollapsed && !ui.focusMode" class="app-shell__sidebar" data-testid="sidebar">
       <Sidebar />
     </aside>
 
     <section class="app-shell__main">
-      <TabStrip class="app-shell__tabs" />
+      <TabStrip v-show="!ui.focusMode" class="app-shell__tabs" />
       <EditorPane class="app-shell__editor" data-testid="editor-pane" />
       <StatusBar class="app-shell__status" data-testid="status-bar" />
     </section>
+
+    <CommandPalette />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
+import { onBeforeUnmount, onMounted } from "vue";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { isTauri } from "@tauri-apps/api/core";
 import Sidebar from "@/components/Sidebar.vue";
 import TabStrip from "@/components/TabStrip.vue";
 import EditorPane from "@/components/EditorPane.vue";
 import StatusBar from "@/components/StatusBar.vue";
-import { useWorkspaceStore } from "@/stores/workspace";
+import CommandPalette from "@/components/CommandPalette.vue";
+import { useDocumentsStore } from "@/stores/documents";
+import { useUiStore } from "@/stores/ui";
 
-const workspace = useWorkspaceStore();
+const documents = useDocumentsStore();
+const ui = useUiStore();
+let unlistenClose: (() => void) | null = null;
 
-onMounted(() => {
-  void workspace.hydrateRecentItems();
+function handleKeydown(event: KeyboardEvent) {
+  if (event.key === "F8") {
+    event.preventDefault();
+    ui.toggleFocusMode();
+    return;
+  }
+
+  const mod = event.metaKey || event.ctrlKey;
+  if (!mod) {
+    return;
+  }
+
+  if (event.key === "p" && event.shiftKey) {
+    event.preventDefault();
+    ui.toggleCommandPalette();
+    return;
+  }
+
+  if (event.key === "n") {
+    event.preventDefault();
+    documents.createNewDocument();
+    return;
+  }
+
+  if (event.key === "e") {
+    event.preventDefault();
+    void documents.exportActiveHtml();
+    return;
+  }
+
+  if (event.key === "l" && event.shiftKey) {
+    event.preventDefault();
+    ui.toggleTheme();
+    return;
+  }
+
+  if (event.key === "\\") {
+    event.preventDefault();
+    ui.toggleSidebar();
+    return;
+  }
+
+  if (event.key === "s" && event.shiftKey) {
+    event.preventDefault();
+    void documents.saveAsDialog();
+    return;
+  }
+
+  if (event.key === "s") {
+    event.preventDefault();
+    void documents.saveActiveFile();
+    return;
+  }
+
+  if (event.key === "o") {
+    event.preventDefault();
+    void documents.openFileDialog();
+  }
+}
+
+onMounted(async () => {
+  ui.applyTheme();
+  void documents.loadRecent();
+  window.addEventListener("keydown", handleKeydown);
+
+  if (isTauri()) {
+    const appWindow = getCurrentWindow();
+    unlistenClose = await appWindow.onCloseRequested(async (event) => {
+      const ok = await documents.confirmBeforeQuit();
+      if (!ok) {
+        event.preventDefault();
+      }
+    });
+  }
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("keydown", handleKeydown);
+  unlistenClose?.();
+  void documents.flushAutosave();
 });
 </script>

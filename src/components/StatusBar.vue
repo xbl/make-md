@@ -13,6 +13,10 @@ import { useDocumentsStore } from "@/stores/documents";
 const documents = useDocumentsStore();
 const statusText = computed(() => {
   const active = documents.activeSession;
-  return active ? `${active.isDirty() ? "*" : ""}Ready` : "No document";
+  if (!active) {
+    return "No document";
+  }
+  const name = active.path.split("/").pop() ?? active.path;
+  return active.isDirty() ? `${name} (unsaved)` : name;
 });
 </script>
