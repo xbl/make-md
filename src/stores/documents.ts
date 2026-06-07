@@ -54,7 +54,12 @@ export const useDocumentsStore = defineStore("documents", {
       return autosaveQueue;
     },
     openSession(session: Session) {
-      this.sessions = [...this.sessions.filter((item) => item.id !== session.id), session];
+      const existing = this.sessions.find((item) => item.id === session.id);
+      if (existing) {
+        this.activeSessionId = session.id;
+        return;
+      }
+      this.sessions = [...this.sessions, session];
       this.activeSessionId = session.id;
     },
     createNewDocument() {
@@ -71,6 +76,12 @@ export const useDocumentsStore = defineStore("documents", {
       this.recentFiles = await loadRecentFiles();
     },
     async openFile(path: string) {
+      const existing = this.sessions.find((session) => session.path === path || session.id === path);
+      if (existing) {
+        this.activeSessionId = existing.id;
+        return existing;
+      }
+
       const restored = await loadRecoverySnapshot(path);
       const { content } = restored ? { content: restored } : await readMarkdownFile(path);
       const session = createDocumentSession({

@@ -47,9 +47,8 @@
 </template>
 
 <script setup lang="ts">
-import { inject, nextTick, ref, watch } from "vue";
+import { nextTick, ref, watch } from "vue";
 import { TextSelection } from "prosemirror-state";
-import { EditorViewKey } from "@/editor/editor-context";
 import { findMatches } from "@/editor/find-replace";
 import {
   findNextMatch,
@@ -57,10 +56,11 @@ import {
   replaceOneInDocument,
   setFindReplaceState,
 } from "@/editor/find-replace-plugin";
+import { useEditorStore } from "@/stores/editor";
 import { useUiStore } from "@/stores/ui";
 
 const ui = useUiStore();
-const editorContext = inject(EditorViewKey);
+const editorStore = useEditorStore();
 const query = ref("");
 const replaceWith = ref("");
 const caseSensitive = ref(false);
@@ -73,7 +73,7 @@ const options = () => ({
 });
 
 function syncPluginState() {
-  const view = editorContext?.view.value;
+  const view = editorStore.view;
   if (!view) {
     return;
   }
@@ -88,7 +88,7 @@ function syncPluginState() {
 }
 
 function selectMatch(from: number, to: number) {
-  const view = editorContext?.view.value;
+  const view = editorStore.view;
   if (!view) {
     return;
   }
@@ -98,7 +98,7 @@ function selectMatch(from: number, to: number) {
 
 function findNext() {
   syncPluginState();
-  const view = editorContext?.view.value;
+  const view = editorStore.view;
   if (!view || !query.value) {
     return;
   }
@@ -111,7 +111,7 @@ function findNext() {
 
 function findPrevious() {
   syncPluginState();
-  const view = editorContext?.view.value;
+  const view = editorStore.view;
   if (!view || !query.value) {
     return;
   }
@@ -141,7 +141,7 @@ function findPrevious() {
 
 function replaceOne() {
   syncPluginState();
-  const view = editorContext?.view.value;
+  const view = editorStore.view;
   if (!view) {
     return;
   }
@@ -154,7 +154,7 @@ function replaceOne() {
 
 function replaceAll() {
   syncPluginState();
-  const view = editorContext?.view.value;
+  const view = editorStore.view;
   if (!view) {
     return;
   }
@@ -174,7 +174,7 @@ watch(
       queryInput.value?.focus();
       syncPluginState();
     } else {
-      const view = editorContext?.view.value;
+      const view = editorStore.view;
       if (view) {
         view.dispatch(setFindReplaceState(view.state, { query: "" }));
       }

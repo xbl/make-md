@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { EditorState } from "prosemirror-state";
 import { EditorView as PMEditorView } from "prosemirror-view";
 import { markdownSchema } from "@/editor/schema";
@@ -11,16 +11,13 @@ import { parseMarkdown } from "@/editor/markdown-parser";
 import { serializeMarkdown } from "@/editor/markdown-serializer";
 import { createEditorPlugins } from "@/editor/plugins";
 import { createEditorNodeViews } from "@/editor/code-block-view";
-import { EditorViewKey } from "@/editor/editor-context";
 import { useDocumentsStore } from "@/stores/documents";
+import { useEditorStore } from "@/stores/editor";
 
 const mountRef = ref<HTMLDivElement | null>(null);
 const documents = useDocumentsStore();
-const viewRef = ref<PMEditorView | null>(null);
-const docVersion = ref(0);
+const editorStore = useEditorStore();
 let view: PMEditorView | null = null;
-
-provide(EditorViewKey, { view: viewRef, docVersion });
 
 const activeSession = computed(() => documents.activeSession);
 
@@ -35,7 +32,7 @@ function syncSessionContent() {
 
 function mountEditor() {
   if (!mountRef.value || !activeSession.value) {
-    viewRef.value = null;
+    editorStore.clearView();
     return;
   }
 
@@ -59,12 +56,11 @@ function mountEditor() {
         return;
       }
       view.updateState(nextState);
-      docVersion.value += 1;
+      editorStore.bumpDocVersion();
       syncSessionContent();
     },
   });
-  viewRef.value = view;
-  docVersion.value += 1;
+  editorStore.setView(view);
 }
 
 onMounted(async () => {
@@ -84,6 +80,6 @@ onBeforeUnmount(() => {
   void documents.flushAutosave();
   view?.destroy();
   view = null;
-  viewRef.value = null;
+  editorStore.clearView();
 });
 </script>

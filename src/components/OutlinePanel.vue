@@ -13,28 +13,38 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, ref, watch } from "vue";
-import { TextSelection } from "prosemirror-state";
+import { computed, ref, watch } from "vue";
+import { parseMarkdown } from "@/editor/markdown-parser";
 import { extractOutline, nestOutlineItems, type OutlineItem } from "@/lib/outline";
-import { EditorViewKey } from "@/editor/editor-context";
+import { scrollEditorToPosition } from "@/lib/editor-scroll";
 import OutlineItemNode from "@/components/OutlineItemNode.vue";
+import { useDocumentsStore } from "@/stores/documents";
+import { useEditorStore } from "@/stores/editor";
 
-const editorContext = inject(EditorViewKey);
+const documents = useDocumentsStore();
+const editorStore = useEditorStore();
 const items = ref<OutlineItem[]>([]);
 
 let timer: ReturnType<typeof setTimeout> | null = null;
 
 function refreshOutline() {
-  const view = editorContext?.view.value;
-  if (!view) {
+  const view = editorStore.view;
+  if (view) {
+    items.value = extractOutline(view.state.doc);
+    return;
+  }
+
+  const content = documents.activeSession?.content ?? "";
+  if (!content.trim()) {
     items.value = [];
     return;
   }
-  items.value = extractOutline(view.state.doc);
+
+  items.value = extractOutline(parseMarkdown(content));
 }
 
 watch(
-  () => editorContext?.docVersion.value,
+  () => [editorStore.docVersion, documents.activeSession?.id, documents.activeSession?.content] as const,
   () => {
     if (timer) {
       clearTimeout(timer);
@@ -44,28 +54,13 @@ watch(
   { immediate: true },
 );
 
-watch(
-  () => editorContext?.view.value,
-  () => refreshOutline(),
-);
-
 const nestedItems = computed(() => nestOutlineItems(items.value));
 
 function scrollToHeading(pos: number) {
-  const view = editorContext?.view.value;
+  const view = editorStore.view;
   if (!view) {
     return;
   }
-  const node = view.state.doc.nodeAt(pos);
-  if (!node) {
-    return;
-  }
-  const selection = TextSelection.near(view.state.doc.resolve(pos + 1));
-  view.dispatch(view.state.tr.setSelection(selection).scrollIntoView());
-  const dom = view.nodeDOM(pos);
-  if (dom instanceof HTMLElement) {
-    dom.scrollIntoView({ behavior: "smooth", block: "center" });
-  }
-  view.focus();
+  scrollEditorToPosition(view, pos);
 }
 </script>

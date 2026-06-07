@@ -9,7 +9,7 @@ export const useUiStore = defineStore("ui", {
     focusMode: false,
     findReplaceOpen: false,
     findReplaceMode: "find" as "find" | "replace",
-    theme: (localStorage.getItem("make-md:theme") as EditorTheme) || "dark",
+    theme: (localStorage.getItem("make-md:theme") as EditorTheme) || "light",
   }),
   actions: {
     toggleCommandPalette() {
