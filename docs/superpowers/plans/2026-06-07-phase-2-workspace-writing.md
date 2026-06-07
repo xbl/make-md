@@ -4,6 +4,10 @@
 
 **Goal:** Add Typora-style folder workspace (file tree + CRUD), outline panel, in-document find/replace, image paste to `assets/`, and built-in macOS PDF export.
 
+**Status (2026-06-07):** ✅ All tasks 1–9 implemented. See milestone table in `docs/superpowers/plans/2026-06-07-typora-desktop-editor.md`.
+
+**Next phase:** `docs/superpowers/plans/2026-06-07-phase-3-editor-depth.md`
+
 **Architecture:** Extend the existing Tauri command layer with a `workspace` Rust module (tree listing, file ops, watch, assets, PDF). Frontend adds a `folder-workspace` Pinia store and replaces `Sidebar.vue` with tabbed `SidebarTabs` (Files | Outline). Editor features (outline extraction, find/replace, image plugin) stay in `src/editor/` and connect via provide/inject from `EditorView.vue`.
 
 **Tech Stack:** Tauri 2, Rust (`notify`, `serde`), Vue 3, Pinia, ProseMirror, Vitest, Playwright (minimal E2E).

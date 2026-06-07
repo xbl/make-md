@@ -4,6 +4,8 @@ import { baseKeymap } from "prosemirror-commands";
 import { createEditorInputRules } from "@/editor/input-rules";
 import { createFindReplacePlugin } from "@/editor/find-replace-plugin";
 import { createMermaidPlugin } from "@/editor/mermaid-plugin";
+import { createInlineMarkPlugin } from "@/editor/inline-mark/plugin";
+import { markdownSchema } from "@/editor/schema";
 import { createImageAssetPlugin } from "@/lib/image-asset-plugin";
 
 type PluginOptions = {
@@ -14,6 +16,7 @@ type PluginOptions = {
 export function createEditorPlugins(options: PluginOptions = {}) {
   const plugins = [
     createEditorInputRules(),
+    ...createInlineMarkPlugin(markdownSchema),
     createMermaidPlugin(),
     createFindReplacePlugin(),
     history(),

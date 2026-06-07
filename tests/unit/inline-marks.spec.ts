@@ -51,4 +51,12 @@ describe("inline marks", () => {
     const output = serializeMarkdown(parseMarkdown(source));
     expect(output).toContain("```mermaid");
   });
+
+  it("round-trips links and strikethrough", () => {
+    const source = "Visit [site](https://example.com) and ~~removed~~.";
+    const doc = parseMarkdown(source);
+    const output = serializeMarkdown(doc);
+    expect(output).toContain("[site](https://example.com)");
+    expect(output).toContain("~~removed~~");
+  });
 });

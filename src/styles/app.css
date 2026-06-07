@@ -529,6 +529,104 @@ button {
   font-weight: 600;
 }
 
+.editor-view .ProseMirror .pm-mark-editing--strong {
+  font-weight: 600;
+}
+
+.editor-view .ProseMirror .pm-mark-editing--strong::before,
+.editor-view .ProseMirror .pm-mark-editing--strong::after {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.editor-view .ProseMirror .pm-mark-editing--strong::before {
+  content: "**";
+}
+
+.editor-view .ProseMirror .pm-mark-editing--strong::after {
+  content: "**";
+}
+
+.editor-view .ProseMirror .pm-mark-editing--em {
+  font-style: italic;
+}
+
+.editor-view .ProseMirror .pm-mark-editing--em::before,
+.editor-view .ProseMirror .pm-mark-editing--em::after {
+  color: var(--text-muted);
+  font-style: normal;
+}
+
+.editor-view .ProseMirror .pm-mark-editing--em::before {
+  content: "*";
+}
+
+.editor-view .ProseMirror .pm-mark-editing--em::after {
+  content: "*";
+}
+
+.editor-view .ProseMirror .pm-mark-editing--code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+  background: var(--code-bg);
+  color: var(--code-text);
+}
+
+.editor-view .ProseMirror .pm-mark-editing--code::before,
+.editor-view .ProseMirror .pm-mark-editing--code::after {
+  color: var(--text-muted);
+  background: transparent;
+  font-family: var(--font-ui);
+}
+
+.editor-view .ProseMirror .pm-mark-editing--code::before {
+  content: "`";
+}
+
+.editor-view .ProseMirror .pm-mark-editing--code::after {
+  content: "`";
+}
+
+.editor-view .ProseMirror s,
+.editor-view .ProseMirror del {
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+
+.editor-view .ProseMirror .pm-mark-editing--strike {
+  text-decoration: line-through;
+}
+
+.editor-view .ProseMirror .pm-mark-editing--strike::before,
+.editor-view .ProseMirror .pm-mark-editing--strike::after {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.editor-view .ProseMirror .pm-mark-editing--strike::before {
+  content: "~~";
+}
+
+.editor-view .ProseMirror .pm-mark-editing--strike::after {
+  content: "~~";
+}
+
+.editor-view .ProseMirror .pm-mark-editing--link::before,
+.editor-view .ProseMirror .pm-mark-editing--link::after {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.editor-view .ProseMirror .pm-mark-editing--link::before {
+  content: "[";
+}
+
+.editor-view .ProseMirror .pm-mark-editing--link::after {
+  content: "](" attr(data-href) ")";
+}
+
 .editor-view .ProseMirror em {
   font-style: italic;
 }
@@ -750,6 +848,13 @@ button {
 .editor-view .ProseMirror .mermaid-preview svg {
   max-width: 100%;
   height: auto;
+}
+
+.editor-view .ProseMirror .mermaid-preview__placeholder {
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  padding: 8px 0;
 }
 
 .editor-view .ProseMirror .mermaid-error {

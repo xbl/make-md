@@ -4,7 +4,7 @@ A Typora-style desktop Markdown editor built with Tauri, Vue 3, and ProseMirror.
 
 ## Features
 
-- **Typora-style editing** — block shortcuts (`#`, `-`, `>`, `` ``` ``), inline **bold** / *italic* / `code` / links / images
+- **Typora-style editing** — block shortcuts (`#`, `-`, `>`, `` ``` ``, `- [ ]`, `---`); type `**bold**`, `*italic*`, `` `code` ``, `~~strike~~`, `[text](url)` or use ⌘B / ⌘I / ⌘E / ⌘K; delimiter hints while cursor is inside a mark; paste inline Markdown
 - **Rich blocks** — task lists, tables, blockquotes, horizontal rules, **Mermaid** diagrams
 - **Folder workspace** — open a folder (⌘⇧O), browse `.md` files in a tree, create/rename/delete/move files
 - **Outline** — Files | Outline sidebar tabs; click headings to navigate
@@ -33,6 +33,7 @@ pnpm tauri dev
 | ⌘⇧S | Save as |
 | ⌘E | Export HTML |
 | ⌘⇧E | Export PDF |
+| ⌘B / ⌘I / ⌘E / ⌘K | Bold / italic / code / link (in editor) |
 | ⌘F | Find in document |
 | ⌘⌥F | Replace in document |
 | ⌘⇧P | Command palette |

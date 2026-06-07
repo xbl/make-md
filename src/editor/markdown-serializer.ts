@@ -20,6 +20,9 @@ function serializeInline(node: PMNode): string {
     if (marks.code.isInSet(node.marks)) {
       return `\`${text}\``;
     }
+    if (marks.strike?.isInSet(node.marks)) {
+      return `~~${text}~~`;
+    }
     if (marks.strong.isInSet(node.marks)) {
       return `**${text}**`;
     }

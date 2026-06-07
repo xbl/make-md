@@ -1,53 +1,12 @@
 import { markdownSchema } from "@/editor/schema";
 import type { Fragment, MarkType, Node as PMNode } from "prosemirror-model";
+import {
+  tokenizeInlineMarkdown,
+  type InlineToken,
+} from "@/editor/inline-mark/syntax";
 
-type InlineToken =
-  | { type: "text"; value: string }
-  | { type: "strong"; value: string }
-  | { type: "em"; value: string }
-  | { type: "code"; value: string }
-  | { type: "link"; text: string; href: string }
-  | { type: "image"; alt: string; src: string };
-
-const INLINE_PATTERN =
-  /!\[([^\]]*)\]\(([^)]+)\)|\[([^\]]*)\]\(([^)]+)\)|\*\*([^*]+)\*\*|\*([^*]+)\*|_([^_]+)_|`([^`]+)`/g;
-
-export function tokenizeInline(text: string): InlineToken[] {
-  const tokens: InlineToken[] = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  INLINE_PATTERN.lastIndex = 0;
-  while ((match = INLINE_PATTERN.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      tokens.push({ type: "text", value: text.slice(lastIndex, match.index) });
-    }
-
-    if (match[1] !== undefined && match[2] !== undefined) {
-      tokens.push({ type: "image", alt: match[1], src: match[2] });
-    } else if (match[3] !== undefined && match[4] !== undefined) {
-      tokens.push({ type: "link", text: match[3], href: match[4] });
-    } else if (match[5] !== undefined) {
-      tokens.push({ type: "strong", value: match[5] });
-    } else if (match[6] !== undefined || match[7] !== undefined) {
-      tokens.push({ type: "em", value: match[6] ?? match[7]! });
-    } else if (match[8] !== undefined) {
-      tokens.push({ type: "code", value: match[8] });
-    }
-
-    lastIndex = match.index + match[0].length;
-  }
-
-  if (lastIndex < text.length) {
-    tokens.push({ type: "text", value: text.slice(lastIndex) });
-  }
-
-  if (tokens.length === 0 && text) {
-    tokens.push({ type: "text", value: text });
-  }
-
-  return tokens;
-}
+export { tokenizeInlineMarkdown as tokenizeInline } from "@/editor/inline-mark/syntax";
+export type { InlineToken } from "@/editor/inline-mark/syntax";
 
 function applyMark(node: PMNode, markType: MarkType, attrs?: Record<string, unknown>): PMNode {
   const mark = markType.create(attrs);
@@ -69,19 +28,26 @@ function tokenToNodes(token: InlineToken): PMNode[] {
   if (token.type === "code") {
     return [applyMark(markdownSchema.text(token.value), markdownSchema.marks.code)];
   }
+  if (token.type === "strike") {
+    return [applyMark(markdownSchema.text(token.value), markdownSchema.marks.strike)];
+  }
   if (token.type === "link") {
     const linkMark = markdownSchema.marks.link;
-    const inner = parseInline(token.text);
+    const inner = tokenizeInlineMarkdown(token.text);
     const output: PMNode[] = [];
-    inner.forEach((node) => {
-      output.push(
-        node.isText
-          ? node.mark(
+    for (const innerToken of inner) {
+      for (const node of tokenToNodes(innerToken)) {
+        if (node.isText) {
+          output.push(
+            node.mark(
               linkMark.create({ href: token.href, title: token.text }).addToSet(node.marks),
-            )
-          : node,
-      );
-    });
+            ),
+          );
+        } else {
+          output.push(node);
+        }
+      }
+    }
     return output;
   }
   if (token.type === "image") {
@@ -92,7 +58,7 @@ function tokenToNodes(token: InlineToken): PMNode[] {
 
 export function parseInline(text: string): Fragment {
   const children: PMNode[] = [];
-  for (const token of tokenizeInline(text)) {
+  for (const token of tokenizeInlineMarkdown(text)) {
     children.push(...tokenToNodes(token));
   }
   if (children.length === 0) {

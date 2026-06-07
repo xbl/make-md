@@ -21,6 +21,19 @@ describe("mermaid plugin", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     renderMock.mockClear();
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        private callback: IntersectionObserverCallback;
+        observe() {
+          this.callback([{ isIntersecting: true } as IntersectionObserverEntry], this);
+        }
+        disconnect() {}
+        constructor(callback: IntersectionObserverCallback) {
+          this.callback = callback;
+        }
+      },
+    );
   });
 
   afterEach(() => {

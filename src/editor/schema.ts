@@ -1,6 +1,6 @@
 import { schema as basicSchema } from "prosemirror-schema-basic";
 import { addListNodes } from "prosemirror-schema-list";
-import { Schema, type NodeSpec } from "prosemirror-model";
+import { Schema, type MarkSpec, type NodeSpec } from "prosemirror-model";
 
 const codeBlockSpec: NodeSpec = {
   content: "text*",
@@ -97,7 +97,23 @@ const nodes = addListNodes(basicSchema.spec.nodes, "paragraph block*", "block")
   .append(tableNodes)
   .append(taskNodes);
 
+const strikeMark: MarkSpec = {
+  parseDOM: [
+    { tag: "s" },
+    { tag: "del" },
+    {
+      style: "text-decoration",
+      getAttrs(value) {
+        return value === "line-through" ? null : false;
+      },
+    },
+  ],
+  toDOM() {
+    return ["s", 0];
+  },
+};
+
 export const markdownSchema = new Schema({
   nodes,
-  marks: basicSchema.spec.marks,
+  marks: basicSchema.spec.marks.append({ strike: strikeMark }),
 });

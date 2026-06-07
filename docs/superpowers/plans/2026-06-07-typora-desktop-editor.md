@@ -15,13 +15,29 @@
 | Task 1 Scaffold | ✅ Complete | Committed `ec7fd51` |
 | Task 2 Shell | ✅ Complete | Committed `9563442` |
 | Task 3 File workflow | ✅ Complete | Committed `8fcb530` |
-| Task 4 Editor core | ⚠️ Partial | Core blocks, tables, tasks, Mermaid, inline marks; missing math, footnotes, front matter, TOC, syntax highlight |
+| Task 4 Editor core | ⚠️ Partial | Core blocks, tables, tasks, Mermaid, inline marks (bold/italic/code/strike/link + ⌘B/I/E/K); missing math, footnotes, front matter, TOC, syntax highlight |
 | Task 5 Autosave/recovery | ✅ Complete | Committed `c54e2e9` |
-| Task 6 Verification | ⚠️ Partial | `phase-1-verification.md` + README; no Playwright E2E; cross-platform not rigorously verified |
+| Task 6 Verification | ⚠️ Partial | `phase-1-verification.md` + README; E2E smoke in `tests/e2e/`; cross-platform not rigorously verified |
 
-**Beyond Phase 1 plan (already shipped):** Mermaid preview, HTML export, command palette, focus mode, theme toggle, tab close + unsaved prompts, typography CSS fixes (pending commit).
+**Beyond Phase 1 plan (already shipped):** Mermaid preview, HTML/PDF export, command palette, focus mode, theme toggle, tab close + unsaved prompts, Phase 2 folder workspace, outline, find/replace, image assets, inline editing module.
 
-**Next:** Phase 2 spec at `docs/superpowers/specs/2026-06-07-phase-2-workspace-writing-design.md`
+**Next:** Phase 3 — editor depth (math, footnotes, syntax highlight, large-file perf). Phase 2 complete.
+
+---
+
+## Phase 2 Status (2026-06-07)
+
+| Milestone | Status |
+|-----------|--------|
+| M1 Folder open + tree + watch | ✅ |
+| M2 File CRUD + reveal + drag | ✅ |
+| M3 Outline panel | ✅ |
+| M4 Find/replace | ✅ |
+| M5 Image paste/drop | ✅ |
+| M6 PDF export (macOS) | ✅ |
+| M7 Docs + E2E smoke | ✅ |
+
+**Inline editing (post Phase 2):** Typora hybrid marks module — bold/italic/code/strike/link, ⌘B/I/E/K, decorations, paste SSOT. See `docs/superpowers/plans/2026-06-07-inline-editing.md`.
 
 ---
 

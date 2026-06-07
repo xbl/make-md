@@ -40,6 +40,9 @@ class MermaidPreviewHost {
   private source = "";
   private renderTimer: ReturnType<typeof setTimeout> | null = null;
   private renderId = 0;
+  private visible = false;
+  private observer: IntersectionObserver | null = null;
+  private observed = false;
 
   constructor() {
     this.dom = document.createElement("div");
@@ -49,20 +52,83 @@ class MermaidPreviewHost {
   }
 
   updateSource(source: string) {
-    if (source === this.source) {
+    const changed = source !== this.source;
+    this.source = source;
+    this.attachWhenConnected();
+
+    if (!changed && this.observed) {
       return;
     }
-    this.source = source;
-    this.scheduleRender();
+
+    if (this.visible) {
+      this.scheduleRender();
+    } else if (this.source) {
+      this.showPlaceholder();
+    }
   }
 
   destroy() {
     if (this.renderTimer) {
       clearTimeout(this.renderTimer);
     }
+    this.attachFrame = null;
+    this.observer?.disconnect();
+    this.observer = null;
+    this.observed = false;
+  }
+
+  private attachFrame: number | null = null;
+
+  private attachWhenConnected() {
+    if (this.observed) {
+      return;
+    }
+    if (!this.dom.isConnected) {
+      if (this.attachFrame === null) {
+        this.attachFrame = requestAnimationFrame(() => {
+          this.attachFrame = null;
+          this.attachWhenConnected();
+        });
+      }
+      return;
+    }
+    this.ensureObserver();
+  }
+
+  private ensureObserver() {
+    if (this.observed || !this.dom.isConnected) {
+      return;
+    }
+
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        const nextVisible = entries.some((entry) => entry.isIntersecting);
+        if (nextVisible === this.visible) {
+          return;
+        }
+        this.visible = nextVisible;
+        if (this.visible) {
+          this.scheduleRender();
+        } else {
+          this.showPlaceholder();
+        }
+      },
+      { rootMargin: "240px 0px" },
+    );
+    this.observer.observe(this.dom);
+    this.observed = true;
+  }
+
+  private showPlaceholder() {
+    this.dom.hidden = false;
+    this.dom.classList.remove("mermaid-preview--ready");
+    this.dom.innerHTML = `<div class="mermaid-preview__placeholder" aria-hidden="true">Mermaid diagram</div>`;
   }
 
   private scheduleRender() {
+    if (!this.visible) {
+      return;
+    }
     if (this.renderTimer) {
       clearTimeout(this.renderTimer);
     }
