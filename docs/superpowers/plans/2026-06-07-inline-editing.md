@@ -18,7 +18,7 @@
 |------|----------------|
 | `inline-mark/syntax.ts` | SSOT regex + tokenize |
 | `inline-mark/guards.ts` | IME/code-block guards |
-| `inline-mark/input-rules.ts` | mark InputRules |
+| `inline-mark/text-input.ts` | handleTextInput + replaceWith mark triggers |
 | `inline-mark/keymap.ts` | ⌘B/I/E |
 | `inline-mark/syntax-decorations.ts` | Typora delimiter hints |
 | `inline-mark/paste.ts` | paste `**bold**` etc. |

@@ -179,6 +179,120 @@ button {
   grid-template-columns: minmax(0, 1fr);
 }
 
+.settings-panel {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(28, 28, 26, 0.34);
+  backdrop-filter: blur(6px);
+  z-index: 30;
+}
+
+.settings-panel__dialog {
+  width: min(860px, 100%);
+  max-height: min(720px, calc(100vh - 48px));
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.settings-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-panel__title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.settings-panel__subtitle {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.settings-panel__header-actions,
+.settings-panel__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-panel__list {
+  overflow: auto;
+  padding: 12px 18px 18px;
+}
+
+.settings-panel__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-panel__meta {
+  min-width: 0;
+}
+
+.settings-panel__command {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.settings-panel__details {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+.settings-panel__capture,
+.settings-panel__secondary,
+.settings-panel__close {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.settings-panel__capture {
+  min-width: 120px;
+  font-family: var(--font-mono);
+  text-align: center;
+}
+
+.settings-panel__capture:hover,
+.settings-panel__secondary:hover,
+.settings-panel__close:hover {
+  background: var(--bg-hover);
+}
+
+.settings-panel__capture--recording {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
 /* ── Sidebar panels ── */
 
 .panel,

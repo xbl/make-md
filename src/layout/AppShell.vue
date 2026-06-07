@@ -17,6 +17,7 @@
     </section>
 
     <CommandPalette />
+    <SettingsPanel />
   </div>
 </template>
 
@@ -29,6 +30,7 @@ import TabStrip from "@/components/TabStrip.vue";
 import EditorPane from "@/components/EditorPane.vue";
 import StatusBar from "@/components/StatusBar.vue";
 import CommandPalette from "@/components/CommandPalette.vue";
+import SettingsPanel from "@/components/SettingsPanel.vue";
 import { useDocumentsStore } from "@/stores/documents";
 import { useUiStore } from "@/stores/ui";
 import { useFolderWorkspaceStore } from "@/stores/folder-workspace";

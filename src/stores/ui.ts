@@ -5,6 +5,7 @@ export type EditorTheme = "dark" | "light";
 export const useUiStore = defineStore("ui", {
   state: () => ({
     commandPaletteOpen: false,
+    settingsOpen: false,
     sidebarCollapsed: false,
     focusMode: false,
     findReplaceOpen: false,
@@ -14,6 +15,21 @@ export const useUiStore = defineStore("ui", {
   actions: {
     toggleCommandPalette() {
       this.commandPaletteOpen = !this.commandPaletteOpen;
+    },
+    openCommandPalette() {
+      this.commandPaletteOpen = true;
+    },
+    closeCommandPalette() {
+      this.commandPaletteOpen = false;
+    },
+    openSettings() {
+      this.settingsOpen = true;
+    },
+    closeSettings() {
+      this.settingsOpen = false;
+    },
+    toggleSettings() {
+      this.settingsOpen = !this.settingsOpen;
     },
     toggleSidebar() {
       this.sidebarCollapsed = !this.sidebarCollapsed;

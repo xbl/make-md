@@ -4,9 +4,13 @@ import type { ShortcutOverrides } from "@/lib/shortcuts/types";
 
 const STORAGE_KEY = "make-md:shortcuts";
 
+function getStorage(): Storage | null {
+  return typeof globalThis.localStorage === "undefined" ? null : globalThis.localStorage;
+}
+
 function loadOverrides(): ShortcutOverrides {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = getStorage()?.getItem(STORAGE_KEY);
     if (!raw) {
       return {};
     }
@@ -17,7 +21,7 @@ function loadOverrides(): ShortcutOverrides {
 }
 
 function saveOverrides(overrides: ShortcutOverrides) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
+  getStorage()?.setItem(STORAGE_KEY, JSON.stringify(overrides));
 }
 
 export const useShortcutsStore = defineStore("shortcuts", {
