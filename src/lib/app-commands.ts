@@ -7,10 +7,14 @@ export type AppCommand = {
 
 export type AppCommandDeps = {
   openFile: () => Promise<unknown>;
+  openFolder: () => Promise<unknown>;
   createNew: () => unknown;
   save: () => Promise<unknown>;
   saveAs: () => Promise<unknown>;
   exportHtml: () => Promise<unknown>;
+  exportPdf: () => Promise<unknown>;
+  openFind: () => void;
+  openReplace: () => void;
   toggleSidebar: () => void;
   toggleFocusMode: () => void;
   toggleTheme: () => void;
@@ -23,6 +27,12 @@ export function createAppCommands(deps: AppCommandDeps): AppCommand[] {
       label: "New File",
       shortcut: "⌘N",
       run: deps.createNew,
+    },
+    {
+      id: "open-folder",
+      label: "Open Folder",
+      shortcut: "⌘⇧O",
+      run: deps.openFolder,
     },
     {
       id: "open",
@@ -47,6 +57,24 @@ export function createAppCommands(deps: AppCommandDeps): AppCommand[] {
       label: "Export HTML",
       shortcut: "⌘E",
       run: deps.exportHtml,
+    },
+    {
+      id: "export-pdf",
+      label: "Export PDF",
+      shortcut: "⌘⇧E",
+      run: deps.exportPdf,
+    },
+    {
+      id: "find",
+      label: "Find in Document",
+      shortcut: "⌘F",
+      run: deps.openFind,
+    },
+    {
+      id: "replace",
+      label: "Replace in Document",
+      shortcut: "⌘⌥F",
+      run: deps.openReplace,
     },
     {
       id: "toggle-focus",

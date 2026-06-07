@@ -81,6 +81,12 @@ function handleKeydown(event: KeyboardEvent) {
     return;
   }
 
+  if (event.key === "e" && mod && event.shiftKey) {
+    event.preventDefault();
+    void documents.exportActivePdf();
+    return;
+  }
+
   if (event.key === "e" && mod && !event.shiftKey) {
     event.preventDefault();
     void documents.exportActiveHtml();

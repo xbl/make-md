@@ -1,4 +1,5 @@
 mod fs;
+mod pdf;
 mod recent;
 mod recovery;
 mod workspace;
@@ -23,6 +24,7 @@ fn main() {
             workspace::files::reveal_in_finder,
             workspace::assets::copy_image_asset,
             workspace::assets::copy_image_bytes,
+            pdf::export_pdf,
         ])
         .run(tauri::generate_context!())
         .expect("failed to run make-md");

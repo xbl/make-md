@@ -34,11 +34,14 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
 import { createAppCommands, type AppCommand } from "@/lib/app-commands";
+import { pickFolder } from "@/lib/file-service";
 import { useDocumentsStore } from "@/stores/documents";
+import { useFolderWorkspaceStore } from "@/stores/folder-workspace";
 import { useUiStore } from "@/stores/ui";
 
 const ui = useUiStore();
 const documents = useDocumentsStore();
+const folderWorkspace = useFolderWorkspaceStore();
 const query = ref("");
 const activeIndex = ref(0);
 const inputRef = ref<HTMLInputElement | null>(null);
@@ -46,10 +49,20 @@ const inputRef = ref<HTMLInputElement | null>(null);
 const commands = computed(() =>
   createAppCommands({
     openFile: () => documents.openFileDialog(),
+    openFolder: async () => {
+      const path = await pickFolder();
+      if (path) {
+        await folderWorkspace.setRootPath(path);
+        folderWorkspace.setActiveTab("files");
+      }
+    },
     createNew: () => documents.createNewDocument(),
     save: () => documents.saveActiveFile(),
     saveAs: () => documents.saveAsDialog(),
     exportHtml: () => documents.exportActiveHtml(),
+    exportPdf: () => documents.exportActivePdf(),
+    openFind: () => ui.openFindReplace("find"),
+    openReplace: () => ui.openFindReplace("replace"),
     toggleSidebar: () => ui.toggleSidebar(),
     toggleFocusMode: () => ui.toggleFocusMode(),
     toggleTheme: () => ui.toggleTheme(),

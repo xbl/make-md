@@ -14,6 +14,7 @@ import { createAutosaveQueue } from "@/lib/autosave";
 import { saveRecoverySnapshot, clearRecoverySnapshot, loadRecoverySnapshot } from "@/lib/recovery";
 import { promptUnsavedChanges } from "@/lib/unsaved-prompt";
 import { markdownToHtml } from "@/lib/export-html";
+import { exportMarkdownToPdf } from "@/lib/export-pdf";
 
 type Session = ReturnType<typeof createDocumentSession>;
 
@@ -244,6 +245,21 @@ export const useDocumentsStore = defineStore("documents", {
 
       await writeTextFile(path, html);
       return path;
+    },
+    async exportActivePdf() {
+      const session = this.activeSession;
+      if (!session) {
+        return null;
+      }
+
+      const title = session.path ? session.path.split("/").pop() ?? "Document" : "Untitled";
+      const defaultPath = session.path ? session.path.replace(/\.md$/i, ".pdf") : "untitled.pdf";
+      try {
+        return await exportMarkdownToPdf(session.content, title, defaultPath);
+      } catch (error) {
+        window.alert(String(error));
+        return null;
+      }
     },
   },
 });

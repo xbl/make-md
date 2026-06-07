@@ -4,6 +4,7 @@ import { normalizeFilePath } from "@/lib/file-path";
 
 const MARKDOWN_FILTER = [{ name: "Markdown", extensions: ["md", "markdown"] }];
 const HTML_FILTER = [{ name: "HTML", extensions: ["html", "htm"] }];
+const PDF_FILTER = [{ name: "PDF", extensions: ["pdf"] }];
 
 export async function readMarkdownFile(path: string) {
   if (!isTauri()) {
@@ -74,6 +75,20 @@ export async function pickSaveMarkdownFile(defaultPath?: string): Promise<string
   }
   const selected = await save({
     filters: MARKDOWN_FILTER,
+    defaultPath,
+  });
+  if (!selected) {
+    return null;
+  }
+  return normalizeFilePath(selected);
+}
+
+export async function pickSavePdfFile(defaultPath?: string): Promise<string | null> {
+  if (!isTauri()) {
+    return null;
+  }
+  const selected = await save({
+    filters: PDF_FILTER,
     defaultPath,
   });
   if (!selected) {
