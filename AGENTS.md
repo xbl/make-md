@@ -25,3 +25,4 @@ Git history favors short, imperative commits with optional scope, such as `feat:
 
 ## Agent Notes
 Prefer small, targeted edits. Check `README.md` and the relevant `docs/superpowers/` plan before adding new behavior, and verify changes with the narrowest useful test command first.
+When a task is completed, agents should automatically create a focused git commit before responding, unless the user explicitly says not to commit or the work is blocked.
