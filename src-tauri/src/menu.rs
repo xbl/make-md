@@ -1,4 +1,4 @@
-use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
+use tauri::menu::{Menu, MenuItem, Submenu};
 use tauri::{App, AppHandle, Emitter, Runtime};
 
 pub const MENU_EVENT_NAME: &str = "app://menu-command";

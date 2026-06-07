@@ -14,6 +14,7 @@ import {
 import { createSyntaxHighlightPlugin } from "@/editor/syntax-highlight/plugin";
 import { createInlineCodeDecorationsPlugin } from "@/editor/inline-code-decorations";
 import { createEditorCommandEventsPlugin } from "@/editor/editor-command-events";
+import { createClipboardPlugin } from "@/editor/clipboard";
 
 type PluginOptions = {
   getDocPath?: () => string | undefined;
@@ -28,6 +29,7 @@ export function createEditorPlugins(options: PluginOptions = {}) {
     createFindReplacePlugin(),
     createCodeBlockPlugin(),
     createEditorCommandEventsPlugin(),
+    createClipboardPlugin(),
     createSyntaxHighlightPlugin(),
     createInlineCodeDecorationsPlugin(),
     history(),

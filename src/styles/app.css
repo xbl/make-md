@@ -1058,13 +1058,13 @@ button {
   white-space: pre;
 }
 
-.editor-view .ProseMirror .code-block-wrapper[data-language]:not([data-language="mermaid" i]):not([data-language="Mermaid" i]) pre {
+.editor-view .ProseMirror .code-block-wrapper[data-language][data-highlighted="true"]:not([data-language="mermaid" i]):not([data-language="Mermaid" i]) pre {
   position: relative;
   z-index: 1;
   background: transparent;
 }
 
-.editor-view .ProseMirror .code-block-wrapper[data-language]:not([data-language="mermaid" i]):not([data-language="Mermaid" i]) pre code {
+.editor-view .ProseMirror .code-block-wrapper[data-language][data-highlighted="true"]:not([data-language="mermaid" i]):not([data-language="Mermaid" i]) pre code {
   color: transparent;
   caret-color: var(--code-text);
 }

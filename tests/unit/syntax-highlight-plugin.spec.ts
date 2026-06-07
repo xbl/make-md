@@ -1,8 +1,10 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { EditorState } from "prosemirror-state";
+import { EditorView } from "prosemirror-view";
 import { collectCodeBlocksForHighlight } from "@/editor/syntax-highlight/plugin";
 import { markdownSchema } from "@/editor/schema";
 import { createCodeBlockNodeView } from "@/editor/code-block-view";
+import { createSyntaxHighlightPlugin } from "@/editor/syntax-highlight/plugin";
 
 describe("collectCodeBlocksForHighlight", () => {
   it("skips mermaid blocks", () => {
@@ -28,6 +30,10 @@ describe("collectCodeBlocksForHighlight", () => {
 });
 
 describe("createCodeBlockNodeView", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   function createMockView(state: EditorState) {
     const mockView = {
       state,
@@ -88,5 +94,37 @@ describe("createCodeBlockNodeView", () => {
     expect((view.state.doc.firstChild as import("prosemirror-model").Node).attrs.params).toBe("rust");
     expect(wrapper.dataset.language).toBe("rust");
     expect(trigger!.textContent).toBe("rust");
+  });
+
+  it("marks a language-configured block as highlighted once overlay html is ready", () => {
+    vi.useFakeTimers();
+
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc: markdownSchema.node("doc", null, [
+        markdownSchema.node("code_block", { params: "ts" }, [markdownSchema.text("const x = 1;")]),
+      ]),
+      plugins: [createSyntaxHighlightPlugin()],
+    });
+
+    const view = new EditorView(mount, {
+      state,
+      nodeViews: {
+        code_block: createCodeBlockNodeView,
+      },
+    });
+
+    const wrapper = mount.querySelector(".code-block-wrapper") as HTMLElement | null;
+    expect(wrapper?.dataset.highlighted).toBeUndefined();
+
+    vi.advanceTimersByTime(200);
+
+    expect(wrapper?.dataset.highlighted).toBe("true");
+    expect(wrapper?.querySelector(".hljs-overlay code")?.className).toContain("hljs");
+
+    view.destroy();
+    document.body.removeChild(mount);
   });
 });

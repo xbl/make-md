@@ -89,6 +89,7 @@ function updateBlockHighlight(
   }
 
   overlay.innerHTML = html;
+  dom.dataset.highlighted = "true";
   bindScrollSync(pre, overlay, bound);
   syncOverlayScroll(pre, overlay);
 }
