@@ -1,0 +1,172 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(87, 108, 255, 0.12), transparent 35%),
+    linear-gradient(180deg, #11151d, #0c0f14);
+  color: #edf2f7;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  min-height: 100%;
+  width: 100%;
+}
+
+body {
+  min-height: 100vh;
+  background: transparent;
+}
+
+button {
+  font: inherit;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.app-shell__sidebar {
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(12, 16, 24, 0.9);
+  backdrop-filter: blur(18px);
+}
+
+.app-shell__main {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-width: 0;
+}
+
+.app-shell__tabs {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.app-shell__editor {
+  min-width: 0;
+}
+
+.app-shell__status {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.panel,
+.editor-pane,
+.status-bar,
+.tab-strip,
+.command-palette {
+  box-sizing: border-box;
+}
+
+.panel {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  padding: 18px;
+  gap: 18px;
+}
+
+.panel__header,
+.editor-pane__hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel__title,
+.editor-pane__title,
+.command-palette__title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.panel__action,
+.editor-pane__ghost,
+.nav-item,
+.tab {
+  border: 0;
+  border-radius: 12px;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.panel__body {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.nav-item,
+.tab {
+  text-align: left;
+  padding: 10px 12px;
+}
+
+.nav-item--active,
+.tab--active {
+  background: rgba(87, 108, 255, 0.18);
+}
+
+.editor-pane {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 24px;
+  padding: 28px;
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.editor-pane__eyebrow {
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 12px;
+  color: rgba(237, 242, 247, 0.6);
+}
+
+.editor-pane__title {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 48px);
+}
+
+.editor-pane__canvas {
+  min-height: 0;
+  display: grid;
+  align-items: start;
+}
+
+.editor-placeholder {
+  min-height: 480px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  color: rgba(237, 242, 247, 0.5);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tab-strip,
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+}
+
+.status-bar {
+  justify-content: space-between;
+  color: rgba(237, 242, 247, 0.65);
+  font-size: 13px;
+}
+
+.command-palette {
+  position: fixed;
+  inset: 0;
+  display: none;
+}
