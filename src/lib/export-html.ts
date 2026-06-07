@@ -1,4 +1,10 @@
 import { marked } from "marked";
+import highlightStyles from "highlight.js/styles/github.min.css?inline";
+import {
+  highlightCode,
+  isMermaidLanguage,
+  resolveHighlightLanguage,
+} from "@/editor/syntax-highlight/languages";
 
 function escapeHtml(value: string) {
   return value
@@ -14,12 +20,14 @@ export function markdownToHtml(markdown: string, title = "Document"): string {
   marked.use({
     renderer: {
       code({ text, lang }) {
-        if (lang === "mermaid") {
+        if (lang && isMermaidLanguage(lang)) {
           hasMermaid = true;
           return `<pre class="mermaid">${escapeHtml(text)}</pre>`;
         }
-        const language = lang ? ` class="language-${escapeHtml(lang)}"` : "";
-        return `<pre><code${language}>${escapeHtml(text)}</code></pre>`;
+
+        const language = resolveHighlightLanguage(lang);
+        const highlighted = highlightCode(text, language);
+        return `<pre><code class="hljs language-${escapeHtml(language)}">${highlighted}</code></pre>`;
       },
     },
   });
@@ -48,6 +56,7 @@ mermaid.initialize({ startOnLoad: true, theme: "dark", securityLevel: "loose" })
     th, td { border: 1px solid #e2e8f0; padding: 8px 12px; text-align: left; }
     th { background: #edf2f7; }
     img { max-width: 100%; }
+    ${highlightStyles}
   </style>
 </head>
 <body>
