@@ -683,3 +683,28 @@ button {
   min-height: 120px;
 }
 
+.outline-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.outline-panel__button {
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  text-align: left;
+  font: inherit;
+  font-size: 13px;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.outline-panel__button:hover {
+  background: var(--accent);
+}
+
