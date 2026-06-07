@@ -31,7 +31,7 @@ export function createEditorInputRules() {
         level: match[1].length,
       })),
       wrappingInputRule(/^\s*>\s$/, blockquote),
-      wrappingInputRule(/^\s*([-+*])\s$/, bullet_list),
+      wrappingInputRule(/^([-+*])\s$/, bullet_list),
       wrappingInputRule(/^(\d+)\.\s$/, ordered_list, (match) => ({
         order: Number(match[1]),
       })),

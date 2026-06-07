@@ -25,7 +25,12 @@ function findMarkedRange(
   markType: MarkType,
 ): { from: number; to: number } | null {
   const { $from, empty } = state.selection;
-  if (!empty || !markType.isInSet($from.marks())) {
+  if (!empty) {
+    return null;
+  }
+
+  const marks = state.storedMarks ?? $from.marks();
+  if (!markType.isInSet(marks)) {
     return null;
   }
 
@@ -34,37 +39,28 @@ function findMarkedRange(
     return null;
   }
 
-  const parentStart = $from.start();
-  let startIndex = $from.index();
-  let endIndex = $from.index();
+  const blockStart = $from.start();
+  const blockEnd = $from.end();
+  let from = $from.pos;
+  let to = $from.pos;
 
-  while (startIndex > 0) {
-    const prev = parent.child(startIndex - 1);
-    if (!prev.isText || !markType.isInSet(prev.marks)) {
+  while (from > blockStart) {
+    const $pos = state.doc.resolve(from - 1);
+    if ($pos.start() !== blockStart || !markType.isInSet($pos.marks())) {
       break;
     }
-    startIndex -= 1;
+    from -= 1;
   }
 
-  while (endIndex + 1 < parent.childCount) {
-    const next = parent.child(endIndex + 1);
-    if (!next.isText || !markType.isInSet(next.marks)) {
+  while (to < blockEnd) {
+    const $pos = state.doc.resolve(to);
+    if ($pos.start() !== blockStart || !markType.isInSet($pos.marks())) {
       break;
     }
-    endIndex += 1;
+    to += 1;
   }
 
-  let from = parentStart;
-  for (let i = 0; i < startIndex; i += 1) {
-    from += parent.child(i).nodeSize;
-  }
-
-  let to = from;
-  for (let i = startIndex; i <= endIndex; i += 1) {
-    to += parent.child(i).nodeSize;
-  }
-
-  return { from, to };
+  return from < to ? { from, to } : null;
 }
 
 function buildSyntaxDecorations(state: EditorState): DecorationSet {

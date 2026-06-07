@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { EditorState, TextSelection } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { markdownSchema } from "../../src/editor/schema";
-import { createInlineMarkInputRulesFromSchema } from "../../src/editor/inline-mark/input-rules";
-import { inputRules } from "prosemirror-inputrules";
+import { createEditorInputRules } from "../../src/editor/input-rules";
+import { createInlineMarkPlugin } from "../../src/editor/inline-mark/plugin";
 import { createInlineMarkSyntaxPlugin } from "../../src/editor/inline-mark/syntax-decorations";
 import { handleInlineMarkdownPaste } from "../../src/editor/inline-mark/paste";
 
@@ -28,6 +28,10 @@ function hasMark(view: EditorView, markName: string): boolean {
   return found;
 }
 
+function inlinePlugins() {
+  return createInlineMarkPlugin(markdownSchema);
+}
+
 describe("inline mark input rules", () => {
   it("converts **bold** while typing", () => {
     const mount = document.createElement("div");
@@ -36,7 +40,7 @@ describe("inline mark input rules", () => {
     const state = EditorState.create({
       schema: markdownSchema,
       doc: markdownSchema.nodes.doc.create(null, [markdownSchema.nodes.paragraph.create()]),
-      plugins: [inputRules({ rules: createInlineMarkInputRulesFromSchema(markdownSchema) })],
+      plugins: inlinePlugins(),
     });
 
     const view = new EditorView(mount, { state });
@@ -56,7 +60,7 @@ describe("inline mark input rules", () => {
     const state = EditorState.create({
       schema: markdownSchema,
       doc: markdownSchema.nodes.doc.create(null, [markdownSchema.nodes.paragraph.create()]),
-      plugins: [inputRules({ rules: createInlineMarkInputRulesFromSchema(markdownSchema) })],
+      plugins: inlinePlugins(),
     });
 
     const view = new EditorView(mount, { state });
@@ -69,6 +73,50 @@ describe("inline mark input rules", () => {
     document.body.removeChild(mount);
   });
 
+  it("allows completing **bold** with spaces after ** ddd *", () => {
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc: markdownSchema.nodes.doc.create(null, [markdownSchema.nodes.paragraph.create()]),
+      plugins: inlinePlugins(),
+    });
+
+    const view = new EditorView(mount, { state });
+    typeInto(view, "** ddd *");
+    expect(view.state.doc.textContent).toBe("** ddd *");
+
+    typeInto(view, "*");
+    expect(hasMark(view, "strong")).toBe(true);
+    expect(view.state.doc.textContent).toBe(" ddd ");
+
+    view.destroy();
+    document.body.removeChild(mount);
+  });
+
+  it("allows completing ~~strike~~ with spaces after ~~ ddd ~", () => {
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc: markdownSchema.nodes.doc.create(null, [markdownSchema.nodes.paragraph.create()]),
+      plugins: inlinePlugins(),
+    });
+
+    const view = new EditorView(mount, { state });
+    typeInto(view, "~~ ddd ~");
+    expect(view.state.doc.textContent).toBe("~~ ddd ~");
+
+    typeInto(view, "~");
+    expect(hasMark(view, "strike")).toBe(true);
+    expect(view.state.doc.textContent).toBe(" ddd ");
+
+    view.destroy();
+    document.body.removeChild(mount);
+  });
+
   it("allows completing **bold** after **ddd*", () => {
     const mount = document.createElement("div");
     document.body.appendChild(mount);
@@ -76,7 +124,7 @@ describe("inline mark input rules", () => {
     const state = EditorState.create({
       schema: markdownSchema,
       doc: markdownSchema.nodes.doc.create(null, [markdownSchema.nodes.paragraph.create()]),
-      plugins: [inputRules({ rules: createInlineMarkInputRulesFromSchema(markdownSchema) })],
+      plugins: inlinePlugins(),
     });
 
     const view = new EditorView(mount, { state });
@@ -99,7 +147,7 @@ describe("inline mark input rules", () => {
     const state = EditorState.create({
       schema: markdownSchema,
       doc: markdownSchema.nodes.doc.create(null, [markdownSchema.nodes.paragraph.create()]),
-      plugins: [inputRules({ rules: createInlineMarkInputRulesFromSchema(markdownSchema) })],
+      plugins: inlinePlugins(),
     });
 
     const view = new EditorView(mount, { state });
@@ -115,6 +163,46 @@ describe("inline mark input rules", () => {
     document.body.removeChild(mount);
   });
 
+  it("allows completing marks with full editor input rules (spaced delimiters)", () => {
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc: markdownSchema.nodes.doc.create(null, [markdownSchema.nodes.paragraph.create()]),
+      plugins: [createEditorInputRules(), ...inlinePlugins()],
+    });
+
+    const view = new EditorView(mount, { state });
+    typeInto(view, "** ddd *");
+    typeInto(view, "*");
+    expect(hasMark(view, "strong")).toBe(true);
+
+    view.destroy();
+    document.body.removeChild(mount);
+  });
+
+  it("does not turn ** ddd * into a bullet list when typing space", () => {
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc: markdownSchema.nodes.doc.create(null, [markdownSchema.nodes.paragraph.create()]),
+      plugins: [createEditorInputRules(), ...inlinePlugins()],
+    });
+
+    const view = new EditorView(mount, { state });
+    typeInto(view, "** ddd *");
+    typeInto(view, " ");
+
+    expect(view.state.doc.child(0).type.name).toBe("paragraph");
+    expect(view.state.doc.textContent).toBe("** ddd * ");
+
+    view.destroy();
+    document.body.removeChild(mount);
+  });
+
   it("converts [text](url) while typing", () => {
     const mount = document.createElement("div");
     document.body.appendChild(mount);
@@ -122,7 +210,7 @@ describe("inline mark input rules", () => {
     const state = EditorState.create({
       schema: markdownSchema,
       doc: markdownSchema.nodes.doc.create(null, [markdownSchema.nodes.paragraph.create()]),
-      plugins: [inputRules({ rules: createInlineMarkInputRulesFromSchema(markdownSchema) })],
+      plugins: inlinePlugins(),
     });
 
     const view = new EditorView(mount, { state });
@@ -142,7 +230,7 @@ describe("inline mark input rules", () => {
     const state = EditorState.create({
       schema: markdownSchema,
       doc: markdownSchema.nodes.doc.create(null, [markdownSchema.nodes.paragraph.create()]),
-      plugins: [inputRules({ rules: createInlineMarkInputRulesFromSchema(markdownSchema) })],
+      plugins: inlinePlugins(),
     });
 
     const view = new EditorView(mount, { state });
@@ -162,7 +250,7 @@ describe("inline mark input rules", () => {
     const state = EditorState.create({
       schema: markdownSchema,
       doc: markdownSchema.nodes.doc.create(null, [markdownSchema.nodes.paragraph.create()]),
-      plugins: [inputRules({ rules: createInlineMarkInputRulesFromSchema(markdownSchema) })],
+      plugins: inlinePlugins(),
     });
 
     const view = new EditorView(mount, { state });
