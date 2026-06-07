@@ -11,6 +11,7 @@
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "test:watch": "vitest",
     "lint": "eslint .",
     "typecheck": "vue-tsc --noEmit"
@@ -34,6 +35,7 @@
     "vue": "^3.5.35"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@rolldown/binding-darwin-x64": "1.1.0",
     "@tauri-apps/cli": "^2.11.2",
     "@types/node": "^25.9.2",
