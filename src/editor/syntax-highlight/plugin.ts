@@ -23,6 +23,9 @@ export function collectCodeBlocksForHighlight(doc: PMNode): CodeBlockHighlightTa
     }
 
     const params = node.attrs.params ?? "";
+    if (!params.trim()) {
+      return;
+    }
     if (isMermaidLanguage(params)) {
       return;
     }

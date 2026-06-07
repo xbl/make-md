@@ -2,15 +2,25 @@ import { defineStore } from "pinia";
 
 export type EditorTheme = "dark" | "light";
 
+function getStorage(): Storage | null {
+  return typeof globalThis.localStorage === "undefined" ? null : globalThis.localStorage;
+}
+
+function loadTheme(): EditorTheme {
+  const theme = getStorage()?.getItem("make-md:theme");
+  return theme === "dark" || theme === "light" ? theme : "light";
+}
+
 export const useUiStore = defineStore("ui", {
   state: () => ({
     commandPaletteOpen: false,
     settingsOpen: false,
+    settingsShortcutRecording: false,
     sidebarCollapsed: false,
     focusMode: false,
     findReplaceOpen: false,
     findReplaceMode: "find" as "find" | "replace",
-    theme: (localStorage.getItem("make-md:theme") as EditorTheme) || "light",
+    theme: loadTheme(),
   }),
   actions: {
     toggleCommandPalette() {
@@ -27,9 +37,19 @@ export const useUiStore = defineStore("ui", {
     },
     closeSettings() {
       this.settingsOpen = false;
+      this.settingsShortcutRecording = false;
     },
     toggleSettings() {
       this.settingsOpen = !this.settingsOpen;
+      if (!this.settingsOpen) {
+        this.settingsShortcutRecording = false;
+      }
+    },
+    startSettingsShortcutRecording() {
+      this.settingsShortcutRecording = true;
+    },
+    stopSettingsShortcutRecording() {
+      this.settingsShortcutRecording = false;
     },
     toggleSidebar() {
       this.sidebarCollapsed = !this.sidebarCollapsed;
@@ -39,7 +59,7 @@ export const useUiStore = defineStore("ui", {
     },
     toggleTheme() {
       this.theme = this.theme === "dark" ? "light" : "dark";
-      localStorage.setItem("make-md:theme", this.theme);
+      getStorage()?.setItem("make-md:theme", this.theme);
       document.documentElement.dataset.theme = this.theme;
     },
     applyTheme() {

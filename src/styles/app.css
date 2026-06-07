@@ -117,11 +117,40 @@ button {
 
 .app-shell {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   grid-template-columns: 240px minmax(0, 1fr);
   height: 100vh;
   max-height: 100vh;
   overflow: hidden;
   background: var(--bg-paper);
+}
+
+.app-menu-bar {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
+}
+
+.app-menu-bar__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-paper);
+  color: var(--text-main);
+  padding: 6px 10px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.app-menu-bar__shortcut {
+  color: var(--text-faint);
+  font-size: 12px;
 }
 
 .app-shell--focus {
@@ -138,6 +167,7 @@ button {
 }
 
 .app-shell__sidebar {
+  grid-row: 2;
   border-right: 1px solid var(--border);
   background: var(--bg-sidebar);
   height: 100%;
@@ -146,6 +176,7 @@ button {
 }
 
 .app-shell__main {
+  grid-row: 2;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   height: 100%;
@@ -237,6 +268,20 @@ button {
   padding: 12px 18px 18px;
 }
 
+.settings-panel__category + .settings-panel__category {
+  margin-top: 18px;
+}
+
+.settings-panel__category-title {
+  margin: 0;
+  padding: 8px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
 .settings-panel__row {
   display: flex;
   align-items: center;
@@ -291,6 +336,34 @@ button {
   border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--accent);
+}
+
+.settings-panel__hint {
+  margin: 16px 4px 0;
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.settings-panel__disabled-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+
+.settings-panel__disabled-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.settings-panel__disabled-note {
+  color: var(--text-muted);
+  font-size: 12px;
 }
 
 /* ── Sidebar panels ── */
@@ -926,18 +999,47 @@ button {
   margin: 0.8em 0;
   font-family: var(--font-mono);
 }
-
-.editor-view .ProseMirror .code-block-wrapper[data-language]::before {
-  content: attr(data-language);
+.editor-view .ProseMirror .code-block-controls {
   position: absolute;
   top: 6px;
   right: 10px;
+  z-index: 3;
+}
+
+.editor-view .ProseMirror .code-block-language-trigger,
+.editor-view .ProseMirror .code-block-language-input {
   font-family: var(--font-ui);
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  line-height: 1.3;
   color: var(--text-faint);
+}
+
+.editor-view .ProseMirror .code-block-language-trigger {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.editor-view .ProseMirror .code-block-language-input {
+  width: 110px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  background: color-mix(in srgb, var(--bg-elevated) 92%, transparent);
+}
+
+.editor-view .ProseMirror .code-block-language-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.editor-view .ProseMirror .code-block-wrapper:not(:hover):not(:focus-within) .code-block-language-trigger {
+  color: var(--text-faint);
+  opacity: 0.6;
 }
 
 .editor-view .ProseMirror pre,
@@ -954,13 +1056,13 @@ button {
   white-space: pre;
 }
 
-.editor-view .ProseMirror .code-block-wrapper:not([data-language="mermaid" i]):not([data-language="Mermaid" i]) pre {
+.editor-view .ProseMirror .code-block-wrapper[data-language]:not([data-language="mermaid" i]):not([data-language="Mermaid" i]) pre {
   position: relative;
   z-index: 1;
   background: transparent;
 }
 
-.editor-view .ProseMirror .code-block-wrapper:not([data-language="mermaid" i]):not([data-language="Mermaid" i]) pre code {
+.editor-view .ProseMirror .code-block-wrapper[data-language]:not([data-language="mermaid" i]):not([data-language="Mermaid" i]) pre code {
   color: transparent;
   caret-color: var(--code-text);
 }

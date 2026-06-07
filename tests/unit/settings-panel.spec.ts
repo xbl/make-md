@@ -1,5 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
+import { nextTick } from "vue";
 import { vi } from "vitest";
 import SettingsPanel from "@/components/SettingsPanel.vue";
 import { useShortcutsStore } from "@/stores/shortcuts";
@@ -64,5 +65,50 @@ describe("SettingsPanel", () => {
 
     await wrapper.find("button[title='Reset all shortcuts']").trigger("click");
     expect(shortcuts.effectiveChord("format.italic")).toBe("Mod-i");
+  });
+
+  it("groups enabled commands by category and excludes disabled commands from rebinding", async () => {
+    const { pinia, ui } = mountPanel();
+    ui.openSettings();
+
+    const wrapper = mount(SettingsPanel, {
+      global: {
+        plugins: [pinia],
+      },
+    });
+
+    const headings = wrapper.findAll(".settings-panel__category-title").map((node) => node.text());
+    expect(headings).toContain("File");
+    expect(headings).toContain("Format");
+    expect(wrapper.find("[data-command-id='format.underline']").exists()).toBe(false);
+    expect(wrapper.text()).toContain("Unavailable commands");
+    expect(wrapper.text()).toContain("Underline");
+  });
+
+  it("shows an inline hint for invalid chords and clears recording when preferences close", async () => {
+    const { pinia, ui, shortcuts } = mountPanel();
+    ui.openSettings();
+
+    const wrapper = mount(SettingsPanel, {
+      global: {
+        plugins: [pinia],
+      },
+    });
+
+    const recordButton = wrapper.find("[data-command-id='format.bold'] .settings-panel__capture");
+    await recordButton.trigger("click");
+    expect(ui.settingsShortcutRecording).toBe(true);
+
+    await recordButton.trigger("keydown", { key: "b" });
+    await nextTick();
+
+    expect(wrapper.text()).toContain("Use a shortcut with modifier keys");
+    expect(shortcuts.effectiveChord("format.bold")).toBe("Mod-b");
+
+    ui.closeSettings();
+    await nextTick();
+
+    expect(ui.settingsShortcutRecording).toBe(false);
+    expect(wrapper.find("[data-testid='settings-panel']").exists()).toBe(false);
   });
 });

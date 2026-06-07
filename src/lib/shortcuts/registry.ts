@@ -15,6 +15,7 @@ export type CommandHandlerDeps = {
   openSettings: () => void;
   openCommandPalette: () => void;
   closeTab: () => void;
+  canRunEditorCommand?: (commandId: string) => boolean;
   runEditorCommand: (commandId: string) => boolean;
 };
 

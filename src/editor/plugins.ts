@@ -13,6 +13,7 @@ import {
 } from "@/editor/code-block-input";
 import { createSyntaxHighlightPlugin } from "@/editor/syntax-highlight/plugin";
 import { createInlineCodeDecorationsPlugin } from "@/editor/inline-code-decorations";
+import { createEditorCommandEventsPlugin } from "@/editor/editor-command-events";
 
 type PluginOptions = {
   getDocPath?: () => string | undefined;
@@ -26,6 +27,7 @@ export function createEditorPlugins(options: PluginOptions = {}) {
     createMermaidPlugin(),
     createFindReplacePlugin(),
     createCodeBlockPlugin(),
+    createEditorCommandEventsPlugin(),
     createSyntaxHighlightPlugin(),
     createInlineCodeDecorationsPlugin(),
     history(),
