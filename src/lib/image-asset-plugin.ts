@@ -18,16 +18,16 @@ export function createImageAssetPlugin(options: ImageAssetOptions) {
   return new Plugin({
     props: {
       handlePaste(view, event) {
-        const docPath = options.getDocPath();
-        if (!docPath) {
-          options.onError("Save the document before inserting images.");
-          return false;
-        }
-
         const item = Array.from(event.clipboardData?.items ?? []).find((entry) =>
           entry.type.startsWith("image/"),
         );
         if (!item) {
+          return false;
+        }
+
+        const docPath = options.getDocPath();
+        if (!docPath) {
+          options.onError("Save the document before inserting images.");
           return false;
         }
 

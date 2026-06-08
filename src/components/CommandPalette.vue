@@ -2,9 +2,10 @@
   <div
     v-if="ui.commandPaletteOpen"
     class="command-palette command-palette--open"
-    @click.self="ui.toggleCommandPalette()"
+    @click.self="ui.closeCommandPalette()"
+    @keydown.capture="handleContainerKeydown"
   >
-    <div class="command-palette__panel" role="dialog" aria-label="Command palette">
+    <div class="command-palette__panel" role="dialog" aria-label="Command palette" tabindex="-1">
       <input
         ref="inputRef"
         v-model="query"
@@ -19,6 +20,7 @@
             type="button"
             class="command-palette__item"
             :class="{ 'command-palette__item--active': index === activeIndex }"
+            :disabled="!command.enabled"
             @click="runCommand(command)"
           >
             <span>{{ command.label }}</span>
@@ -33,40 +35,77 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
-import { createAppCommands, type AppCommand } from "@/lib/app-commands";
+import { createAppCommandRuntime, type PaletteCommand } from "@/lib/app-commands";
 import { pickFolder } from "@/lib/file-service";
+import { useAiStore } from "@/stores/ai";
 import { useDocumentsStore } from "@/stores/documents";
+import { useEditorStore } from "@/stores/editor";
 import { useFolderWorkspaceStore } from "@/stores/folder-workspace";
+import { useShortcutsStore } from "@/stores/shortcuts";
 import { useUiStore } from "@/stores/ui";
 
 const ui = useUiStore();
+const ai = useAiStore();
 const documents = useDocumentsStore();
+const editorStore = useEditorStore();
 const folderWorkspace = useFolderWorkspaceStore();
+const shortcuts = useShortcutsStore();
 const query = ref("");
 const activeIndex = ref(0);
 const inputRef = ref<HTMLInputElement | null>(null);
 
-const commands = computed(() =>
-  createAppCommands({
-    openFile: () => documents.openFileDialog(),
-    openFolder: async () => {
-      const path = await pickFolder();
-      if (path) {
-        await folderWorkspace.setRootPath(path);
-        folderWorkspace.setActiveTab("files");
-      }
-    },
-    createNew: () => documents.createNewDocument(),
-    save: () => documents.saveActiveFile(),
-    saveAs: () => documents.saveAsDialog(),
-    exportHtml: () => documents.exportActiveHtml(),
-    exportPdf: () => documents.exportActivePdf(),
-    openFind: () => ui.openFindReplace("find"),
-    openReplace: () => ui.openFindReplace("replace"),
-    toggleSidebar: () => ui.toggleSidebar(),
-    toggleFocusMode: () => ui.toggleFocusMode(),
-    toggleTheme: () => ui.toggleTheme(),
-  }),
+function canRunEditorCommand(commandId: string) {
+  if (commandId === "view.outline" || commandId === "view.files") {
+    return true;
+  }
+
+  return Boolean(editorStore.view);
+}
+
+const runtime = createAppCommandRuntime({
+  openFile: () => documents.openFileDialog(),
+  openFolder: async () => {
+    const path = await pickFolder();
+    if (path) {
+      await folderWorkspace.setRootPath(path);
+      folderWorkspace.setActiveTab("files");
+    }
+  },
+  createNew: () => documents.createNewDocument(),
+  save: () => documents.saveActiveFile(),
+  saveAs: () => documents.saveAsDialog(),
+  exportHtml: () => documents.exportActiveHtml(),
+  exportPdf: () => documents.exportActivePdf(),
+  openFind: () => ui.openFindReplace("find"),
+  openReplace: () => ui.openFindReplace("replace"),
+  toggleSidebar: () => ui.toggleSidebar(),
+  toggleFocusMode: () => ui.toggleFocusMode(),
+  openSettings: () => ui.openSettings(),
+  openAiSettings: () => ai.openSettings(),
+  openAiRewriteSelection: () => ai.startSelectionRewrite(),
+  openAiRewriteDocument: () => ai.startDocumentRewrite(),
+  openCommandPalette: () => ui.openCommandPalette(),
+  closeTab: () => (documents.activeSessionId ? documents.closeSession(documents.activeSessionId) : Promise.resolve(true)),
+  canRunEditorCommand,
+  runEditorCommand: (commandId: string) => {
+    if (commandId === "view.outline") {
+      folderWorkspace.setActiveTab("outline");
+      return true;
+    }
+    if (commandId === "view.files") {
+      folderWorkspace.setActiveTab("files");
+      return true;
+    }
+    if (!editorStore.view) {
+      return false;
+    }
+    window.dispatchEvent(new CustomEvent("make-md:editor-command", { detail: { commandId } }));
+    return true;
+  },
+});
+
+const commands = computed<PaletteCommand[]>(() =>
+  runtime.getPaletteCommands((commandId) => shortcuts.effectiveChord(commandId)),
 );
 
 const filtered = computed(() => {
@@ -93,16 +132,22 @@ watch(filtered, () => {
   activeIndex.value = 0;
 });
 
-async function runCommand(command: AppCommand) {
-  ui.commandPaletteOpen = false;
+async function runCommand(command: PaletteCommand) {
+  if (!command.enabled) {
+    return;
+  }
+  ui.closeCommandPalette();
   await command.run();
 }
 
-function handleKeydown(event: KeyboardEvent) {
+function handleContainerKeydown(event: KeyboardEvent) {
   if (event.key === "Escape") {
-    ui.commandPaletteOpen = false;
+    ui.closeCommandPalette();
     return;
   }
+}
+
+function handleKeydown(event: KeyboardEvent) {
   if (event.key === "ArrowDown") {
     event.preventDefault();
     activeIndex.value = Math.min(activeIndex.value + 1, filtered.value.length - 1);

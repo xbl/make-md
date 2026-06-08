@@ -16,4 +16,19 @@ describe("createShortcutDispatcher", () => {
     expect(handled).toBe(true);
     expect(exportHtml).toHaveBeenCalled();
   });
+
+  it("runs AI rewrite selection on Mod-Shift-a when editor is focused", async () => {
+    const rewriteSelection = vi.fn();
+    const dispatcher = createShortcutDispatcher({
+      handlers: { "view.aiRewriteSelection": rewriteSelection },
+      getContext: () => ({ editorFocused: true, hasSelection: true, inInlineMark: false }),
+      getChordMap: () => ({ "view.aiRewriteSelection": "Mod-Shift-a" }),
+      isEditorFocused: () => true,
+    });
+
+    const event = new KeyboardEvent("keydown", { key: "A", metaKey: true, shiftKey: true, bubbles: true });
+    const handled = await dispatcher.handleKeydown(event);
+    expect(handled).toBe(true);
+    expect(rewriteSelection).toHaveBeenCalled();
+  });
 });

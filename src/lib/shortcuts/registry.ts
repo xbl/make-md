@@ -13,8 +13,12 @@ export type CommandHandlerDeps = {
   toggleSidebar: () => void;
   toggleFocusMode: () => void;
   openSettings: () => void;
+  openAiSettings: () => void;
+  openAiRewriteSelection: () => void;
+  openAiRewriteDocument: () => void;
   openCommandPalette: () => void;
   closeTab: () => void;
+  canRunEditorCommand?: (commandId: string) => boolean;
   runEditorCommand: (commandId: string) => boolean;
 };
 
@@ -72,6 +76,9 @@ export const COMMAND_CATALOG: CommandDef[] = [
   def("view.outline", "Outline", "view", "view", "Mod-Control-1"),
   def("view.files", "File Tree", "view", "view", "Mod-Control-3"),
   def("view.focus", "Focus Mode", "view", "view", "F8"),
+  def("view.aiSettings", "AI Settings", "view", "app", null),
+  def("view.aiRewriteSelection", "AI Rewrite Selection", "view", "editor", "Mod-Shift-a"),
+  def("view.aiRewriteDocument", "AI Rewrite Document", "view", "app", null),
   def("view.commandPalette", "Command Palette", "view", "app", "Mod-Shift-p"),
 
   def("export.html", "Export HTML", "export", "export", "Mod-e"),
@@ -136,6 +143,9 @@ export function createCommandHandlers(deps: CommandHandlerDeps): Record<string, 
     "view.outline": editor("view.outline"),
     "view.files": editor("view.files"),
     "view.focus": () => deps.toggleFocusMode(),
+    "view.aiSettings": () => deps.openAiSettings(),
+    "view.aiRewriteSelection": () => deps.openAiRewriteSelection(),
+    "view.aiRewriteDocument": () => deps.openAiRewriteDocument(),
     "view.commandPalette": () => deps.openCommandPalette(),
 
     "export.html": () => deps.exportHtml(),

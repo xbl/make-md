@@ -1,4 +1,6 @@
+mod ai;
 mod fs;
+mod menu;
 mod pdf;
 mod recent;
 mod recovery;
@@ -7,7 +9,16 @@ mod workspace;
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .setup(|app| {
+            menu::install_menu(app)?;
+            Ok(())
+        })
+        .on_menu_event(|app, event| {
+            menu::handle_menu_event(app, event);
+        })
         .invoke_handler(tauri::generate_handler![
+            ai::ai_stream,
+            ai::ai_cancel,
             fs::read_markdown_file,
             fs::write_markdown_file,
             recent::load_recent_files,

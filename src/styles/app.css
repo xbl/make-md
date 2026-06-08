@@ -117,11 +117,40 @@ button {
 
 .app-shell {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   grid-template-columns: 240px minmax(0, 1fr);
   height: 100vh;
   max-height: 100vh;
   overflow: hidden;
   background: var(--bg-paper);
+}
+
+.app-menu-bar {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
+}
+
+.app-menu-bar__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-paper);
+  color: var(--text-main);
+  padding: 6px 10px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.app-menu-bar__shortcut {
+  color: var(--text-faint);
+  font-size: 12px;
 }
 
 .app-shell--focus {
@@ -138,6 +167,7 @@ button {
 }
 
 .app-shell__sidebar {
+  grid-row: 2;
   border-right: 1px solid var(--border);
   background: var(--bg-sidebar);
   height: 100%;
@@ -146,6 +176,7 @@ button {
 }
 
 .app-shell__main {
+  grid-row: 2;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   height: 100%;
@@ -177,6 +208,162 @@ button {
 
 .app-shell--sidebar-collapsed {
   grid-template-columns: minmax(0, 1fr);
+}
+
+.settings-panel {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(28, 28, 26, 0.34);
+  backdrop-filter: blur(6px);
+  z-index: 30;
+}
+
+.settings-panel__dialog {
+  width: min(860px, 100%);
+  max-height: min(720px, calc(100vh - 48px));
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.settings-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-panel__title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+.settings-panel__subtitle {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+}
+
+.settings-panel__header-actions,
+.settings-panel__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-panel__list {
+  overflow: auto;
+  padding: 12px 18px 18px;
+}
+
+.settings-panel__category + .settings-panel__category {
+  margin-top: 18px;
+}
+
+.settings-panel__category-title {
+  margin: 0;
+  padding: 8px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.settings-panel__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-panel__meta {
+  min-width: 0;
+}
+
+.settings-panel__command {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.settings-panel__details {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+.settings-panel__capture,
+.settings-panel__secondary,
+.settings-panel__close {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.settings-panel__capture {
+  min-width: 120px;
+  font-family: var(--font-mono);
+  text-align: center;
+}
+
+.settings-panel__capture:hover,
+.settings-panel__secondary:hover,
+.settings-panel__close:hover {
+  background: var(--bg-hover);
+}
+
+.settings-panel__capture--recording {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.settings-panel__hint {
+  margin: 16px 4px 0;
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.settings-panel__disabled-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+
+.settings-panel__disabled-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.settings-panel__disabled-note {
+  color: var(--text-muted);
+  font-size: 12px;
 }
 
 /* ── Sidebar panels ── */
@@ -577,9 +764,11 @@ button {
   font-family: var(--font-mono);
   font-size: 0.88em;
   padding: 0.1em 0.3em;
-  border-radius: 3px;
-  background: var(--code-bg);
-  color: var(--code-text);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  box-shadow: inset 0 0 0 999px var(--accent-soft);
 }
 
 .editor-view .ProseMirror .pm-mark-editing--code::before,
@@ -812,18 +1001,47 @@ button {
   margin: 0.8em 0;
   font-family: var(--font-mono);
 }
-
-.editor-view .ProseMirror .code-block-wrapper[data-language]::before {
-  content: attr(data-language);
+.editor-view .ProseMirror .code-block-controls {
   position: absolute;
   top: 6px;
   right: 10px;
+  z-index: 3;
+}
+
+.editor-view .ProseMirror .code-block-language-trigger,
+.editor-view .ProseMirror .code-block-language-input {
   font-family: var(--font-ui);
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  line-height: 1.3;
   color: var(--text-faint);
+}
+
+.editor-view .ProseMirror .code-block-language-trigger {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.editor-view .ProseMirror .code-block-language-input {
+  width: 110px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  background: color-mix(in srgb, var(--bg-elevated) 92%, transparent);
+}
+
+.editor-view .ProseMirror .code-block-language-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.editor-view .ProseMirror .code-block-wrapper:not(:hover):not(:focus-within) .code-block-language-trigger {
+  color: var(--text-faint);
+  opacity: 0.6;
 }
 
 .editor-view .ProseMirror pre,
@@ -840,13 +1058,13 @@ button {
   white-space: pre;
 }
 
-.editor-view .ProseMirror .code-block-wrapper:not([data-language="mermaid" i]):not([data-language="Mermaid" i]) pre {
+.editor-view .ProseMirror .code-block-wrapper[data-language][data-highlighted="true"]:not([data-language="mermaid" i]):not([data-language="Mermaid" i]) pre {
   position: relative;
   z-index: 1;
   background: transparent;
 }
 
-.editor-view .ProseMirror .code-block-wrapper:not([data-language="mermaid" i]):not([data-language="Mermaid" i]) pre code {
+.editor-view .ProseMirror .code-block-wrapper[data-language][data-highlighted="true"]:not([data-language="mermaid" i]):not([data-language="Mermaid" i]) pre code {
   color: transparent;
   caret-color: var(--code-text);
 }

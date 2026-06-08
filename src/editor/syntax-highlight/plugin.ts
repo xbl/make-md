@@ -23,6 +23,9 @@ export function collectCodeBlocksForHighlight(doc: PMNode): CodeBlockHighlightTa
     }
 
     const params = node.attrs.params ?? "";
+    if (!params.trim()) {
+      return;
+    }
     if (isMermaidLanguage(params)) {
       return;
     }
@@ -86,6 +89,7 @@ function updateBlockHighlight(
   }
 
   overlay.innerHTML = html;
+  dom.dataset.highlighted = "true";
   bindScrollSync(pre, overlay, bound);
   syncOverlayScroll(pre, overlay);
 }

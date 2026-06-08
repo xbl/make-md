@@ -1,5 +1,6 @@
 <template>
   <div class="editor-pane">
+    <AiEditToolbar v-if="activeSession" />
     <FindReplaceBar v-if="activeSession" />
     <EditorView v-if="activeSession" />
     <div v-else class="editor-empty">
@@ -21,6 +22,7 @@
 import { computed } from "vue";
 import { useDocumentsStore } from "@/stores/documents";
 import EditorView from "@/editor/EditorView.vue";
+import AiEditToolbar from "@/components/AiEditToolbar.vue";
 import FindReplaceBar from "@/components/FindReplaceBar.vue";
 
 const documents = useDocumentsStore();

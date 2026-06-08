@@ -13,6 +13,9 @@ import {
 } from "@/editor/code-block-input";
 import { createSyntaxHighlightPlugin } from "@/editor/syntax-highlight/plugin";
 import { createInlineCodeDecorationsPlugin } from "@/editor/inline-code-decorations";
+import { createEditorCommandEventsPlugin } from "@/editor/editor-command-events";
+import { createClipboardPlugin } from "@/editor/clipboard";
+import { createMarkdownPastePlugin } from "@/editor/markdown-paste";
 
 type PluginOptions = {
   getDocPath?: () => string | undefined;
@@ -26,6 +29,9 @@ export function createEditorPlugins(options: PluginOptions = {}) {
     createMermaidPlugin(),
     createFindReplacePlugin(),
     createCodeBlockPlugin(),
+    createEditorCommandEventsPlugin(),
+    createClipboardPlugin(),
+    createMarkdownPastePlugin(),
     createSyntaxHighlightPlugin(),
     createInlineCodeDecorationsPlugin(),
     history(),

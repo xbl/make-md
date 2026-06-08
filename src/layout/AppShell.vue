@@ -17,11 +17,13 @@
     </section>
 
     <CommandPalette />
+    <SettingsPanel />
+    <AiSettingsPanel />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted } from "vue";
+import { computed, onBeforeUnmount, onMounted } from "vue";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { isTauri } from "@tauri-apps/api/core";
 import SidebarTabs from "@/components/SidebarTabs.vue";
@@ -29,116 +31,150 @@ import TabStrip from "@/components/TabStrip.vue";
 import EditorPane from "@/components/EditorPane.vue";
 import StatusBar from "@/components/StatusBar.vue";
 import CommandPalette from "@/components/CommandPalette.vue";
+import SettingsPanel from "@/components/SettingsPanel.vue";
+import AiSettingsPanel from "@/components/AiSettingsPanel.vue";
+import { createAppCommandRuntime } from "@/lib/app-commands";
+import { useAiStore } from "@/stores/ai";
 import { useDocumentsStore } from "@/stores/documents";
+import { useEditorStore } from "@/stores/editor";
+import { useShortcutsStore } from "@/stores/shortcuts";
 import { useUiStore } from "@/stores/ui";
 import { useFolderWorkspaceStore } from "@/stores/folder-workspace";
 import { pickFolder } from "@/lib/file-service";
+import { createShortcutDispatcher, type ShortcutDispatcher } from "@/lib/shortcuts/dispatcher";
+import { startMenuBridge } from "@/lib/menu-bridge";
 
 const documents = useDocumentsStore();
+const ai = useAiStore();
+const editorStore = useEditorStore();
+const shortcuts = useShortcutsStore();
 const ui = useUiStore();
 const folderWorkspace = useFolderWorkspaceStore();
 let unlistenClose: (() => void) | null = null;
+const activeSessionId = computed(() => documents.activeSessionId);
+let dispatcher: ShortcutDispatcher | null = null;
+let stopMenuBridge: (() => void) | null = null;
 
-function handleKeydown(event: KeyboardEvent) {
-  if (event.key === "F8") {
+async function openFolder() {
+  const path = await pickFolder();
+  if (path) {
+    await folderWorkspace.setRootPath(path);
+    folderWorkspace.setActiveTab("files");
+  }
+}
+
+function getShortcutContext() {
+  const view = editorStore.view;
+  const editorFocused = Boolean(view?.hasFocus());
+  const selection = view?.state.selection;
+
+  return {
+    editorFocused,
+    hasSelection: Boolean(selection && !selection.empty),
+    inInlineMark: Boolean(view?.state.selection.$from.marks().length),
+  };
+}
+
+function canRunEditorCommand(commandId: string) {
+  const view = editorStore.view;
+  if (!view && commandId !== "view.outline" && commandId !== "view.files") {
+    return false;
+  }
+
+  return true;
+}
+
+function runEditorCommand(commandId: string) {
+  if (!canRunEditorCommand(commandId)) {
+    return false;
+  }
+
+  if (commandId === "view.outline") {
+    folderWorkspace.setActiveTab("outline");
+    return true;
+  }
+
+  if (commandId === "view.files") {
+    folderWorkspace.setActiveTab("files");
+    return true;
+  }
+
+  window.dispatchEvent(new CustomEvent("make-md:editor-command", { detail: { commandId } }));
+  return true;
+}
+
+function handleEscape(event: KeyboardEvent) {
+  if (event.key !== "Escape") {
+    return false;
+  }
+
+  if (ui.settingsShortcutRecording) {
+    return false;
+  }
+
+  if (ui.commandPaletteOpen) {
     event.preventDefault();
-    ui.toggleFocusMode();
-    return;
+    ui.closeCommandPalette();
+    return true;
   }
 
-  const mod = event.metaKey || event.ctrlKey;
-  if (!mod) {
-    return;
-  }
-
-  if (event.key === "p" && event.shiftKey) {
+  if (ui.settingsOpen) {
     event.preventDefault();
-    ui.toggleCommandPalette();
-    return;
+    ui.closeSettings();
+    return true;
   }
 
-  if (event.key === "n") {
-    event.preventDefault();
-    documents.createNewDocument();
-    return;
-  }
-
-  if (event.key === "f" && mod && event.altKey) {
-    event.preventDefault();
-    ui.openFindReplace("replace");
-    return;
-  }
-
-  if (event.key === "f" && mod) {
-    event.preventDefault();
-    ui.openFindReplace("find");
-    return;
-  }
-
-  if (event.key === "Escape" && ui.findReplaceOpen) {
+  if (ui.findReplaceOpen) {
     event.preventDefault();
     ui.closeFindReplace();
+    return true;
+  }
+
+  return false;
+}
+
+async function handleKeydown(event: KeyboardEvent) {
+  if (handleEscape(event)) {
     return;
   }
 
-  if (event.key === "e" && mod && event.shiftKey) {
-    event.preventDefault();
-    void documents.exportActivePdf();
-    return;
-  }
-
-  if (event.key === "e" && mod && !event.shiftKey) {
-    event.preventDefault();
-    void documents.exportActiveHtml();
-    return;
-  }
-
-  if (event.key === "l" && event.shiftKey) {
-    event.preventDefault();
-    ui.toggleTheme();
-    return;
-  }
-
-  if (event.key === "\\") {
-    event.preventDefault();
-    ui.toggleSidebar();
-    return;
-  }
-
-  if (event.key === "s" && event.shiftKey) {
-    event.preventDefault();
-    void documents.saveAsDialog();
-    return;
-  }
-
-  if (event.key === "s") {
-    event.preventDefault();
-    void documents.saveActiveFile();
-    return;
-  }
-
-  if (event.key === "o" && event.shiftKey) {
-    event.preventDefault();
-    void (async () => {
-      const path = await pickFolder();
-      if (path) {
-        await folderWorkspace.setRootPath(path);
-        folderWorkspace.setActiveTab("files");
-      }
-    })();
-    return;
-  }
-
-  if (event.key === "o") {
-    event.preventDefault();
-    void documents.openFileDialog();
-  }
+  await dispatcher?.handleKeydown(event);
 }
 
 onMounted(async () => {
   ui.applyTheme();
   void documents.loadRecent();
-  window.addEventListener("keydown", handleKeydown);
+  const runtime = createAppCommandRuntime({
+    openFile: () => documents.openFileDialog(),
+    openFolder,
+    createNew: () => documents.createNewDocument(),
+    save: () => documents.saveActiveFile(),
+    saveAs: () => documents.saveAsDialog(),
+    exportHtml: () => documents.exportActiveHtml(),
+    exportPdf: () => documents.exportActivePdf(),
+    openFind: () => ui.openFindReplace("find"),
+    openReplace: () => ui.openFindReplace("replace"),
+    toggleSidebar: () => ui.toggleSidebar(),
+    toggleFocusMode: () => ui.toggleFocusMode(),
+    openSettings: () => ui.openSettings(),
+    openAiSettings: () => ai.openSettings(),
+    openAiRewriteSelection: () => ai.startSelectionRewrite(),
+    openAiRewriteDocument: () => ai.startDocumentRewrite(),
+    openCommandPalette: () => ui.openCommandPalette(),
+    closeTab: () => (activeSessionId.value ? documents.closeSession(activeSessionId.value) : Promise.resolve(true)),
+    canRunEditorCommand,
+    runEditorCommand,
+  });
+  dispatcher = createShortcutDispatcher({
+    handlers: runtime.handlers,
+    getContext: getShortcutContext,
+    getChordMap: () => shortcuts.chordMap,
+    isEditorFocused: () => Boolean(editorStore.view?.hasFocus()),
+  });
+  window.addEventListener("keydown", handleKeydown, true);
+  stopMenuBridge = await startMenuBridge((commandId) => {
+    void dispatcher?.run(commandId);
+  });
 
   if (isTauri()) {
     const appWindow = getCurrentWindow();
@@ -152,7 +188,8 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("keydown", handleKeydown);
+  window.removeEventListener("keydown", handleKeydown, true);
+  stopMenuBridge?.();
   unlistenClose?.();
   void documents.flushAutosave();
 });
