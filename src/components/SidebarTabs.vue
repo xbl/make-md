@@ -21,7 +21,7 @@
 
     <div v-if="folderWorkspace.activeTab === 'files'" class="panel__body">
       <div class="panel__header">
-        <div class="panel__title">{{ folderWorkspace.hasFolder ? folderTitle : "Recent" }}</div>
+        <div class="panel__title">{{ folderWorkspace.hasFolder ? folderTitle : t("sidebar.recent.title") }}</div>
         <div class="panel__actions">
           <button
             v-if="!folderWorkspace.hasFolder && documents.recentFiles.length > 0"
@@ -30,12 +30,12 @@
             data-testid="recent-clear"
             @click="clearRecent"
           >
-            Clear
+            {{ t("common.clear") }}
           </button>
-          <button type="button" class="panel__action" @click="newFile">New</button>
+          <button type="button" class="panel__action" @click="newFile">{{ t("common.new") }}</button>
           <button type="button" class="panel__action" @click="openFolder">Folder</button>
           <button v-if="!folderWorkspace.hasFolder" type="button" class="panel__action" @click="openFile">
-            Open
+            {{ t("common.open") }}
           </button>
         </div>
       </div>
@@ -59,7 +59,7 @@
           {{ fileName(path) }}
         </button>
         <p v-if="documents.recentFiles.length === 0" class="panel__empty">
-          No recent files
+          {{ t("sidebar.recent.empty") }}
         </p>
       </nav>
     </div>
@@ -83,6 +83,7 @@ import { computed, ref } from "vue";
 import ContextMenu from "@/components/ContextMenu.vue";
 import FileTree from "@/components/FileTree.vue";
 import OutlinePanel from "@/components/OutlinePanel.vue";
+import { useI18n } from "@/composables/useI18n";
 import {
   createContextMenuController,
   type ContextMenuActionItem,
@@ -95,12 +96,13 @@ import { useFolderWorkspaceStore } from "@/stores/folder-workspace";
 
 const documents = useDocumentsStore();
 const folderWorkspace = useFolderWorkspaceStore();
+const { t } = useI18n();
 const menu = createContextMenuController();
 const selectedRecentPath = ref<string | null>(null);
 const menuItems = computed<ContextMenuItem[]>(() => [
-  { type: "action", id: "open", label: "Open" },
-  { type: "action", id: "remove", label: "Remove from Recent" },
-  { type: "action", id: "reveal", label: "Reveal in Finder" },
+  { type: "action", id: "open", label: t("common.open") },
+  { type: "action", id: "remove", label: t("sidebar.recent.remove") },
+  { type: "action", id: "reveal", label: t("sidebar.recent.reveal") },
 ]);
 
 const folderTitle = computed(() => {

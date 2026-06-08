@@ -6,6 +6,7 @@ import SidebarTabs from "@/components/SidebarTabs.vue";
 import { revealInFinder } from "@/lib/workspace-service";
 import { useDocumentsStore } from "@/stores/documents";
 import { useFolderWorkspaceStore } from "@/stores/folder-workspace";
+import { usePreferencesStore } from "@/stores/preferences";
 
 vi.mock("@/lib/workspace-service", async () => {
   const actual = await vi.importActual<typeof import("@/lib/workspace-service")>("@/lib/workspace-service");
@@ -104,5 +105,17 @@ describe("SidebarTabs recent actions", () => {
     await wrapper.get("[data-testid='recent-clear']").trigger("click");
 
     expect(documents.clearRecent).toHaveBeenCalledTimes(1);
+  });
+
+  it("localizes recent view labels", async () => {
+    const documents = useDocumentsStore();
+    documents.recentFiles = [];
+    const preferences = usePreferencesStore();
+    await preferences.initialize();
+    await preferences.setLanguagePreference("zh-CN");
+
+    const wrapper = mountRecentTabs();
+    expect(wrapper.text()).toContain("最近文件");
+    expect(wrapper.text()).toContain("没有最近文件");
   });
 });

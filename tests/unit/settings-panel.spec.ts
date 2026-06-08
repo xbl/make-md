@@ -3,6 +3,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { nextTick } from "vue";
 import { vi } from "vitest";
 import SettingsPanel from "@/components/SettingsPanel.vue";
+import { usePreferencesStore } from "@/stores/preferences";
 import { useShortcutsStore } from "@/stores/shortcuts";
 import { useUiStore } from "@/stores/ui";
 
@@ -12,6 +13,7 @@ describe("SettingsPanel", () => {
     setActivePinia(pinia);
     return {
       pinia,
+      preferences: usePreferencesStore(),
       ui: useUiStore(),
       shortcuts: useShortcutsStore(),
     };
@@ -63,7 +65,7 @@ describe("SettingsPanel", () => {
     await boldRow.find("button[title='Reset shortcut']").trigger("click");
     expect(shortcuts.effectiveChord("format.bold")).toBe("Mod-b");
 
-    await wrapper.find("button[title='Reset all shortcuts']").trigger("click");
+    await wrapper.find("button[title='Reset All']").trigger("click");
     expect(shortcuts.effectiveChord("format.italic")).toBe("Mod-i");
   });
 
@@ -130,5 +132,26 @@ describe("SettingsPanel", () => {
     expect(shortcuts.effectiveChord("format.bold")).toBe("Mod-b");
     expect(wrapper.text()).toContain("This shortcut is reserved by the system and cannot be reassigned");
     expect(ui.settingsShortcutRecording).toBe(true);
+  });
+
+  it("shows a language selector and updates labels when the locale changes", async () => {
+    const { pinia, preferences, ui } = mountPanel();
+    await preferences.initialize();
+    ui.openSettings();
+
+    const wrapper = mount(SettingsPanel, {
+      global: {
+        plugins: [pinia],
+      },
+    });
+
+    expect(wrapper.text()).toContain("Preferences");
+    expect(wrapper.get("[data-testid='language-select']").exists()).toBe(true);
+
+    await preferences.setLanguagePreference("zh-CN");
+    await nextTick();
+
+    expect(wrapper.text()).toContain("偏好设置");
+    expect(wrapper.text()).toContain("跟随系统");
   });
 });

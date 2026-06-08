@@ -3,25 +3,52 @@
     <section class="settings-panel__dialog" aria-label="Preferences" role="dialog" aria-modal="true">
       <header class="settings-panel__header">
         <div>
-          <h2 class="settings-panel__title">Preferences</h2>
-          <p class="settings-panel__subtitle">Customize keyboard shortcuts for app and editor commands.</p>
+          <h2 class="settings-panel__title">{{ t("settings.title") }}</h2>
+          <p class="settings-panel__subtitle">{{ t("settings.subtitle") }}</p>
         </div>
         <div class="settings-panel__header-actions">
           <button
             class="settings-panel__secondary"
-            title="Reset all shortcuts"
+            :title="t('settings.resetAll')"
             type="button"
             @click="resetAll"
           >
-            Reset All
+            {{ t("settings.resetAll") }}
           </button>
-          <button class="settings-panel__close" type="button" aria-label="Close preferences" @click="ui.closeSettings()">
-            Close
+          <button
+            class="settings-panel__close"
+            type="button"
+            :aria-label="t('settings.close')"
+            @click="ui.closeSettings()"
+          >
+            {{ t("settings.close") }}
           </button>
         </div>
       </header>
 
       <div class="settings-panel__list">
+        <section class="settings-panel__category">
+          <h3 class="settings-panel__category-title">{{ t("settings.language.label") }}</h3>
+          <article class="settings-panel__row">
+            <div class="settings-panel__meta">
+              <h4 class="settings-panel__command">{{ t("settings.language.current") }}</h4>
+              <p class="settings-panel__details">{{ effectiveLocale }}</p>
+            </div>
+
+            <div class="settings-panel__actions">
+              <select
+                data-testid="language-select"
+                class="settings-panel__capture"
+                :value="preferences.languagePreference"
+                @change="onLanguageChange"
+              >
+                <option value="system">{{ t("settings.language.system") }}</option>
+                <option value="en">{{ t("settings.language.en") }}</option>
+                <option value="zh-CN">{{ t("settings.language.zhCN") }}</option>
+              </select>
+            </div>
+          </article>
+        </section>
         <section
           v-for="group in commandGroups"
           :key="group.category"
@@ -48,7 +75,7 @@
                 @click="startRecording(command.id)"
                 @keydown="captureChord(command.id, $event)"
               >
-                {{ recordingCommandId === command.id ? "Type shortcut…" : getDisplay(shortcuts.effectiveChord(command.id)) }}
+                {{ recordingCommandId === command.id ? t("settings.capture") : getDisplay(shortcuts.effectiveChord(command.id)) }}
               </button>
               <button
                 class="settings-panel__secondary"
@@ -63,11 +90,11 @@
         </section>
 
         <section v-if="disabledCommands.length" class="settings-panel__category settings-panel__category--disabled">
-          <h3 class="settings-panel__category-title">Unavailable commands</h3>
+          <h3 class="settings-panel__category-title">{{ t("settings.unavailable") }}</h3>
           <ul class="settings-panel__disabled-list">
             <li v-for="command in disabledCommands" :key="command.id" class="settings-panel__disabled-item">
               <span>{{ command.label }}</span>
-              <span class="settings-panel__disabled-note">Not currently available</span>
+              <span class="settings-panel__disabled-note">{{ t("settings.unavailableNote") }}</span>
             </li>
           </ul>
         </section>
@@ -79,14 +106,18 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { useI18n } from "@/composables/useI18n";
 import { chordToDisplay } from "@/lib/shortcuts/display";
 import { eventToChord } from "@/lib/shortcuts/bindings";
 import { isSystemReservedChord } from "@/lib/shortcuts/reserved";
+import { usePreferencesStore } from "@/stores/preferences";
 import { useShortcutsStore } from "@/stores/shortcuts";
 import { useUiStore } from "@/stores/ui";
 
 const ui = useUiStore();
+const preferences = usePreferencesStore();
 const shortcuts = useShortcutsStore();
+const { t, effectiveLocale } = useI18n();
 const recordingCommandId = ref<string | null>(null);
 const recordingHint = ref("");
 const platform = computed(() => (navigator.userAgent.includes("Mac") ? "darwin" : "win32"));
@@ -119,7 +150,7 @@ watch(
 );
 
 function getDisplay(chord: string | null) {
-  return chord ? chordToDisplay(chord, platform.value) : "Unassigned";
+  return chord ? chordToDisplay(chord, platform.value) : t("settings.unassigned");
 }
 
 function startRecording(commandId: string) {
@@ -133,6 +164,11 @@ function resetAll() {
   recordingCommandId.value = null;
   recordingHint.value = "";
   ui.stopSettingsShortcutRecording();
+}
+
+async function onLanguageChange(event: Event) {
+  const value = (event.target as HTMLSelectElement).value as "system" | "en" | "zh-CN";
+  await preferences.setLanguagePreference(value);
 }
 
 function captureChord(commandId: string, event: KeyboardEvent) {
@@ -152,12 +188,12 @@ function captureChord(commandId: string, event: KeyboardEvent) {
 
   const chord = eventToChord(event);
   if (!chord) {
-    recordingHint.value = "Use a shortcut with modifier keys.";
+    recordingHint.value = t("settings.hint.modifier");
     return;
   }
 
   if (isSystemReservedChord(chord)) {
-    recordingHint.value = "This shortcut is reserved by the system and cannot be reassigned.";
+    recordingHint.value = t("settings.hint.reserved");
     return;
   }
 
