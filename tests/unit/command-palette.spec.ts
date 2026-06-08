@@ -1,6 +1,7 @@
 import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import CommandPalette from "@/components/CommandPalette.vue";
+import { usePreferencesStore } from "@/stores/preferences";
 import { useUiStore } from "@/stores/ui";
 
 describe("CommandPalette", () => {
@@ -8,6 +9,7 @@ describe("CommandPalette", () => {
     const pinia = createPinia();
     setActivePinia(pinia);
     const ui = useUiStore();
+    const preferences = usePreferencesStore();
     ui.openCommandPalette();
 
     const wrapper = mount(CommandPalette, {
@@ -17,7 +19,7 @@ describe("CommandPalette", () => {
       },
     });
 
-    return { wrapper, ui };
+    return { wrapper, ui, preferences };
   }
 
   it("closes on Escape from the palette container", async () => {
@@ -39,5 +41,15 @@ describe("CommandPalette", () => {
   it("shows AI rewrite document action", () => {
     const { wrapper } = mountPalette();
     expect(wrapper.text()).toContain("AI Rewrite Document");
+  });
+
+  it("localizes palette copy and command labels", async () => {
+    const { wrapper, preferences } = mountPalette();
+    await preferences.setLanguagePreference("zh-CN");
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find(".command-palette__panel").attributes("aria-label")).toBe("命令面板");
+    expect(wrapper.find(".command-palette__input").attributes("placeholder")).toBe("输入命令…");
+    expect(wrapper.text()).toContain("AI 改写全文");
   });
 });

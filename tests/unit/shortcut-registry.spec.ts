@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { COMMAND_CATALOG, getDefaultChordMap } from "@/lib/shortcuts/registry";
+import { COMMAND_CATALOG, getCommandCatalog, getDefaultChordMap } from "@/lib/shortcuts/registry";
 
 describe("COMMAND_CATALOG", () => {
   it("uses Typora inline code chord", () => {
@@ -36,5 +36,11 @@ describe("COMMAND_CATALOG", () => {
   it("maps replace to Mod-Alt-f to avoid conflicting with macOS hide", () => {
     const replace = COMMAND_CATALOG.find((command) => command.id === "edit.replace");
     expect(replace?.defaultChord).toBe("Mod-Alt-f");
+  });
+
+  it("resolves labels by locale without changing ids", () => {
+    const zh = getCommandCatalog("zh-CN");
+    const open = zh.find((command) => command.id === "file.open");
+    expect(open?.label).toBe("打开文件");
   });
 });

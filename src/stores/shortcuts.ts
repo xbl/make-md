@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
-import { COMMAND_CATALOG, getDefaultChordMap } from "@/lib/shortcuts/registry";
+import { getCommandCatalog, getDefaultChordMap } from "@/lib/shortcuts/registry";
 import type { ShortcutOverrides } from "@/lib/shortcuts/types";
+import { usePreferencesStore } from "@/stores/preferences";
 
 const STORAGE_KEY = "make-md:shortcuts";
 
@@ -29,14 +30,17 @@ export const useShortcutsStore = defineStore("shortcuts", {
     overrides: loadOverrides(),
   }),
   getters: {
-    catalog: () => COMMAND_CATALOG,
+    catalog: () => {
+      const preferences = usePreferencesStore();
+      return getCommandCatalog(preferences.effectiveLocale);
+    },
     effectiveChord(): (commandId: string) => string | null {
       return (commandId: string) => {
         if (commandId in this.overrides) {
           return this.overrides[commandId];
         }
 
-        const command = COMMAND_CATALOG.find((entry) => entry.id === commandId);
+        const command = this.catalog.find((entry) => entry.id === commandId);
         return command?.defaultChord ?? null;
       };
     },
@@ -59,7 +63,7 @@ export const useShortcutsStore = defineStore("shortcuts", {
           continue;
         }
         if (otherChord === chord) {
-          return { commandId: otherId, label: COMMAND_CATALOG.find((c) => c.id === otherId)?.label ?? otherId };
+          return { commandId: otherId, label: this.catalog.find((c) => c.id === otherId)?.label ?? otherId };
         }
       }
       return null;

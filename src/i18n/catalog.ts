@@ -15,3 +15,7 @@ export const catalogs = {
 type CatalogShape = typeof en;
 
 export type MessageKey = keyof CatalogShape;
+
+export function translate(locale: SupportedLocale, key: MessageKey) {
+  return catalogs[locale][key] ?? catalogs[DEFAULT_LOCALE][key] ?? key;
+}

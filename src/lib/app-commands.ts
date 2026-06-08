@@ -1,5 +1,6 @@
 import { chordToDisplay } from "@/lib/shortcuts/display";
-import { COMMAND_CATALOG, createCommandHandlers, type CommandHandlerDeps } from "@/lib/shortcuts/registry";
+import type { SupportedLocale } from "@/i18n/catalog";
+import { createCommandHandlers, getCommandCatalog, type CommandHandlerDeps } from "@/lib/shortcuts/registry";
 
 export type AppCommandRuntime = ReturnType<typeof createAppCommandRuntime>;
 
@@ -37,8 +38,8 @@ export function createAppCommandRuntime(deps: CommandHandlerDeps) {
     return deps.canRunEditorCommand?.(commandId) ?? false;
   }
 
-  function getPaletteCommands(effectiveChord: (commandId: string) => string | null): PaletteCommand[] {
-    return COMMAND_CATALOG
+  function getPaletteCommands(locale: SupportedLocale, effectiveChord: (commandId: string) => string | null): PaletteCommand[] {
+    return getCommandCatalog(locale)
       .filter((command) => command.enabled && command.id in handlers)
       .map((command) => {
         const chord = effectiveChord(command.id);

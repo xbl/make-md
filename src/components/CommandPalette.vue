@@ -5,13 +5,13 @@
     @click.self="ui.closeCommandPalette()"
     @keydown.capture="handleContainerKeydown"
   >
-    <div class="command-palette__panel" role="dialog" aria-label="Command palette" tabindex="-1">
+    <div class="command-palette__panel" role="dialog" :aria-label="t('commandPalette.title')" tabindex="-1">
       <input
         ref="inputRef"
         v-model="query"
         class="command-palette__input"
         type="text"
-        placeholder="Type a command…"
+        :placeholder="t('commandPalette.placeholder')"
         @keydown="handleKeydown"
       />
       <ul class="command-palette__list">
@@ -27,7 +27,7 @@
             <span v-if="command.shortcut" class="command-palette__shortcut">{{ command.shortcut }}</span>
           </button>
         </li>
-        <li v-if="filtered.length === 0" class="command-palette__empty">No matching commands</li>
+        <li v-if="filtered.length === 0" class="command-palette__empty">{{ t("commandPalette.empty") }}</li>
       </ul>
     </div>
   </div>
@@ -35,12 +35,14 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
+import { useI18n } from "@/composables/useI18n";
 import { createAppCommandRuntime, type PaletteCommand } from "@/lib/app-commands";
 import { pickFolder } from "@/lib/file-service";
 import { useAiStore } from "@/stores/ai";
 import { useDocumentsStore } from "@/stores/documents";
 import { useEditorStore } from "@/stores/editor";
 import { useFolderWorkspaceStore } from "@/stores/folder-workspace";
+import { usePreferencesStore } from "@/stores/preferences";
 import { useShortcutsStore } from "@/stores/shortcuts";
 import { useUiStore } from "@/stores/ui";
 
@@ -49,7 +51,9 @@ const ai = useAiStore();
 const documents = useDocumentsStore();
 const editorStore = useEditorStore();
 const folderWorkspace = useFolderWorkspaceStore();
+const preferences = usePreferencesStore();
 const shortcuts = useShortcutsStore();
+const { t } = useI18n();
 const query = ref("");
 const activeIndex = ref(0);
 const inputRef = ref<HTMLInputElement | null>(null);
@@ -106,7 +110,7 @@ const runtime = createAppCommandRuntime({
 });
 
 const commands = computed<PaletteCommand[]>(() =>
-  runtime.getPaletteCommands((commandId) => shortcuts.effectiveChord(commandId)),
+  runtime.getPaletteCommands(preferences.effectiveLocale, (commandId) => shortcuts.effectiveChord(commandId)),
 );
 
 const filtered = computed(() => {
