@@ -37,6 +37,7 @@
 import { computed, nextTick, ref, watch } from "vue";
 import { createAppCommandRuntime, type PaletteCommand } from "@/lib/app-commands";
 import { pickFolder } from "@/lib/file-service";
+import { useAiStore } from "@/stores/ai";
 import { useDocumentsStore } from "@/stores/documents";
 import { useEditorStore } from "@/stores/editor";
 import { useFolderWorkspaceStore } from "@/stores/folder-workspace";
@@ -44,6 +45,7 @@ import { useShortcutsStore } from "@/stores/shortcuts";
 import { useUiStore } from "@/stores/ui";
 
 const ui = useUiStore();
+const ai = useAiStore();
 const documents = useDocumentsStore();
 const editorStore = useEditorStore();
 const folderWorkspace = useFolderWorkspaceStore();
@@ -80,6 +82,9 @@ const runtime = createAppCommandRuntime({
   toggleFocusMode: () => ui.toggleFocusMode(),
   toggleSourceMode: () => ui.toggleSourceMode(),
   openSettings: () => ui.openSettings(),
+  openAiSettings: () => ai.openSettings(),
+  openAiRewriteSelection: () => ai.startSelectionRewrite(),
+  openAiRewriteDocument: () => ai.startDocumentRewrite(),
   openCommandPalette: () => ui.openCommandPalette(),
   closeTab: () => (documents.activeSessionId ? documents.closeSession(documents.activeSessionId) : Promise.resolve(true)),
   canRunEditorCommand,

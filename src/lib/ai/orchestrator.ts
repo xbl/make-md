@@ -3,6 +3,8 @@ type AiRewriteSelectionInput = {
   selection: string;
   sectionMarkdown: string;
   fullMarkdown: string;
+  agentsContent?: string;
+  matchedSkills?: Array<{ body: string }>;
 };
 
 type AiProviderConfig = {
@@ -18,6 +20,16 @@ export function createAiOrchestrator(deps: {
   activeProvider: () => AiProviderConfig;
   startStream: (request: Record<string, unknown>) => Promise<StartStreamResult>;
 }) {
+  function buildSystemPrompt(input: AiRewriteSelectionInput) {
+    const sections = [
+      input.agentsContent?.trim(),
+      ...(input.matchedSkills ?? []).map((skill) => skill.body.trim()),
+      "You are a Markdown editing assistant. Output only the modified Markdown text. Preserve formatting.",
+    ].filter(Boolean);
+
+    return sections.join("\n\n");
+  }
+
   return {
     async rewriteSelection(input: AiRewriteSelectionInput) {
       const provider = deps.activeProvider();
@@ -30,8 +42,7 @@ export function createAiOrchestrator(deps: {
         messages: [
           {
             role: "system",
-            content:
-              "You are a Markdown editing assistant. Output only the modified Markdown text. Preserve formatting.",
+            content: buildSystemPrompt(input),
           },
           {
             role: "user",

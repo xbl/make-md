@@ -15,6 +15,7 @@ const ALWAYS_AVAILABLE_COMMANDS = new Set([
   "view.outline",
   "view.files",
   "view.aiSettings",
+  "view.aiRewriteDocument",
 ]);
 
 export function createAppCommandRuntime(deps: CommandHandlerDeps) {

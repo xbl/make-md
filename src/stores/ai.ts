@@ -19,6 +19,7 @@ export const useAiStore = defineStore("ai", {
     },
     isGenerating: false,
     preview: null as AiPreviewState | null,
+    toolbarMode: "selection" as "selection" | "document",
   }),
   actions: {
     openSettings() {
@@ -32,6 +33,12 @@ export const useAiStore = defineStore("ai", {
     },
     clearPreview() {
       this.preview = null;
+    },
+    startSelectionRewrite() {
+      this.toolbarMode = "selection";
+    },
+    startDocumentRewrite() {
+      this.toolbarMode = "document";
     },
   },
 });
