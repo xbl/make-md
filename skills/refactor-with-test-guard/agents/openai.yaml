@@ -1,0 +1,7 @@
+interface:
+  display_name: "Refactor With Test Guard"
+  short_description: "Require test coverage before and after refactors"
+  default_prompt: "Use $refactor-with-test-guard before refactoring an existing feature: confirm behavior coverage first, add missing tests before structural edits, then rerun the relevant tests after the refactor."
+
+policy:
+  allow_implicit_invocation: true

@@ -1,11 +1,13 @@
 import { defineStore } from "pinia";
 import { createDocumentSession } from "@/lib/document-session";
 import {
+  clearRecentFiles,
   loadRecentFiles,
   pickMarkdownFile,
   pickSaveHtmlFile,
   pickSaveMarkdownFile,
   readMarkdownFile,
+  removeRecentFile,
   saveRecentFile,
   writeMarkdownFile,
   writeTextFile,
@@ -74,6 +76,12 @@ export const useDocumentsStore = defineStore("documents", {
     },
     async loadRecent() {
       this.recentFiles = await loadRecentFiles();
+    },
+    async removeRecent(path: string) {
+      this.recentFiles = await removeRecentFile(path);
+    },
+    async clearRecent() {
+      this.recentFiles = await clearRecentFiles();
     },
     async openFile(path: string) {
       const existing = this.sessions.find((session) => session.path === path || session.id === path);
@@ -157,6 +165,17 @@ export const useDocumentsStore = defineStore("documents", {
         this.getAutosaveQueue().schedule(content);
       }
     },
+    async refreshSessionFromDisk(path: string) {
+      const session = this.sessions.find((item) => item.path === path || item.id === path);
+      if (!session || session.isDirty()) {
+        return false;
+      }
+
+      const { content } = await readMarkdownFile(path);
+      session.markSaved(content);
+      this.sessions = [...this.sessions];
+      return true;
+    },
     async flushAutosave() {
       await this.getAutosaveQueue().flush();
     },
@@ -191,6 +210,29 @@ export const useDocumentsStore = defineStore("documents", {
       this.sessions = this.sessions.filter((item) => item.id !== id);
       if (this.activeSessionId === id) {
         this.activeSessionId = this.sessions[this.sessions.length - 1]?.id ?? "";
+      }
+      return true;
+    },
+    async closeOtherSessions(targetId: string) {
+      const target = this.sessions.find((session) => session.id === targetId);
+      if (!target) {
+        return false;
+      }
+
+      this.activeSessionId = targetId;
+      const otherIds = this.sessions.filter((session) => session.id !== targetId).map((session) => session.id);
+      for (const id of otherIds) {
+        const closed = await this.closeSession(id);
+        if (!closed) {
+          if (this.sessions.some((session) => session.id === targetId)) {
+            this.activeSessionId = targetId;
+          }
+          return false;
+        }
+      }
+
+      if (this.sessions.some((session) => session.id === targetId)) {
+        this.activeSessionId = targetId;
       }
       return true;
     },

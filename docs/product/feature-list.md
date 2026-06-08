@@ -21,9 +21,9 @@
 | 无序列表命令 | `partial` | 文档模型与解析已支持，但菜单/快捷键对应的运行时命令还未完全接通。 |
 | 标题升级/降级 | `partial` | 命令 ID 和菜单项已存在，但实际行为还未补完。 |
 | 代码块语言选择 | `complete` | 输入代码块时可选择语言，已有代码块也可更新语言。 |
-| 围栏代码语法高亮 | `partial` | 高亮覆盖层与显示修复已存在，但整体行为仍在继续对齐和验证。 |
+| 围栏代码语法高亮 | `complete` | 已支持带语言标记的代码块高亮，并修复了真实文件打开后 `ts`、`json` 等代码块高亮层被编辑器视图回收的问题。 |
 | 行内代码启发式着色 | `complete` | 编辑器内已支持行内代码 token 着色。 |
-| Mermaid 图表块 | `complete` | 已支持 Mermaid 块渲染。 |
+| Mermaid 图表块 | `complete` | 已支持 Mermaid 块渲染，并修复 Mermaid 预览 ready 后未正确替换源码块的显示问题。 |
 | 表格文档模型与解析 | `complete` | 已支持表格解析与渲染。 |
 | 插入表格命令 | `not_started` | `paragraph.table` 在共享命令清单中仍为禁用状态。 |
 | 数学公式块 | `not_started` | 已在下一阶段计划中列出，但尚未实现。 |
@@ -51,8 +51,9 @@
 | 文件新建 / 重命名 / 删除 / 移动 | `complete` | Phase 2 工作区文件操作已交付。 |
 | 文件监听与刷新 | `complete` | Tauri 侧已存在工作区监听能力。 |
 | 多标签编辑 | `complete` | 已有标签栏和多文档会话。 |
-| 最近文件 | `complete` | 已有 Rust 侧最近文件处理。 |
+| 最近文件 | `complete` | 已支持持久化、右键菜单移除/清空，以及在无工作区时从侧边栏 Recent 列表继续打开或在 Finder 中定位文件。 |
 | 未保存变更提示 | `complete` | 已实现脏文档提示流程。 |
+| 复制选区为 Markdown | `complete` | 编辑器复制已改为输出 Markdown 文本，支持全选复制后粘贴保留 Markdown 结构。 |
 
 ## 大纲与导航
 
@@ -127,6 +128,12 @@
 | 选区 AI 改写 | `partial` | 已有 preset、context、orchestrator、toolbar 和 preview state 基础结构；实际流式替换与接受/拒绝仍需继续打磨。 |
 | 全文 AI 改写 | `partial` | 已有全文模式状态与命令入口，截断逻辑已实现；完整预览和应用流程仍待补齐。 |
 | AGENTS.md / Skill 自动注入 | `partial` | 已有 AGENTS merge、skill 解析与匹配基础能力，并已接入 orchestrator 的 system prompt 组装。 |
+
+## 项目工作流与 Skill
+
+| 功能 | 状态 | 说明 |
+|---|---|---|
+| 项目级 Refactor Skill | `complete` | 已新增 `skills/refactor-with-test-guard`，要求在重构前先检查现有测试覆盖，不足时先补测试，重构后再运行相关测试确认行为未破坏。 |
 
 ## 维护说明
 

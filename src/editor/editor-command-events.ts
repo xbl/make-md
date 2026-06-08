@@ -143,6 +143,64 @@ function promptCodeBlockLanguage(currentLanguage: string): string | null {
   return value.trim();
 }
 
+function promptPositiveInteger(label: string, fallback: string): number | null {
+  const value = window.prompt(label, fallback);
+  if (value === null) {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!/^[1-9]\d*$/.test(trimmed)) {
+    window.alert("Table size must be a positive integer");
+    return null;
+  }
+
+  return Number(trimmed);
+}
+
+function createEmptyCell(cellType: typeof markdownSchema.nodes.table_cell | typeof markdownSchema.nodes.table_header) {
+  return cellType.createAndFill(null, markdownSchema.nodes.paragraph.createAndFill())!;
+}
+
+function buildTableNode(columns: number, rows: number) {
+  const headerRow = markdownSchema.nodes.table_row.create(
+    null,
+    Array.from({ length: columns }, () => createEmptyCell(markdownSchema.nodes.table_header)),
+  );
+  const bodyRows = Array.from({ length: rows }, () =>
+    markdownSchema.nodes.table_row.create(
+      null,
+      Array.from({ length: columns }, () => createEmptyCell(markdownSchema.nodes.table_cell)),
+    ),
+  );
+  return markdownSchema.nodes.table.create(null, [headerRow, ...bodyRows]);
+}
+
+function applyTableCommand(view: import("prosemirror-view").EditorView): boolean {
+  const columns = promptPositiveInteger("Table column count", "3");
+  if (columns === null) {
+    return false;
+  }
+
+  const rows = promptPositiveInteger("Table row count", "2");
+  if (rows === null) {
+    return false;
+  }
+
+  const { from, to } = view.state.selection;
+  const table = buildTableNode(columns, rows);
+  let tr = view.state.tr;
+  if (from !== to) {
+    tr = tr.deleteRange(from, to);
+  }
+  const { $from } = tr.selection;
+  const insertPos = $from.depth > 0 ? $from.after(1) : tr.selection.to;
+  tr = tr.insert(insertPos, table);
+  view.dispatch(tr.scrollIntoView());
+  view.focus();
+  return true;
+}
+
 function applyCodeFenceCommand(view: import("prosemirror-view").EditorView): boolean {
   const active = activeCodeBlock(view);
   const currentLanguage = active?.node.attrs.params ?? "";
@@ -192,6 +250,11 @@ export function createEditorCommandEventsPlugin() {
         }
 
         if (applySelectionCommand(commandId, view)) {
+          return;
+        }
+
+        if (commandId === "paragraph.table") {
+          void applyTableCommand(view);
           return;
         }
 

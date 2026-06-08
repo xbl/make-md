@@ -37,6 +37,7 @@
   { "id": "view.outline", "label": "Outline", "category": "view", "enabled": true },
   { "id": "view.files", "label": "File Tree", "category": "view", "enabled": true },
   { "id": "view.focus", "label": "Focus Mode", "category": "view", "enabled": true },
+  { "id": "view.source", "label": "Toggle Source", "category": "view", "enabled": true },
   { "id": "view.commandPalette", "label": "Command Palette", "category": "view", "enabled": true },
   { "id": "export.html", "label": "Export HTML", "category": "export", "enabled": true },
   { "id": "export.pdf", "label": "Export PDF", "category": "export", "enabled": true }

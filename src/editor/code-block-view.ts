@@ -32,6 +32,15 @@ export function createCodeBlockNodeView(
 
   wrapper.appendChild(overlay);
   wrapper.appendChild(pre);
+
+  function isOverlayMutationTarget(target: Node) {
+    return target instanceof Element && target.closest(".hljs-overlay");
+  }
+
+  function isWrapperMutationTarget(target: Node) {
+    return target === wrapper;
+  }
+
   function languageLabel(language: string) {
     return language || "plain text";
   }
@@ -109,7 +118,9 @@ export function createCodeBlockNodeView(
         return false;
       }
       const lang = updatedNode.attrs.params ?? "";
-      syncLanguage(lang);
+      if ((wrapper.dataset.language ?? "") !== lang.trim()) {
+        syncLanguage(lang);
+      }
       return true;
     },
     stopEvent(event) {
@@ -120,7 +131,11 @@ export function createCodeBlockNodeView(
       return controls.contains(target);
     },
     ignoreMutation(mutation) {
-      return controls.contains(mutation.target);
+      return (
+        controls.contains(mutation.target) ||
+        isOverlayMutationTarget(mutation.target) ||
+        isWrapperMutationTarget(mutation.target)
+      );
     },
   };
 }

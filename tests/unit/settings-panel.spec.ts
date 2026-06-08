@@ -111,4 +111,24 @@ describe("SettingsPanel", () => {
     expect(ui.settingsShortcutRecording).toBe(false);
     expect(wrapper.find("[data-testid='settings-panel']").exists()).toBe(false);
   });
+
+  it("rejects system reserved shortcuts and keeps the existing binding", async () => {
+    const { pinia, ui, shortcuts } = mountPanel();
+    ui.openSettings();
+
+    const wrapper = mount(SettingsPanel, {
+      global: {
+        plugins: [pinia],
+      },
+    });
+
+    const recordButton = wrapper.find("[data-command-id='format.bold'] .settings-panel__capture");
+    await recordButton.trigger("click");
+    await recordButton.trigger("keydown", { key: "c", metaKey: true });
+    await nextTick();
+
+    expect(shortcuts.effectiveChord("format.bold")).toBe("Mod-b");
+    expect(wrapper.text()).toContain("This shortcut is reserved by the system and cannot be reassigned");
+    expect(ui.settingsShortcutRecording).toBe(true);
+  });
 });

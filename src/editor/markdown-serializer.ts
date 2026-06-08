@@ -10,6 +10,9 @@ function eachChild(node: PMNode, mapper: (child: PMNode) => string) {
 }
 
 function serializeInline(node: PMNode): string {
+  if (node.type.name === "hard_break") {
+    return "<br>";
+  }
   if (node.isText) {
     let text = node.text ?? "";
     const { marks } = markdownSchema;

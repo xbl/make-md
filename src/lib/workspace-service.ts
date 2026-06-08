@@ -25,6 +25,30 @@ export async function watchFolder(root: string): Promise<void> {
 let refreshTimer: ReturnType<typeof setTimeout> | null = null;
 let unlistenChanged: UnlistenFn | null = null;
 
+export async function onWorkspaceChanged(handler: () => void | Promise<void>): Promise<() => void> {
+  if (!isTauri()) {
+    if (typeof window === "undefined") {
+      return () => {};
+    }
+
+    const listener = () => {
+      void handler();
+    };
+    window.addEventListener("make-md:e2e-workspace-changed", listener);
+    return () => {
+      window.removeEventListener("make-md:e2e-workspace-changed", listener);
+    };
+  }
+
+  const unlisten = await listen("workspace://changed", () => {
+    void handler();
+  });
+
+  return () => {
+    unlisten();
+  };
+}
+
 export async function startFolderWatch(root: string, refresh: () => Promise<void>) {
   if (!isTauri()) {
     return;

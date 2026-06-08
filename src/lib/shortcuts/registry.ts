@@ -12,6 +12,7 @@ export type CommandHandlerDeps = {
   openReplace: () => void;
   toggleSidebar: () => void;
   toggleFocusMode: () => void;
+  toggleSourceMode: () => void;
   openSettings: () => void;
   openAiSettings: () => void;
   openAiRewriteSelection: () => void;
@@ -76,6 +77,7 @@ export const COMMAND_CATALOG: CommandDef[] = [
   def("view.outline", "Outline", "view", "view", "Mod-Control-1"),
   def("view.files", "File Tree", "view", "view", "Mod-Control-3"),
   def("view.focus", "Focus Mode", "view", "view", "F8"),
+  def("view.source", "Toggle Source", "view", "view", null),
   def("view.aiSettings", "AI Settings", "view", "app", null),
   def("view.aiRewriteSelection", "AI Rewrite Selection", "view", "editor", "Mod-Shift-a"),
   def("view.aiRewriteDocument", "AI Rewrite Document", "view", "app", null),
@@ -101,11 +103,21 @@ export function createCommandHandlers(deps: CommandHandlerDeps): Record<string, 
   };
 
   return {
-    "file.new": () => deps.createNew(),
-    "file.open": () => deps.openFile(),
-    "file.openFolder": () => deps.openFolder(),
-    "file.save": () => deps.save(),
-    "file.saveAs": () => deps.saveAs(),
+    "file.new": () => {
+      void deps.createNew();
+    },
+    "file.open": async () => {
+      await deps.openFile();
+    },
+    "file.openFolder": async () => {
+      await deps.openFolder();
+    },
+    "file.save": async () => {
+      await deps.save();
+    },
+    "file.saveAs": async () => {
+      await deps.saveAs();
+    },
     "file.close": () => deps.closeTab(),
     "app.preferences": () => deps.openSettings(),
 
@@ -143,13 +155,18 @@ export function createCommandHandlers(deps: CommandHandlerDeps): Record<string, 
     "view.outline": editor("view.outline"),
     "view.files": editor("view.files"),
     "view.focus": () => deps.toggleFocusMode(),
+    "view.source": () => deps.toggleSourceMode(),
     "view.aiSettings": () => deps.openAiSettings(),
     "view.aiRewriteSelection": () => deps.openAiRewriteSelection(),
     "view.aiRewriteDocument": () => deps.openAiRewriteDocument(),
     "view.commandPalette": () => deps.openCommandPalette(),
 
-    "export.html": () => deps.exportHtml(),
-    "export.pdf": () => deps.exportPdf(),
+    "export.html": async () => {
+      await deps.exportHtml();
+    },
+    "export.pdf": async () => {
+      await deps.exportPdf();
+    },
   };
 }
 

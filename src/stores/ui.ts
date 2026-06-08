@@ -18,6 +18,7 @@ export const useUiStore = defineStore("ui", {
     settingsShortcutRecording: false,
     sidebarCollapsed: false,
     focusMode: false,
+    sourceMode: false,
     findReplaceOpen: false,
     findReplaceMode: "find" as "find" | "replace",
     theme: loadTheme(),
@@ -56,6 +57,9 @@ export const useUiStore = defineStore("ui", {
     },
     toggleFocusMode() {
       this.focusMode = !this.focusMode;
+    },
+    toggleSourceMode() {
+      this.sourceMode = !this.sourceMode;
     },
     toggleTheme() {
       this.theme = this.theme === "dark" ? "light" : "dark";

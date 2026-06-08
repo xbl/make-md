@@ -56,14 +56,28 @@ function tokenToNodes(token: InlineToken): PMNode[] {
   return [];
 }
 
-export function parseInline(text: string): Fragment {
+function parseInlineSegment(text: string): PMNode[] {
   const children: PMNode[] = [];
   for (const token of tokenizeInlineMarkdown(text)) {
     children.push(...tokenToNodes(token));
   }
+  return children;
+}
+
+export function parseInline(text: string): Fragment {
+  const children: PMNode[] = [];
+  const segments = text.split(/<br\s*\/?>/i);
+  segments.forEach((segment, index) => {
+    children.push(...parseInlineSegment(segment));
+    if (index < segments.length - 1) {
+      children.push(markdownSchema.nodes.hard_break.create());
+    }
+  });
+
   if (children.length === 0) {
     return markdownSchema.nodes.paragraph.createAndFill(null)!.content;
   }
+
   return markdownSchema.nodes.paragraph.createAndFill(null, children)!.content;
 }
 

@@ -17,18 +17,24 @@ describe("createShortcutDispatcher", () => {
     expect(exportHtml).toHaveBeenCalled();
   });
 
-  it("runs AI rewrite selection on Mod-Shift-a when editor is focused", async () => {
-    const rewriteSelection = vi.fn();
+  it("does not intercept system reserved shortcuts like copy, paste, undo, redo, or quit", async () => {
+    const copyHandler = vi.fn();
     const dispatcher = createShortcutDispatcher({
-      handlers: { "view.aiRewriteSelection": rewriteSelection },
+      handlers: {
+        "format.bold": copyHandler,
+      },
       getContext: () => ({ editorFocused: true, hasSelection: true, inInlineMark: false }),
-      getChordMap: () => ({ "view.aiRewriteSelection": "Mod-Shift-a" }),
+      getChordMap: () => ({
+        "format.bold": "Mod-c",
+      }),
       isEditorFocused: () => true,
     });
 
-    const event = new KeyboardEvent("keydown", { key: "A", metaKey: true, shiftKey: true, bubbles: true });
+    const event = new KeyboardEvent("keydown", { key: "c", metaKey: true, bubbles: true, cancelable: true });
     const handled = await dispatcher.handleKeydown(event);
-    expect(handled).toBe(true);
-    expect(rewriteSelection).toHaveBeenCalled();
+
+    expect(handled).toBe(false);
+    expect(event.defaultPrevented).toBe(false);
+    expect(copyHandler).not.toHaveBeenCalled();
   });
 });

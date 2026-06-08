@@ -38,22 +38,25 @@
       />
     </ul>
 
-    <div
-      v-if="menu.open"
-      class="file-tree__menu"
-      :style="{ top: `${menu.y}px`, left: `${menu.x}px` }"
-      @click.stop
-    >
-      <button v-if="menu.kind === 'folder'" type="button" @click="createFile">New File</button>
-      <button v-if="menu.kind === 'file'" type="button" @click="renameFile">Rename</button>
-      <button v-if="menu.kind === 'file'" type="button" @click="deleteFile">Delete</button>
-      <button type="button" @click="revealFile">Reveal in Finder</button>
-    </div>
+    <ContextMenu
+      :open="menu.state.open"
+      :x="menu.state.x"
+      :y="menu.state.y"
+      :items="menuItems"
+      @close="menu.close"
+      @select="onMenuSelect"
+    />
   </li>
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, reactive } from "vue";
+import { computed } from "vue";
+import ContextMenu from "@/components/ContextMenu.vue";
+import {
+  createContextMenuController,
+  type ContextMenuActionItem,
+  type ContextMenuItem,
+} from "@/lib/context-menu";
 import type { TreeNode } from "@/lib/workspace-service";
 import {
   createWorkspaceFile,
@@ -77,18 +80,22 @@ const emit = defineEmits<{
 const folderWorkspace = useFolderWorkspaceStore();
 const documents = useDocumentsStore();
 
-const menu = reactive({
-  open: false,
-  x: 0,
-  y: 0,
-  kind: "file" as "file" | "folder",
-});
+const menu = createContextMenuController();
 
 const expanded = computed(() => folderWorkspace.isExpanded(props.node.path));
-
-function closeMenu() {
-  menu.open = false;
-}
+const menuItems = computed<ContextMenuItem[]>(() =>
+  props.node.kind === "folder"
+    ? [
+        { type: "action", id: "new-file", label: "New File" },
+        { type: "action", id: "reveal", label: "Reveal in Finder" },
+      ]
+    : [
+        { type: "action", id: "open", label: "Open" },
+        { type: "action", id: "rename", label: "Rename" },
+        { type: "action", id: "delete", label: "Delete" },
+        { type: "action", id: "reveal", label: "Reveal in Finder" },
+      ],
+);
 
 function toggle() {
   folderWorkspace.toggleExpanded(props.node.path);
@@ -101,14 +108,39 @@ function openFile() {
 }
 
 function openMenu(event: MouseEvent, kind: "file" | "folder") {
-  menu.open = true;
-  menu.x = event.clientX;
-  menu.y = event.clientY;
-  menu.kind = kind;
+  folderWorkspace.setSelectedPath(props.node.path);
+  menu.openAt(event.clientX, event.clientY);
+}
+
+function onMenuSelect(item: ContextMenuActionItem) {
+  if (props.node.kind === "folder" && item.id === "new-file") {
+    void createFile();
+    return;
+  }
+
+  if (props.node.kind === "file" && item.id === "open") {
+    openFile();
+    menu.close("programmatic");
+    return;
+  }
+
+  if (props.node.kind === "file" && item.id === "rename") {
+    void renameFile();
+    return;
+  }
+
+  if (props.node.kind === "file" && item.id === "delete") {
+    void deleteFile();
+    return;
+  }
+
+  if (item.id === "reveal") {
+    void revealFile();
+  }
 }
 
 async function createFile() {
-  closeMenu();
+  menu.close("programmatic");
   const name = window.prompt("New file name", "Untitled");
   if (!name?.trim()) {
     return;
@@ -123,7 +155,7 @@ async function createFile() {
 }
 
 async function renameFile() {
-  closeMenu();
+  menu.close("programmatic");
   const current = props.node.name.replace(/\.(md|markdown)$/i, "");
   const name = window.prompt("Rename file", current);
   if (!name?.trim()) {
@@ -143,7 +175,7 @@ async function renameFile() {
 }
 
 async function deleteFile() {
-  closeMenu();
+  menu.close("programmatic");
   if (!window.confirm(`Delete ${props.node.name}?`)) {
     return;
   }
@@ -160,7 +192,7 @@ async function deleteFile() {
 }
 
 async function revealFile() {
-  closeMenu();
+  menu.close("programmatic");
   try {
     await revealInFinder(props.node.path);
   } catch (error) {
@@ -198,7 +230,4 @@ async function onDrop(event: DragEvent) {
     window.alert(String(error));
   }
 }
-
-onMounted(() => window.addEventListener("click", closeMenu));
-onBeforeUnmount(() => window.removeEventListener("click", closeMenu));
 </script>

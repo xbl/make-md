@@ -1,6 +1,7 @@
 import { matchesChord, eventToChord } from "@/lib/shortcuts/bindings";
 import { resolveChordCommand, resolveModECommand } from "@/lib/shortcuts/context";
 import { COMMAND_CATALOG } from "@/lib/shortcuts/registry";
+import { isSystemReservedChord } from "@/lib/shortcuts/reserved";
 import type { ShortcutContext } from "@/lib/shortcuts/types";
 
 export type ShortcutDispatcherOptions = {
@@ -47,6 +48,10 @@ export function createShortcutDispatcher(options: ShortcutDispatcherOptions) {
       event.preventDefault();
       await run(resolveModECommand(getContext()));
       return true;
+    }
+
+    if (isSystemReservedChord(chord)) {
+      return false;
     }
 
     const commandId = resolveChordCommand(chord, getContext(), getChordMap());

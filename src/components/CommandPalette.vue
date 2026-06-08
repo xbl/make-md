@@ -80,6 +80,7 @@ const runtime = createAppCommandRuntime({
   openReplace: () => ui.openFindReplace("replace"),
   toggleSidebar: () => ui.toggleSidebar(),
   toggleFocusMode: () => ui.toggleFocusMode(),
+  toggleSourceMode: () => ui.toggleSourceMode(),
   openSettings: () => ui.openSettings(),
   openAiSettings: () => ai.openSettings(),
   openAiRewriteSelection: () => ai.startSelectionRewrite(),

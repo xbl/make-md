@@ -27,14 +27,15 @@ export const useFolderWorkspaceStore = defineStore("folder-workspace", {
         this.expandedPaths = [...this.expandedPaths, path];
       }
     },
-    findNode(path: string, node: TreeNode | null = this.tree): TreeNode | null {
-      if (!node) {
+    findNode(path: string, node?: TreeNode | null): TreeNode | null {
+      const currentNode = node ?? this.tree;
+      if (!currentNode) {
         return null;
       }
-      if (node.path === path) {
-        return node;
+      if (currentNode.path === path) {
+        return currentNode;
       }
-      for (const child of node.children) {
+      for (const child of currentNode.children) {
         const found = this.findNode(path, child);
         if (found) {
           return found;

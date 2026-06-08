@@ -23,6 +23,8 @@ fn main() {
             fs::write_markdown_file,
             recent::load_recent_files,
             recent::save_recent_file,
+            recent::remove_recent_file,
+            recent::clear_recent_files,
             recovery::save_recovery_snapshot,
             recovery::load_recovery_snapshot,
             recovery::clear_recovery_snapshot,

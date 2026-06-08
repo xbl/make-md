@@ -1,1 +1,9 @@
-export default [];
+export default [
+  {
+    ignores: [
+      "src-tauri/target/**",
+      "dist/**",
+      "coverage/**",
+    ],
+  },
+];

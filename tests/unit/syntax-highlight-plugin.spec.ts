@@ -6,6 +6,17 @@ import { markdownSchema } from "@/editor/schema";
 import { createCodeBlockNodeView } from "@/editor/code-block-view";
 import { createSyntaxHighlightPlugin } from "@/editor/syntax-highlight/plugin";
 
+function typeInto(view: EditorView, text: string) {
+  for (const char of text) {
+    const from = view.state.selection.from;
+    const to = view.state.selection.to;
+    const handled = view.someProp("handleTextInput", (handler) => handler(view, from, to, char));
+    if (!handled) {
+      view.dispatch(view.state.tr.insertText(char, from, to));
+    }
+  }
+}
+
 describe("collectCodeBlocksForHighlight", () => {
   it("skips mermaid blocks", () => {
     const doc = markdownSchema.node("doc", null, [
@@ -17,15 +28,16 @@ describe("collectCodeBlocksForHighlight", () => {
     expect(blocks[0].language).toBe("javascript");
   });
 
-  it("skips blocks without an explicit language", () => {
+  it("collects non-mermaid blocks without an explicit language for auto highlighting", () => {
     const doc = markdownSchema.node("doc", null, [
       markdownSchema.node("code_block", { params: "" }, [markdownSchema.text("const x = 1")]),
       markdownSchema.node("code_block", { params: "ts" }, [markdownSchema.text("const y = 2")]),
     ]);
     const blocks = collectCodeBlocksForHighlight(doc);
 
-    expect(blocks).toHaveLength(1);
-    expect(blocks[0].language).toBe("typescript");
+    expect(blocks).toHaveLength(2);
+    expect(blocks[0].language).toBe("plaintext");
+    expect(blocks[1].language).toBe("typescript");
   });
 });
 
@@ -123,6 +135,76 @@ describe("createCodeBlockNodeView", () => {
 
     expect(wrapper?.dataset.highlighted).toBe("true");
     expect(wrapper?.querySelector(".hljs-overlay code")?.className).toContain("hljs");
+
+    view.destroy();
+    document.body.removeChild(mount);
+  });
+
+  it("marks a language-empty block as highlighted once auto-detected overlay html is ready", () => {
+    vi.useFakeTimers();
+
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc: markdownSchema.node("doc", null, [
+        markdownSchema.node("code_block", { params: "" }, [markdownSchema.text("const x = 1;")]),
+      ]),
+      plugins: [createSyntaxHighlightPlugin()],
+    });
+
+    const view = new EditorView(mount, {
+      state,
+      nodeViews: {
+        code_block: createCodeBlockNodeView,
+      },
+    });
+
+    vi.advanceTimersByTime(200);
+
+    const wrapper = mount.querySelector(".code-block-wrapper") as HTMLElement | null;
+    expect(wrapper?.dataset.highlighted).toBe("true");
+    expect(wrapper?.querySelector(".hljs-overlay code")?.className).toContain("hljs");
+
+    view.destroy();
+    document.body.removeChild(mount);
+  });
+
+  it("refreshes highlighted overlay after typing into a json block", () => {
+    vi.useFakeTimers();
+
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc: markdownSchema.node("doc", null, [
+        markdownSchema.node("code_block", { params: "json" }, [markdownSchema.text("{\n}")]),
+      ]),
+      plugins: [createSyntaxHighlightPlugin()],
+    });
+
+    const view = new EditorView(mount, {
+      state,
+      nodeViews: {
+        code_block: createCodeBlockNodeView,
+      },
+    });
+
+    vi.advanceTimersByTime(200);
+
+    const wrapper = mount.querySelector(".code-block-wrapper") as HTMLElement | null;
+    const codeNode = wrapper?.querySelector("code");
+    expect(codeNode).not.toBeNull();
+    codeNode?.dispatchEvent(new FocusEvent("focus", { bubbles: true }));
+    typeInto(view, '\n  "a": 1');
+
+    vi.advanceTimersByTime(200);
+
+    const nextOverlay = wrapper?.querySelector(".hljs-overlay")?.innerHTML ?? "";
+    expect(wrapper?.dataset.highlighted).toBe("true");
+    expect(nextOverlay).toContain("language-json");
+    expect(nextOverlay).toContain("hljs");
+    expect(nextOverlay).toMatch(/hljs-(attr|number|string|punctuation)/);
 
     view.destroy();
     document.body.removeChild(mount);

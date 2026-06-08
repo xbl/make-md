@@ -5,12 +5,13 @@ A Typora-style desktop Markdown editor built with Tauri, Vue 3, and ProseMirror.
 ## Features
 
 - **Typora-style editing** — block shortcuts (`#`, `-`, `>`, `` ``` ``, `- [ ]`, `---`); type `**bold**`, `*italic*`, `` `code` ``, `~~strike~~`, `[text](url)` or use ⌘B / ⌘I / ⌘E / ⌘K; delimiter hints while cursor is inside a mark; paste inline Markdown
-- **Rich blocks** — task lists, tables, blockquotes, horizontal rules, **Mermaid** diagrams
+- **Rich blocks** — task lists, tables, blockquotes, horizontal rules, fenced code highlighting, **Mermaid** diagrams
 - **Folder workspace** — open a folder (⌘⇧O), browse `.md` files in a tree, create/rename/delete/move files
 - **Outline** — Files | Outline sidebar tabs; click headings to navigate
 - **Find & replace** — in-document search (⌘F) and replace (⌘⌥F)
 - **Images** — paste or drop images into `./assets/` next to the saved document
 - **File workflow** — open/save/save-as, multi-tab, recent files, unsaved prompts
+- **Markdown-friendly clipboard** — copy selections back out as Markdown, so select-all → copy → paste preserves Markdown structure
 - **Reliability** — autosave and crash recovery (Rust-backed snapshots)
 - **Productivity** — command palette (⌘⇧P), focus mode (F8), light/dark theme
 - **Export** — standalone HTML (⌘E) and PDF (⌘⇧E, macOS with Chrome/Chromium/Edge)
@@ -58,6 +59,11 @@ graph TD
 pnpm test
 pnpm test:e2e
 ```
+
+## Project Skills
+
+- Project-level skills live in `skills/`
+- `skills/refactor-with-test-guard` enforces: check existing coverage before refactoring, add missing tests first, then rerun tests after the refactor
 
 ## Build
 

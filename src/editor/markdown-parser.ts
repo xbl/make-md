@@ -46,6 +46,22 @@ function isBlockStart(line: string) {
   );
 }
 
+function joinParagraphLines(lines: string[]) {
+  if (lines.length === 0) {
+    return "";
+  }
+
+  let output = lines[0] ?? "";
+  for (let index = 1; index < lines.length; index += 1) {
+    if (output.endsWith("  ")) {
+      output = `${output.slice(0, -2)}<br>${lines[index]}`;
+    } else {
+      output = `${output} ${lines[index]}`;
+    }
+  }
+  return output;
+}
+
 function parseTable(lines: string[], startIndex: number): { node: PMNode; nextIndex: number } {
   const headerCells = splitTableRow(lines[startIndex]);
   const separatorIndex = startIndex + 1;
@@ -202,7 +218,7 @@ export function parseMarkdown(source: string): PMNode {
       paragraphLines.push(lines[index]);
       index += 1;
     }
-    blocks.push(paragraphFromMarkdown(paragraphLines.join(" ")));
+    blocks.push(paragraphFromMarkdown(joinParagraphLines(paragraphLines)));
   }
 
   if (blocks.length === 0) {
