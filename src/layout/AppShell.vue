@@ -28,10 +28,7 @@
         <p class="app-shell__drag-overlay-hint">Supports .md and .markdown</p>
       </div>
     </div>
-<<<<<<< HEAD
     <AiSettingsPanel />
-=======
->>>>>>> e2b306d (fix: stabilize ai integration verification)
   </div>
 </template>
 
@@ -45,6 +42,7 @@ import EditorPane from "@/components/EditorPane.vue";
 import StatusBar from "@/components/StatusBar.vue";
 import CommandPalette from "@/components/CommandPalette.vue";
 import SettingsPanel from "@/components/SettingsPanel.vue";
+import AiSettingsPanel from "@/components/AiSettingsPanel.vue";
 import { createAppCommandRuntime } from "@/lib/app-commands";
 import { useDocumentsStore } from "@/stores/documents";
 import { useEditorStore } from "@/stores/editor";
