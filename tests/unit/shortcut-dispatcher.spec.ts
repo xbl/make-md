@@ -37,4 +37,42 @@ describe("createShortcutDispatcher", () => {
     expect(event.defaultPrevented).toBe(false);
     expect(copyHandler).not.toHaveBeenCalled();
   });
+
+  it("does not intercept other macOS system shortcuts like minimize or quit even if bound", async () => {
+    const handler = vi.fn();
+    const dispatcher = createShortcutDispatcher({
+      handlers: {
+        "view.focus": handler,
+        "format.bold": handler,
+      },
+      getContext: () => ({ editorFocused: true, hasSelection: true, inInlineMark: false }),
+      getChordMap: () => ({
+        "view.focus": "Mod-m",
+        "format.bold": "Mod-q",
+      }),
+      isEditorFocused: () => true,
+    });
+
+    const minimizeEvent = new KeyboardEvent("keydown", {
+      key: "m",
+      metaKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    const quitEvent = new KeyboardEvent("keydown", {
+      key: "q",
+      metaKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+
+    const minimizeHandled = await dispatcher.handleKeydown(minimizeEvent);
+    const quitHandled = await dispatcher.handleKeydown(quitEvent);
+
+    expect(minimizeHandled).toBe(false);
+    expect(quitHandled).toBe(false);
+    expect(minimizeEvent.defaultPrevented).toBe(false);
+    expect(quitEvent.defaultPrevented).toBe(false);
+    expect(handler).not.toHaveBeenCalled();
+  });
 });
