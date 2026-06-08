@@ -14,6 +14,7 @@ export type PaletteCommand = {
 const ALWAYS_AVAILABLE_COMMANDS = new Set([
   "view.outline",
   "view.files",
+  "view.aiSettings",
 ]);
 
 export function createAppCommandRuntime(deps: CommandHandlerDeps) {

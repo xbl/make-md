@@ -28,6 +28,7 @@
         <p class="app-shell__drag-overlay-hint">Supports .md and .markdown</p>
       </div>
     </div>
+    <AiSettingsPanel />
   </div>
 </template>
 
@@ -41,7 +42,9 @@ import EditorPane from "@/components/EditorPane.vue";
 import StatusBar from "@/components/StatusBar.vue";
 import CommandPalette from "@/components/CommandPalette.vue";
 import SettingsPanel from "@/components/SettingsPanel.vue";
+import AiSettingsPanel from "@/components/AiSettingsPanel.vue";
 import { createAppCommandRuntime } from "@/lib/app-commands";
+import { useAiStore } from "@/stores/ai";
 import { useDocumentsStore } from "@/stores/documents";
 import { useEditorStore } from "@/stores/editor";
 import { useShortcutsStore } from "@/stores/shortcuts";
@@ -53,6 +56,7 @@ import { startMenuBridge } from "@/lib/menu-bridge";
 import { onWorkspaceChanged } from "@/lib/workspace-service";
 
 const documents = useDocumentsStore();
+const ai = useAiStore();
 const editorStore = useEditorStore();
 const shortcuts = useShortcutsStore();
 const ui = useUiStore();
@@ -270,6 +274,7 @@ onMounted(async () => {
     toggleFocusMode: () => ui.toggleFocusMode(),
     toggleSourceMode: () => ui.toggleSourceMode(),
     openSettings: () => ui.openSettings(),
+    openAiSettings: () => ai.openSettings(),
     openCommandPalette: () => ui.openCommandPalette(),
     closeTab: () => (activeSessionId.value ? documents.closeSession(activeSessionId.value) : Promise.resolve(true)),
     canRunEditorCommand,
