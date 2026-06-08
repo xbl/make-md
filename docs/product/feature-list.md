@@ -121,12 +121,18 @@
 | 设置接入原生菜单 | `complete` | 可从原生菜单打开偏好设置。 |
 | 国际化 | `not_started` | 已讨论为下一步方向，但当前尚无 i18n 基础设施。 |
 
+## 应用外观与品牌
+
+| 功能 | 状态 | 说明 |
+|---|---|---|
+| 应用图标资源 | `complete` | 已修复图标透明圆角像素的白色 matte 污染，重新生成 Tauri 平台图标后，外角透明区域不再在缩放或系统显示中出现白角伪影。 |
+
 ## AI 辅助编辑
 
 | 功能 | 状态 | 说明 |
 |---|---|---|
-| AI 配置与多 Provider 接入 | `partial` | 已有 AI 设置面板、Provider/Model 基础状态，以及 Rust 侧 provider、keychain 和流式命令壳子。 |
-| 选区 AI 改写 | `partial` | 已有 preset、context、orchestrator、toolbar 和 preview state 基础结构；AI 工具条现仅在富文本 Markdown 编辑器中选中文本时浮动出现，实际流式替换与接受/拒绝仍需继续打磨。 |
+| AI 配置与多 Provider 接入 | `partial` | 已有 AI 设置面板、Provider/Model 基础状态，以及 Rust 侧 provider、keychain 和流式命令壳子；现已支持按 provider 测试 API Key、通过后保存到系统 keychain，并在启动时回填已配置状态。 |
+| 选区 AI 改写 | `partial` | 已有 preset、context、orchestrator、toolbar 和 preview state 基础结构；AI 工具条现仅在富文本 Markdown 编辑器中选中文本且当前 provider 已配置有效 Key 时浮动出现，实际流式替换与接受/拒绝仍需继续打磨。 |
 | 全文 AI 改写 | `partial` | 已有全文模式状态与命令入口，截断逻辑已实现；完整预览和应用流程仍待补齐。 |
 | AGENTS.md / Skill 自动注入 | `partial` | 已有 AGENTS merge、skill 解析与匹配基础能力，并已接入 orchestrator 的 system prompt 组装。 |
 
