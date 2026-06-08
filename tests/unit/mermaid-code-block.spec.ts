@@ -58,6 +58,7 @@ describe("mermaid plugin", () => {
 
     const preview = mount.querySelector(".mermaid-preview");
     expect(preview).not.toBeNull();
+    expect(preview?.previousElementSibling?.tagName).toBe("PRE");
     expect(renderMock).toHaveBeenCalled();
     expect(preview?.querySelector('[data-testid="mermaid-svg"]')).not.toBeNull();
     expect(preview?.classList.contains("mermaid-preview--ready")).toBe(true);
