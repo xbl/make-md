@@ -22,4 +22,9 @@ describe("COMMAND_CATALOG", () => {
     expect(map["format.bold"]).toBe("Mod-b");
     expect(map["view.sidebar"]).toBe("Mod-Shift-l");
   });
+
+  it("registers AI rewrite selection shortcut", () => {
+    const aiRewrite = COMMAND_CATALOG.find((command) => command.id === "view.aiRewriteSelection");
+    expect(aiRewrite?.defaultChord).toBe("Mod-Shift-a");
+  });
 });

@@ -35,4 +35,9 @@ describe("CommandPalette", () => {
     expect(boldButton).toBeTruthy();
     expect(boldButton!.attributes("disabled")).toBeDefined();
   });
+
+  it("shows AI rewrite document action", () => {
+    const { wrapper } = mountPalette();
+    expect(wrapper.text()).toContain("AI Rewrite Document");
+  });
 });

@@ -1,6 +1,6 @@
 # 产品功能清单
 
-最后更新：2026-06-07
+最后更新：2026-06-08
 
 状态说明：
 - `complete`：已完成并可在产品中正常使用
@@ -118,6 +118,15 @@
 | 快捷键录制 UI | `complete` | 用户可录制与重置快捷键。 |
 | 设置接入原生菜单 | `complete` | 可从原生菜单打开偏好设置。 |
 | 国际化 | `not_started` | 已讨论为下一步方向，但当前尚无 i18n 基础设施。 |
+
+## AI 辅助编辑
+
+| 功能 | 状态 | 说明 |
+|---|---|---|
+| AI 配置与多 Provider 接入 | `partial` | 已有 AI 设置面板、Provider/Model 基础状态，以及 Rust 侧 provider、keychain 和流式命令壳子。 |
+| 选区 AI 改写 | `partial` | 已有 preset、context、orchestrator、toolbar 和 preview state 基础结构；实际流式替换与接受/拒绝仍需继续打磨。 |
+| 全文 AI 改写 | `partial` | 已有全文模式状态与命令入口，截断逻辑已实现；完整预览和应用流程仍待补齐。 |
+| AGENTS.md / Skill 自动注入 | `partial` | 已有 AGENTS merge、skill 解析与匹配基础能力，并已接入 orchestrator 的 system prompt 组装。 |
 
 ## 维护说明
 

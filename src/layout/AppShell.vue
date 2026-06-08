@@ -158,6 +158,8 @@ onMounted(async () => {
     toggleFocusMode: () => ui.toggleFocusMode(),
     openSettings: () => ui.openSettings(),
     openAiSettings: () => ai.openSettings(),
+    openAiRewriteSelection: () => ai.startSelectionRewrite(),
+    openAiRewriteDocument: () => ai.startDocumentRewrite(),
     openCommandPalette: () => ui.openCommandPalette(),
     closeTab: () => (activeSessionId.value ? documents.closeSession(activeSessionId.value) : Promise.resolve(true)),
     canRunEditorCommand,
