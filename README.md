@@ -60,6 +60,11 @@ pnpm test
 pnpm test:e2e
 ```
 
+## Project Skills
+
+- Project-level skills live in `skills/`
+- `skills/refactor-with-test-guard` enforces: check existing coverage before refactoring, add missing tests first, then rerun tests after the refactor
+
 ## Build
 
 ```bash

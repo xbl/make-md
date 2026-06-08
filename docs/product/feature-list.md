@@ -129,6 +129,12 @@
 | 全文 AI 改写 | `not_started` | 已有设计文档，尚未实现全文上下文、截断提示和整篇预览。 |
 | AGENTS.md / Skill 自动注入 | `not_started` | 已有设计文档，尚未实现项目级/全局规则加载和 Skill 匹配。 |
 
+## 项目工作流与 Skill
+
+| 功能 | 状态 | 说明 |
+|---|---|---|
+| 项目级 Refactor Skill | `complete` | 已新增 `skills/refactor-with-test-guard`，要求在重构前先检查现有测试覆盖，不足时先补测试，重构后再运行相关测试确认行为未破坏。 |
+
 ## 维护说明
 
 - 该文档基于 `README.md`、当前已交付 UI/组件、命令清单以及进行中的实现计划整理。
