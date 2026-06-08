@@ -1,3 +1,4 @@
+mod ai;
 mod fs;
 mod menu;
 mod pdf;
@@ -16,6 +17,8 @@ fn main() {
             menu::handle_menu_event(app, event);
         })
         .invoke_handler(tauri::generate_handler![
+            ai::ai_stream,
+            ai::ai_cancel,
             fs::read_markdown_file,
             fs::write_markdown_file,
             recent::load_recent_files,
