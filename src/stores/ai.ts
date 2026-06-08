@@ -1,6 +1,13 @@
 import { defineStore } from "pinia";
 
 export type AiProviderId = "openai" | "deepseek";
+export type AiPreviewState = {
+  mode: "selection" | "document";
+  from: number;
+  to: number;
+  originalText: string;
+  previewText: string;
+};
 
 export const useAiStore = defineStore("ai", {
   state: () => ({
@@ -11,6 +18,7 @@ export const useAiStore = defineStore("ai", {
       deepseek: { model: "deepseek-chat", baseUrl: "" },
     },
     isGenerating: false,
+    preview: null as AiPreviewState | null,
   }),
   actions: {
     openSettings() {
@@ -18,6 +26,12 @@ export const useAiStore = defineStore("ai", {
     },
     closeSettings() {
       this.settingsOpen = false;
+    },
+    setPreview(preview: AiPreviewState) {
+      this.preview = preview;
+    },
+    clearPreview() {
+      this.preview = null;
     },
   },
 });
