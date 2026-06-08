@@ -18,6 +18,7 @@
 
     <CommandPalette />
     <SettingsPanel />
+    <AiSettingsPanel />
   </div>
 </template>
 
@@ -31,7 +32,9 @@ import EditorPane from "@/components/EditorPane.vue";
 import StatusBar from "@/components/StatusBar.vue";
 import CommandPalette from "@/components/CommandPalette.vue";
 import SettingsPanel from "@/components/SettingsPanel.vue";
+import AiSettingsPanel from "@/components/AiSettingsPanel.vue";
 import { createAppCommandRuntime } from "@/lib/app-commands";
+import { useAiStore } from "@/stores/ai";
 import { useDocumentsStore } from "@/stores/documents";
 import { useEditorStore } from "@/stores/editor";
 import { useShortcutsStore } from "@/stores/shortcuts";
@@ -42,6 +45,7 @@ import { createShortcutDispatcher, type ShortcutDispatcher } from "@/lib/shortcu
 import { startMenuBridge } from "@/lib/menu-bridge";
 
 const documents = useDocumentsStore();
+const ai = useAiStore();
 const editorStore = useEditorStore();
 const shortcuts = useShortcutsStore();
 const ui = useUiStore();
@@ -153,6 +157,7 @@ onMounted(async () => {
     toggleSidebar: () => ui.toggleSidebar(),
     toggleFocusMode: () => ui.toggleFocusMode(),
     openSettings: () => ui.openSettings(),
+    openAiSettings: () => ai.openSettings(),
     openCommandPalette: () => ui.openCommandPalette(),
     closeTab: () => (activeSessionId.value ? documents.closeSession(activeSessionId.value) : Promise.resolve(true)),
     canRunEditorCommand,
