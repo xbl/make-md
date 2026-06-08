@@ -1,9 +1,11 @@
 import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
+import { TextSelection } from "prosemirror-state";
 import { nextTick } from "vue";
 import { describe, expect, it } from "vitest";
 import EditorPane from "@/components/EditorPane.vue";
 import { useDocumentsStore } from "@/stores/documents";
+import { useEditorStore } from "@/stores/editor";
 import { useUiStore } from "@/stores/ui";
 
 describe("EditorPane", () => {
@@ -97,5 +99,68 @@ describe("EditorPane", () => {
 
     expect(wrapper.text()).toContain("second");
     expect(wrapper.text()).not.toContain("first");
+  });
+
+  it("shows the AI toolbar only for a non-empty rich-text selection", async () => {
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const documents = useDocumentsStore();
+    const editorStore = useEditorStore();
+
+    const session = documents.createNewDocument();
+    session.markSaved("alpha beta");
+
+    const wrapper = mount(EditorPane, {
+      attachTo: document.body,
+      global: {
+        plugins: [pinia],
+      },
+    });
+
+    await nextTick();
+    await nextTick();
+
+    expect(wrapper.find("[data-testid='ai-edit-toolbar']").exists()).toBe(false);
+
+    const view = editorStore.view;
+    expect(view).toBeTruthy();
+    if (!view) {
+      throw new Error("expected editor view");
+    }
+
+    view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, 1, 6)));
+    await nextTick();
+
+    expect(wrapper.find("[data-testid='ai-edit-toolbar']").exists()).toBe(true);
+    expect(wrapper.find("[data-testid='ai-edit-toolbar']").text()).toContain("Polish");
+  });
+
+  it("does not show the AI toolbar in source mode", async () => {
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const documents = useDocumentsStore();
+    const ui = useUiStore();
+
+    const session = documents.createNewDocument();
+    session.updateContent("alpha beta");
+    ui.toggleSourceMode();
+
+    const wrapper = mount(EditorPane, {
+      attachTo: document.body,
+      global: {
+        plugins: [pinia],
+      },
+    });
+
+    await nextTick();
+
+    const sourceInput = wrapper.find("[data-testid='source-input']").element as HTMLTextAreaElement;
+    sourceInput.focus();
+    sourceInput.selectionStart = 0;
+    sourceInput.selectionEnd = 5;
+    sourceInput.dispatchEvent(new Event("select"));
+    await nextTick();
+
+    expect(wrapper.find("[data-testid='ai-edit-toolbar']").exists()).toBe(false);
   });
 });

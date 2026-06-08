@@ -779,6 +779,43 @@ button {
   padding: 28px 40px 40px;
 }
 
+.editor-view-shell {
+  position: relative;
+}
+
+.ai-edit-toolbar {
+  position: absolute;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-elevated) 94%, transparent);
+  box-shadow: var(--shadow-md);
+  transform: translateX(-50%);
+  backdrop-filter: blur(10px);
+}
+
+.ai-edit-toolbar__button {
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.ai-edit-toolbar__button:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
 .editor-pane--source {
   grid-template-rows: auto minmax(0, 1fr);
   align-content: stretch;

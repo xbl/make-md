@@ -1,6 +1,5 @@
 <template>
   <div class="editor-pane" :class="{ 'editor-pane--source': ui.sourceMode }">
-    <AiEditToolbar v-if="activeSession" />
     <FindReplaceBar v-if="activeSession" />
     <SourceEditor
       v-if="activeSession && ui.sourceMode"
@@ -28,7 +27,6 @@ import { computed } from "vue";
 import { useDocumentsStore } from "@/stores/documents";
 import { useUiStore } from "@/stores/ui";
 import EditorView from "@/editor/EditorView.vue";
-import AiEditToolbar from "@/components/AiEditToolbar.vue";
 import FindReplaceBar from "@/components/FindReplaceBar.vue";
 import SourceEditor from "@/components/SourceEditor.vue";
 

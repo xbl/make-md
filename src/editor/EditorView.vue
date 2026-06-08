@@ -1,5 +1,10 @@
 <template>
   <div class="editor-view-shell" @contextmenu="openContextMenu">
+    <AiEditToolbar
+      v-if="selectionToolbar.visible"
+      :left="selectionToolbar.left"
+      :top="selectionToolbar.top"
+    />
     <div ref="mountRef" class="editor-view"></div>
     <ContextMenu
       :open="menu.state.open"
@@ -18,6 +23,7 @@ import { EditorState } from "prosemirror-state";
 import { EditorView as PMEditorView } from "prosemirror-view";
 import type { EditorState as PMEditorState } from "prosemirror-state";
 import type { Slice } from "prosemirror-model";
+import AiEditToolbar from "@/components/AiEditToolbar.vue";
 import ContextMenu from "@/components/ContextMenu.vue";
 import { markdownSchema } from "@/editor/schema";
 import { parseMarkdown } from "@/editor/markdown-parser";
@@ -37,6 +43,11 @@ const documents = useDocumentsStore();
 const editorStore = useEditorStore();
 const menu = createContextMenuController();
 let view: PMEditorView | null = null;
+const selectionToolbar = ref({
+  visible: false,
+  left: 0,
+  top: 0,
+});
 
 const activeSession = computed(() => documents.activeSession);
 const hasSelection = computed(() => Boolean(view && !view.state.selection.empty));
@@ -156,6 +167,45 @@ function openContextMenu(event: MouseEvent) {
   menu.openAt(event.clientX, event.clientY);
 }
 
+function hideSelectionToolbar() {
+  selectionToolbar.value = {
+    visible: false,
+    left: 0,
+    top: 0,
+  };
+}
+
+function updateSelectionToolbar() {
+  if (!view || !mountRef.value) {
+    hideSelectionToolbar();
+    return;
+  }
+
+  const { selection } = view.state;
+  if (selection.empty) {
+    hideSelectionToolbar();
+    return;
+  }
+
+  try {
+    const start = view.coordsAtPos(selection.from);
+    const end = view.coordsAtPos(selection.to);
+    const container = mountRef.value.getBoundingClientRect();
+    const selectionCenter = (Math.min(start.left, end.left) + Math.max(start.right, end.right)) / 2;
+    selectionToolbar.value = {
+      visible: true,
+      left: Math.max(16, selectionCenter - container.left),
+      top: Math.max(8, Math.min(start.top, end.top) - container.top - 48),
+    };
+  } catch {
+    selectionToolbar.value = {
+      visible: true,
+      left: 24,
+      top: 8,
+    };
+  }
+}
+
 function syncSessionContent() {
   const session = activeSession.value;
   if (!session || !view) {
@@ -189,6 +239,7 @@ function syncViewFromSession() {
   const hadFocus = view.hasFocus();
   view.updateState(nextState);
   editorStore.bumpDocVersion();
+  updateSelectionToolbar();
   if (hadFocus) {
     view.focus();
   }
@@ -220,6 +271,7 @@ function mountEditor() {
         return;
       }
       view.updateState(nextState);
+      updateSelectionToolbar();
       if (transaction.docChanged) {
         editorStore.bumpDocVersion();
         syncSessionContent();
@@ -227,6 +279,7 @@ function mountEditor() {
     },
   });
   editorStore.setView(view);
+  updateSelectionToolbar();
   view.focus();
 }
 
@@ -255,6 +308,7 @@ onBeforeUnmount(() => {
   void documents.flushAutosave();
   view?.destroy();
   view = null;
+  hideSelectionToolbar();
   menu.close();
   editorStore.clearView();
 });
