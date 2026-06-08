@@ -24,8 +24,8 @@
     <SettingsPanel />
     <div v-if="markdownDragActive" class="app-shell__drag-overlay" data-testid="markdown-drop-overlay">
       <div class="app-shell__drag-overlay-card">
-        <p class="app-shell__drag-overlay-title">Drop Markdown files to open</p>
-        <p class="app-shell__drag-overlay-hint">Supports .md and .markdown</p>
+        <p class="app-shell__drag-overlay-title">{{ t("app.dragOverlay.title") }}</p>
+        <p class="app-shell__drag-overlay-hint">{{ t("app.dragOverlay.hint") }}</p>
       </div>
     </div>
     <AiSettingsPanel />
@@ -43,9 +43,11 @@ import StatusBar from "@/components/StatusBar.vue";
 import CommandPalette from "@/components/CommandPalette.vue";
 import SettingsPanel from "@/components/SettingsPanel.vue";
 import AiSettingsPanel from "@/components/AiSettingsPanel.vue";
+import { useI18n } from "@/composables/useI18n";
 import { createAppCommandRuntime } from "@/lib/app-commands";
 import { useDocumentsStore } from "@/stores/documents";
 import { useEditorStore } from "@/stores/editor";
+import { usePreferencesStore } from "@/stores/preferences";
 import { useShortcutsStore } from "@/stores/shortcuts";
 import { useUiStore } from "@/stores/ui";
 import { useFolderWorkspaceStore } from "@/stores/folder-workspace";
@@ -56,9 +58,11 @@ import { onWorkspaceChanged } from "@/lib/workspace-service";
 
 const documents = useDocumentsStore();
 const editorStore = useEditorStore();
+const preferences = usePreferencesStore();
 const shortcuts = useShortcutsStore();
 const ui = useUiStore();
 const folderWorkspace = useFolderWorkspaceStore();
+const { t } = useI18n();
 let unlistenClose: (() => void) | null = null;
 let unlistenDragDrop: (() => void) | null = null;
 let stopWorkspaceChangeWatch: (() => void) | null = null;
@@ -257,6 +261,7 @@ async function onDrop(event: DragEvent) {
 
 onMounted(async () => {
   ui.applyTheme();
+  void preferences.initialize();
   void documents.loadRecent();
   const runtime = createAppCommandRuntime({
     openFile: () => documents.openFileDialog(),

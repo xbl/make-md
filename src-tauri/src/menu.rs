@@ -1,56 +1,64 @@
+use crate::i18n::{menu_label, DEFAULT_LOCALE};
 use tauri::menu::{AboutMetadata, Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::{App, AppHandle, Emitter, Runtime};
 
 pub const MENU_EVENT_NAME: &str = "app://menu-command";
 
 const COMMANDS: &[(&str, &str, &str, bool, Option<&str>)] = &[
-    ("file.new", "New File", "file", true, Some("CmdOrCtrl+N")),
-    ("file.open", "Open File", "file", true, Some("CmdOrCtrl+O")),
-    ("file.openFolder", "Open Folder", "file", true, Some("CmdOrCtrl+Shift+O")),
-    ("file.save", "Save", "file", true, Some("CmdOrCtrl+S")),
-    ("file.saveAs", "Save As…", "file", true, Some("CmdOrCtrl+Shift+S")),
-    ("file.close", "Close Tab", "file", true, Some("CmdOrCtrl+W")),
-    ("app.preferences", "Preferences…", "file", true, Some("CmdOrCtrl+,")),
-    ("edit.find", "Find", "edit", true, Some("CmdOrCtrl+F")),
-    ("edit.replace", "Replace", "edit", true, Some("CmdOrCtrl+Alt+F")),
-    ("edit.findNext", "Find Next", "edit", true, Some("CmdOrCtrl+G")),
-    ("edit.findPrevious", "Find Previous", "edit", true, Some("CmdOrCtrl+Shift+G")),
-    ("edit.selectAll", "Select All", "edit", true, Some("CmdOrCtrl+A")),
-    ("format.bold", "Bold", "format", true, Some("CmdOrCtrl+B")),
-    ("format.italic", "Italic", "format", true, Some("CmdOrCtrl+I")),
-    ("format.underline", "Underline", "format", false, Some("CmdOrCtrl+U")),
-    ("format.inlineCode", "Inline Code", "format", true, Some("CmdOrCtrl+Shift+`")),
-    ("format.strike", "Strikethrough", "format", true, Some("Ctrl+Shift+`")),
-    ("format.link", "Hyperlink", "format", true, Some("CmdOrCtrl+K")),
-    ("format.image", "Image", "format", false, Some("CmdOrCtrl+Ctrl+I")),
-    ("format.clear", "Clear Formatting", "format", true, Some("CmdOrCtrl+\\")),
-    ("paragraph.h1", "Heading 1", "paragraph", true, Some("CmdOrCtrl+1")),
-    ("paragraph.h2", "Heading 2", "paragraph", true, Some("CmdOrCtrl+2")),
-    ("paragraph.h3", "Heading 3", "paragraph", true, Some("CmdOrCtrl+3")),
-    ("paragraph.h4", "Heading 4", "paragraph", true, Some("CmdOrCtrl+4")),
-    ("paragraph.h5", "Heading 5", "paragraph", true, Some("CmdOrCtrl+5")),
-    ("paragraph.h6", "Heading 6", "paragraph", true, Some("CmdOrCtrl+6")),
-    ("paragraph.paragraph", "Paragraph", "paragraph", true, Some("CmdOrCtrl+0")),
-    ("paragraph.increaseHeading", "Increase Heading Level", "paragraph", true, Some("CmdOrCtrl+=")),
-    ("paragraph.decreaseHeading", "Decrease Heading Level", "paragraph", true, Some("CmdOrCtrl+-")),
-    ("paragraph.quote", "Quote", "paragraph", true, Some("CmdOrCtrl+Alt+Q")),
-    ("paragraph.orderedList", "Ordered List", "paragraph", true, Some("CmdOrCtrl+Alt+O")),
-    ("paragraph.unorderedList", "Unordered List", "paragraph", true, Some("CmdOrCtrl+Alt+U")),
-    ("paragraph.codeFence", "Code Fences", "paragraph", true, Some("CmdOrCtrl+Alt+C")),
-    ("paragraph.table", "Table", "paragraph", false, Some("CmdOrCtrl+Alt+T")),
-    ("view.sidebar", "Toggle Sidebar", "view", true, Some("CmdOrCtrl+Shift+L")),
-    ("view.outline", "Outline", "view", true, Some("CmdOrCtrl+Ctrl+1")),
-    ("view.files", "File Tree", "view", true, Some("CmdOrCtrl+Ctrl+3")),
-    ("view.focus", "Focus Mode", "view", true, Some("F8")),
-    ("view.source", "Toggle Source", "view", true, Some("CmdOrCtrl+Alt+S")),
-    ("view.commandPalette", "Command Palette", "view", true, Some("CmdOrCtrl+Shift+P")),
-    ("export.html", "Export HTML", "export", true, Some("CmdOrCtrl+E")),
-    ("export.pdf", "Export PDF", "export", true, Some("CmdOrCtrl+Shift+E")),
+    ("file.new", "menu.file.new", "file", true, Some("CmdOrCtrl+N")),
+    ("file.open", "menu.file.open", "file", true, Some("CmdOrCtrl+O")),
+    ("file.openFolder", "menu.file.openFolder", "file", true, Some("CmdOrCtrl+Shift+O")),
+    ("file.save", "menu.file.save", "file", true, Some("CmdOrCtrl+S")),
+    ("file.saveAs", "menu.file.saveAs", "file", true, Some("CmdOrCtrl+Shift+S")),
+    ("file.close", "menu.file.close", "file", true, Some("CmdOrCtrl+W")),
+    ("app.preferences", "menu.app.preferences", "file", true, Some("CmdOrCtrl+,")),
+    ("edit.find", "menu.edit.find", "edit", true, Some("CmdOrCtrl+F")),
+    ("edit.replace", "menu.edit.replace", "edit", true, Some("CmdOrCtrl+Alt+F")),
+    ("edit.findNext", "menu.edit.findNext", "edit", true, Some("CmdOrCtrl+G")),
+    ("edit.findPrevious", "menu.edit.findPrevious", "edit", true, Some("CmdOrCtrl+Shift+G")),
+    ("edit.selectAll", "menu.edit.selectAll", "edit", true, Some("CmdOrCtrl+A")),
+    ("format.bold", "menu.format.bold", "format", true, Some("CmdOrCtrl+B")),
+    ("format.italic", "menu.format.italic", "format", true, Some("CmdOrCtrl+I")),
+    ("format.underline", "menu.format.underline", "format", false, Some("CmdOrCtrl+U")),
+    ("format.inlineCode", "menu.format.inlineCode", "format", true, Some("CmdOrCtrl+Shift+`")),
+    ("format.strike", "menu.format.strike", "format", true, Some("Ctrl+Shift+`")),
+    ("format.link", "menu.format.link", "format", true, Some("CmdOrCtrl+K")),
+    ("format.image", "menu.format.image", "format", false, Some("CmdOrCtrl+Ctrl+I")),
+    ("format.clear", "menu.format.clear", "format", true, Some("CmdOrCtrl+\\")),
+    ("paragraph.h1", "menu.paragraph.h1", "paragraph", true, Some("CmdOrCtrl+1")),
+    ("paragraph.h2", "menu.paragraph.h2", "paragraph", true, Some("CmdOrCtrl+2")),
+    ("paragraph.h3", "menu.paragraph.h3", "paragraph", true, Some("CmdOrCtrl+3")),
+    ("paragraph.h4", "menu.paragraph.h4", "paragraph", true, Some("CmdOrCtrl+4")),
+    ("paragraph.h5", "menu.paragraph.h5", "paragraph", true, Some("CmdOrCtrl+5")),
+    ("paragraph.h6", "menu.paragraph.h6", "paragraph", true, Some("CmdOrCtrl+6")),
+    ("paragraph.paragraph", "menu.paragraph.paragraph", "paragraph", true, Some("CmdOrCtrl+0")),
+    ("paragraph.increaseHeading", "menu.paragraph.increaseHeading", "paragraph", true, Some("CmdOrCtrl+=")),
+    ("paragraph.decreaseHeading", "menu.paragraph.decreaseHeading", "paragraph", true, Some("CmdOrCtrl+-")),
+    ("paragraph.quote", "menu.paragraph.quote", "paragraph", true, Some("CmdOrCtrl+Alt+Q")),
+    ("paragraph.orderedList", "menu.paragraph.orderedList", "paragraph", true, Some("CmdOrCtrl+Alt+O")),
+    ("paragraph.unorderedList", "menu.paragraph.unorderedList", "paragraph", true, Some("CmdOrCtrl+Alt+U")),
+    ("paragraph.codeFence", "menu.paragraph.codeFence", "paragraph", true, Some("CmdOrCtrl+Alt+C")),
+    ("paragraph.table", "menu.paragraph.table", "paragraph", false, Some("CmdOrCtrl+Alt+T")),
+    ("view.sidebar", "menu.view.sidebar", "view", true, Some("CmdOrCtrl+Shift+L")),
+    ("view.outline", "menu.view.outline", "view", true, Some("CmdOrCtrl+Ctrl+1")),
+    ("view.files", "menu.view.files", "view", true, Some("CmdOrCtrl+Ctrl+3")),
+    ("view.focus", "menu.view.focus", "view", true, Some("F8")),
+    ("view.source", "menu.view.source", "view", true, Some("CmdOrCtrl+Alt+S")),
+    ("view.commandPalette", "menu.view.commandPalette", "view", true, Some("CmdOrCtrl+Shift+P")),
+    ("export.html", "menu.export.html", "export", true, Some("CmdOrCtrl+E")),
+    ("export.pdf", "menu.export.pdf", "export", true, Some("CmdOrCtrl+Shift+E")),
 ];
 
 pub fn install_menu<R: Runtime>(app: &mut App<R>) -> tauri::Result<()> {
-    let menu = build_menu(app.handle())?;
+    let menu = build_menu_for_locale(app.handle(), DEFAULT_LOCALE)?;
     app.set_menu(menu)?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn sync_menu_locale(app: tauri::AppHandle, locale: String) -> Result<(), String> {
+    let menu = build_menu_for_locale(&app, &locale).map_err(|err| err.to_string())?;
+    app.set_menu(menu).map_err(|err| err.to_string())?;
     Ok(())
 }
 
@@ -59,33 +67,33 @@ pub fn handle_menu_event<R: Runtime>(app: &AppHandle<R>, event: tauri::menu::Men
     let _ = app.emit(MENU_EVENT_NAME, command_id);
 }
 
-fn build_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
+fn build_menu_for_locale<R: Runtime>(app: &AppHandle<R>, locale: &str) -> tauri::Result<Menu<R>> {
     let mut top_level: Vec<Submenu<R>> = Vec::new();
 
     #[cfg(target_os = "macos")]
     top_level.push(build_app_submenu(app)?);
 
     for (category, label) in [
-        ("file", "File"),
-        ("edit", "Edit"),
-        ("paragraph", "Paragraph"),
-        ("format", "Format"),
-        ("view", "View"),
-        ("export", "Export"),
+        ("file", menu_label(locale, "menu.file")),
+        ("edit", menu_label(locale, "menu.edit")),
+        ("paragraph", menu_label(locale, "menu.paragraph")),
+        ("format", menu_label(locale, "menu.format")),
+        ("view", menu_label(locale, "menu.view")),
+        ("export", menu_label(locale, "menu.export")),
     ] {
         if category == "edit" {
-            top_level.push(build_edit_submenu(app, label)?);
+            top_level.push(build_edit_submenu(app, label, locale)?);
             continue;
         }
 
-        let items = build_command_items(app, category)?;
+        let items = build_command_items(app, category, locale)?;
         let refs: Vec<&dyn tauri::menu::IsMenuItem<R>> =
             items.iter().map(|item| item as &dyn tauri::menu::IsMenuItem<R>).collect();
         top_level.push(Submenu::with_items(app, label, true, &refs)?);
     }
 
     #[cfg(target_os = "macos")]
-    top_level.push(build_window_submenu(app)?);
+    top_level.push(build_window_submenu(app, locale)?);
 
     let top_refs: Vec<&dyn tauri::menu::IsMenuItem<R>> =
         top_level.iter().map(|submenu| submenu as &dyn tauri::menu::IsMenuItem<R>).collect();
@@ -122,10 +130,10 @@ fn build_app_submenu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>
 }
 
 #[cfg(target_os = "macos")]
-fn build_window_submenu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> {
+fn build_window_submenu<R: Runtime>(app: &AppHandle<R>, locale: &str) -> tauri::Result<Submenu<R>> {
     Submenu::with_items(
         app,
-        "Window",
+        menu_label(locale, "menu.window"),
         true,
         &[
             &PredefinedMenuItem::minimize(app, None)?,
@@ -139,18 +147,23 @@ fn build_window_submenu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu
 fn build_command_items<R: Runtime>(
     app: &AppHandle<R>,
     category: &str,
+    locale: &str,
 ) -> tauri::Result<Vec<MenuItem<R>>> {
     COMMANDS
         .iter()
         .filter(|(_, _, item_category, _, _)| *item_category == category)
-        .map(|(id, item_label, _, enabled, accelerator)| {
-            MenuItem::with_id(app, *id, *item_label, *enabled, *accelerator)
+        .map(|(id, item_key, _, enabled, accelerator)| {
+            MenuItem::with_id(app, *id, menu_label(locale, item_key), *enabled, *accelerator)
         })
         .collect()
 }
 
-fn build_edit_submenu<R: Runtime>(app: &AppHandle<R>, label: &str) -> tauri::Result<Submenu<R>> {
-    let edit_commands = build_command_items(app, "edit")?;
+fn build_edit_submenu<R: Runtime>(
+    app: &AppHandle<R>,
+    label: &str,
+    locale: &str,
+) -> tauri::Result<Submenu<R>> {
+    let edit_commands = build_command_items(app, "edit", locale)?;
     let undo = PredefinedMenuItem::undo(app, None)?;
     let redo = PredefinedMenuItem::redo(app, None)?;
     let separator_1 = PredefinedMenuItem::separator(app)?;

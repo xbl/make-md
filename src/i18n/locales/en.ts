@@ -1,5 +1,7 @@
 export const en = {
   "app.language": "English",
+  "app.dragOverlay.title": "Drop Markdown files to open",
+  "app.dragOverlay.hint": "Supports .md and .markdown",
   "common.clear": "Clear",
   "common.new": "New",
   "common.open": "Open",
@@ -70,4 +72,5 @@ export const en = {
   "command.view.commandPalette": "Command Palette",
   "command.export.html": "Export HTML",
   "command.export.pdf": "Export PDF",
+  "command.export.word": "Export Word",
 } as const;

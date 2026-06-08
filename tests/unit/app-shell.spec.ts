@@ -1,11 +1,12 @@
 import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { nextTick } from "vue";
-import { beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useEditorStore } from "../../src/stores/editor";
 import AppShell from "../../src/layout/AppShell.vue";
 import { useDocumentsStore } from "../../src/stores/documents";
 import { useUiStore } from "../../src/stores/ui";
+import { usePreferencesStore } from "../../src/stores/preferences";
 
 const tauriMocks = vi.hoisted(() => {
   const onCloseRequested = vi.fn(async () => () => {});
@@ -48,6 +49,11 @@ vi.mock("@/lib/workspace-service", () => ({
   onWorkspaceChanged: vi.fn(async () => () => {}),
 }));
 
+vi.mock("@/lib/system-locale", () => ({
+  loadSystemLocale: vi.fn(async () => "zh-Hans-CN"),
+  syncMenuLocale: vi.fn(async () => {}),
+}));
+
 describe("AppShell", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -73,6 +79,22 @@ describe("AppShell", () => {
     expect(wrapper.find("[data-testid='sidebar']").exists()).toBe(true);
     expect(wrapper.find("[data-testid='editor-pane']").exists()).toBe(true);
     expect(wrapper.find("[data-testid='status-bar']").exists()).toBe(true);
+  });
+
+  it("initializes locale preferences on mount", async () => {
+    const wrapper = mount(AppShell, {
+      global: {
+        plugins: [createPinia()],
+      },
+    });
+
+    await nextTick();
+    await Promise.resolve();
+
+    const preferences = usePreferencesStore();
+    expect(preferences.systemLocale).toBe("zh-Hans-CN");
+    expect(preferences.effectiveLocale).toBe("zh-CN");
+    expect(wrapper.text()).toContain("最近文件");
   });
 
   it("does not close settings while shortcut capture handles Escape", async () => {

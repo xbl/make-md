@@ -1,5 +1,7 @@
 export const zhCN = {
   "app.language": "简体中文",
+  "app.dragOverlay.title": "拖放 Markdown 文件以打开",
+  "app.dragOverlay.hint": "支持 .md 和 .markdown",
   "common.clear": "清空",
   "common.new": "新建",
   "common.open": "打开",
@@ -70,4 +72,5 @@ export const zhCN = {
   "command.view.commandPalette": "命令面板",
   "command.export.html": "导出 HTML",
   "command.export.pdf": "导出 PDF",
+  "command.export.word": "导出 Word",
 } as const;

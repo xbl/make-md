@@ -1,5 +1,6 @@
 mod ai;
 mod fs;
+mod i18n;
 mod menu;
 mod pdf;
 mod recent;
@@ -19,8 +20,10 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             ai::ai_stream,
             ai::ai_cancel,
+            i18n::get_system_locale,
             fs::read_markdown_file,
             fs::write_markdown_file,
+            menu::sync_menu_locale,
             recent::load_recent_files,
             recent::save_recent_file,
             recent::remove_recent_file,
