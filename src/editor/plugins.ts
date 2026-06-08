@@ -1,4 +1,4 @@
-import { history } from "prosemirror-history";
+import { history, redo, undo } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
 import { baseKeymap } from "prosemirror-commands";
 import { createEditorInputRules } from "@/editor/input-rules";
@@ -35,6 +35,14 @@ export function createEditorPlugins(options: PluginOptions = {}) {
     createSyntaxHighlightPlugin(),
     createInlineCodeDecorationsPlugin(),
     history(),
+    keymap({
+      "Mod-z": undo,
+      "Meta-z": undo,
+      "Shift-Mod-z": redo,
+      "Shift-Meta-z": redo,
+      "Mod-y": redo,
+      "Meta-y": redo,
+    }),
     keymap(createCodeBlockKeymap()),
     keymap(baseKeymap),
   ];

@@ -32,4 +32,9 @@ describe("COMMAND_CATALOG", () => {
     const aiRewrite = COMMAND_CATALOG.find((command) => command.id === "view.aiRewriteSelection");
     expect(aiRewrite?.defaultChord).toBe("Mod-Shift-a");
   });
+
+  it("maps replace to Mod-Alt-f to avoid conflicting with macOS hide", () => {
+    const replace = COMMAND_CATALOG.find((command) => command.id === "edit.replace");
+    expect(replace?.defaultChord).toBe("Mod-Alt-f");
+  });
 });

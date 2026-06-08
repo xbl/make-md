@@ -44,7 +44,7 @@ export const COMMAND_CATALOG: CommandDef[] = [
   def("app.preferences", "Preferences…", "file", "app", "Mod-Comma"),
 
   def("edit.find", "Find", "edit", "app", "Mod-f"),
-  def("edit.replace", "Replace", "edit", "app", "Mod-h"),
+  def("edit.replace", "Replace", "edit", "app", "Mod-Alt-f"),
   def("edit.findNext", "Find Next", "edit", "app", "Mod-g"),
   def("edit.findPrevious", "Find Previous", "edit", "app", "Mod-Shift-g"),
   def("edit.selectAll", "Select All", "edit", "editor", "Mod-a"),

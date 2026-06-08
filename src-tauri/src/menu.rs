@@ -1,4 +1,4 @@
-use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
+use tauri::menu::{AboutMetadata, Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::{App, AppHandle, Emitter, Runtime};
 
 pub const MENU_EVENT_NAME: &str = "app://menu-command";
@@ -12,7 +12,7 @@ const COMMANDS: &[(&str, &str, &str, bool, Option<&str>)] = &[
     ("file.close", "Close Tab", "file", true, Some("CmdOrCtrl+W")),
     ("app.preferences", "Preferences…", "file", true, Some("CmdOrCtrl+,")),
     ("edit.find", "Find", "edit", true, Some("CmdOrCtrl+F")),
-    ("edit.replace", "Replace", "edit", true, Some("CmdOrCtrl+H")),
+    ("edit.replace", "Replace", "edit", true, Some("CmdOrCtrl+Alt+F")),
     ("edit.findNext", "Find Next", "edit", true, Some("CmdOrCtrl+G")),
     ("edit.findPrevious", "Find Previous", "edit", true, Some("CmdOrCtrl+Shift+G")),
     ("edit.selectAll", "Select All", "edit", true, Some("CmdOrCtrl+A")),
@@ -62,6 +62,9 @@ pub fn handle_menu_event<R: Runtime>(app: &AppHandle<R>, event: tauri::menu::Men
 fn build_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
     let mut top_level: Vec<Submenu<R>> = Vec::new();
 
+    #[cfg(target_os = "macos")]
+    top_level.push(build_app_submenu(app)?);
+
     for (category, label) in [
         ("file", "File"),
         ("edit", "Edit"),
@@ -81,9 +84,56 @@ fn build_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
         top_level.push(Submenu::with_items(app, label, true, &refs)?);
     }
 
+    #[cfg(target_os = "macos")]
+    top_level.push(build_window_submenu(app)?);
+
     let top_refs: Vec<&dyn tauri::menu::IsMenuItem<R>> =
         top_level.iter().map(|submenu| submenu as &dyn tauri::menu::IsMenuItem<R>).collect();
     Menu::with_items(app, &top_refs)
+}
+
+#[cfg(target_os = "macos")]
+fn build_app_submenu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> {
+    let pkg_info = app.package_info();
+    let config = app.config();
+    let about_metadata = AboutMetadata {
+        name: Some(pkg_info.name.clone()),
+        version: Some(pkg_info.version.to_string()),
+        copyright: config.bundle.copyright.clone(),
+        authors: config.bundle.publisher.clone().map(|publisher| vec![publisher]),
+        ..Default::default()
+    };
+
+    Submenu::with_items(
+        app,
+        pkg_info.name.clone(),
+        true,
+        &[
+            &PredefinedMenuItem::about(app, None, Some(about_metadata))?,
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::services(app, None)?,
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::hide(app, None)?,
+            &PredefinedMenuItem::hide_others(app, None)?,
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::quit(app, None)?,
+        ],
+    )
+}
+
+#[cfg(target_os = "macos")]
+fn build_window_submenu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> {
+    Submenu::with_items(
+        app,
+        "Window",
+        true,
+        &[
+            &PredefinedMenuItem::minimize(app, None)?,
+            &PredefinedMenuItem::maximize(app, None)?,
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::close_window(app, None)?,
+        ],
+    )
 }
 
 fn build_command_items<R: Runtime>(

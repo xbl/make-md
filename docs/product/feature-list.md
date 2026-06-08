@@ -77,6 +77,7 @@
 | 功能 | 状态 | 说明 |
 |---|---|---|
 | 原生应用菜单 | `complete` | 已接入 Tauri 原生菜单，含 File/Edit/Paragraph/Format/View/Export。 |
+| macOS 系统快捷键保留 | `complete` | 已避免自定义命令占用 `Cmd+Q`、`Cmd+H`、`Cmd+M`、`Cmd+Z` 等系统或原生编辑快捷键，并补齐 App / Window 菜单项。 |
 | 命令面板 | `complete` | 命令面板 UI 与命令注册表已存在。 |
 | 共享命令目录 | `complete` | 各入口已复用统一的 manifest/registry 命令 ID。 |
 | 快捷键自定义 | `complete` | 偏好设置面板已支持录制和重置快捷键。 |
