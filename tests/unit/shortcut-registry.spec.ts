@@ -17,6 +17,11 @@ describe("COMMAND_CATALOG", () => {
     expect(bold?.defaultChord).toBe("Mod-b");
   });
 
+  it("includes the source toggle command", () => {
+    const source = COMMAND_CATALOG.find((command) => command.id === "view.source");
+    expect(source?.label).toBe("Toggle Source");
+  });
+
   it("builds default chord map without duplicates for unique commands", () => {
     const map = getDefaultChordMap();
     expect(map["format.bold"]).toBe("Mod-b");

@@ -78,6 +78,7 @@ const runtime = createAppCommandRuntime({
   openReplace: () => ui.openFindReplace("replace"),
   toggleSidebar: () => ui.toggleSidebar(),
   toggleFocusMode: () => ui.toggleFocusMode(),
+  toggleSourceMode: () => ui.toggleSourceMode(),
   openSettings: () => ui.openSettings(),
   openCommandPalette: () => ui.openCommandPalette(),
   closeTab: () => (documents.activeSessionId ? documents.closeSession(documents.activeSessionId) : Promise.resolve(true)),

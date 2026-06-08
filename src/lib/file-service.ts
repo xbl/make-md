@@ -6,9 +6,16 @@ const MARKDOWN_FILTER = [{ name: "Markdown", extensions: ["md", "markdown"] }];
 const HTML_FILTER = [{ name: "HTML", extensions: ["html", "htm"] }];
 const PDF_FILTER = [{ name: "PDF", extensions: ["pdf"] }];
 
+function getE2eBridge() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  return window.__MAKE_MD_E2E__ ?? null;
+}
+
 export async function readMarkdownFile(path: string) {
   if (!isTauri()) {
-    return { path, content: "" };
+    return { path, content: getE2eBridge()?.files[path] ?? "" };
   }
   const content = await invoke<string>("read_markdown_file", { path });
   return { path, content };
@@ -16,6 +23,10 @@ export async function readMarkdownFile(path: string) {
 
 export async function writeMarkdownFile(path: string, content: string) {
   if (!isTauri()) {
+    const bridge = getE2eBridge();
+    if (bridge) {
+      bridge.files[path] = content;
+    }
     return { path, content };
   }
   await invoke("write_markdown_file", { path, content });
@@ -38,6 +49,20 @@ export async function saveRecentFile(path: string) {
     return [path];
   }
   return invoke<string[]>("save_recent_file", { path });
+}
+
+export async function removeRecentFile(path: string) {
+  if (!isTauri()) {
+    return [];
+  }
+  return invoke<string[]>("remove_recent_file", { path });
+}
+
+export async function clearRecentFiles() {
+  if (!isTauri()) {
+    return [];
+  }
+  return invoke<string[]>("clear_recent_files");
 }
 
 export async function pickFolder(): Promise<string | null> {

@@ -1,0 +1,28 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - button "Files" [ref=e7] [cursor=pointer]
+        - button "Outline" [ref=e8] [cursor=pointer]
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: Recent
+          - generic [ref=e12]:
+            - button "New" [ref=e13] [cursor=pointer]
+            - button "Folder" [ref=e14] [cursor=pointer]
+            - button "Open" [ref=e15] [cursor=pointer]
+        - navigation [ref=e16]:
+          - paragraph [ref=e17]: No recent files
+  - generic [ref=e18]:
+    - button "New file" [ref=e20] [cursor=pointer]: +
+    - generic [ref=e22]:
+      - paragraph [ref=e23]: Open a Markdown file to start writing
+      - generic [ref=e24]:
+        - button "New file" [ref=e25] [cursor=pointer]
+        - button "Open file…" [ref=e26] [cursor=pointer]
+      - paragraph [ref=e27]: ⌘N new · ⌘O open · ⌘S save · ⌘⇧P commands
+    - generic [ref=e28]:
+      - generic [ref=e29]: No document
+      - generic [ref=e30]: Rich Text
+      - generic [ref=e31]: Markdown
+      - generic [ref=e32]: UTF-8

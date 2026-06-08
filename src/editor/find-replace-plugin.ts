@@ -51,9 +51,14 @@ export function createFindReplacePlugin() {
             }
             const matches = findMatches(child.text, pluginState.query, options);
             for (const match of matches) {
+              const from = pos + offset + 1 + match;
+              const to = from + pluginState.query.length;
+              const isActive =
+                from === state.selection.from
+                && to === state.selection.to;
               decorations.push(
-                Decoration.inline(pos + offset + 1 + match, pos + offset + 1 + match + pluginState.query.length, {
-                  class: "find-match",
+                Decoration.inline(from, to, {
+                  class: isActive ? "find-match find-match--active" : "find-match",
                 }),
               );
             }
@@ -140,7 +145,7 @@ export function findNextMatch(
   query: string,
   options: FindOptions,
   from: number,
-) {
+): { from: number; to: number } | null {
   let result: { from: number; to: number } | null = null;
 
   state.doc.descendants((node, pos) => {

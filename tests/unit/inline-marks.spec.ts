@@ -59,4 +59,12 @@ describe("inline marks", () => {
     expect(output).toContain("[site](https://example.com)");
     expect(output).toContain("~~removed~~");
   });
+
+  it("parses and serializes inline br tags as hard breaks", () => {
+    const source = "alpha<br>beta<br/>gamma";
+    const doc = parseMarkdown(source);
+    const output = serializeMarkdown(doc);
+
+    expect(output).toContain("alpha<br>beta<br>gamma");
+  });
 });

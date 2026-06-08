@@ -23,9 +23,6 @@ export function collectCodeBlocksForHighlight(doc: PMNode): CodeBlockHighlightTa
     }
 
     const params = node.attrs.params ?? "";
-    if (!params.trim()) {
-      return;
-    }
     if (isMermaidLanguage(params)) {
       return;
     }
@@ -33,7 +30,7 @@ export function collectCodeBlocksForHighlight(doc: PMNode): CodeBlockHighlightTa
     blocks.push({
       pos,
       text: node.textContent,
-      language: resolveHighlightLanguage(params),
+      language: params.trim() ? resolveHighlightLanguage(params) : "plaintext",
       nodeSize: node.nodeSize,
     });
   });
@@ -63,21 +60,38 @@ function bindScrollSync(pre: HTMLElement, overlay: HTMLElement, bound: WeakSet<H
   pre.addEventListener("scroll", () => syncOverlayScroll(pre, overlay), { passive: true });
 }
 
+function resolveCodeBlockWrapper(view: EditorView, pos: number): HTMLElement | null {
+  const dom = view.nodeDOM(pos);
+  if (dom instanceof HTMLElement && dom.classList.contains("code-block-wrapper")) {
+    return dom;
+  }
+
+  if (dom instanceof HTMLElement) {
+    return dom.closest(".code-block-wrapper");
+  }
+
+  if (dom instanceof Text) {
+    return dom.parentElement?.closest(".code-block-wrapper") ?? null;
+  }
+
+  return null;
+}
+
 function updateBlockHighlight(
   view: EditorView,
   block: CodeBlockHighlightTarget,
   cache: Map<string, string>,
   bound: WeakSet<HTMLElement>,
 ) {
-  const dom = view.nodeDOM(block.pos);
-  if (!(dom instanceof HTMLElement) || !dom.classList.contains("code-block-wrapper")) {
-    return;
+  const dom = resolveCodeBlockWrapper(view, block.pos);
+  if (!(dom instanceof HTMLElement)) {
+    return false;
   }
 
   const pre = dom.querySelector("pre");
   const overlay = dom.querySelector(".hljs-overlay");
   if (!(pre instanceof HTMLElement) || !(overlay instanceof HTMLElement)) {
-    return;
+    return false;
   }
 
   const key = cacheKey(block.pos, block.text, block.language);
@@ -92,10 +106,12 @@ function updateBlockHighlight(
   dom.dataset.highlighted = "true";
   bindScrollSync(pre, overlay, bound);
   syncOverlayScroll(pre, overlay);
+  return true;
 }
 
 export function createSyntaxHighlightPlugin() {
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  let retryCount = 0;
   const cache = new Map<string, string>();
   const boundScroll = new WeakSet<HTMLElement>();
 
@@ -107,21 +123,39 @@ export function createSyntaxHighlightPlugin() {
     debounceTimer = setTimeout(() => {
       debounceTimer = null;
       const blocks = collectCodeBlocksForHighlight(view.state.doc);
+      let highlightedCount = 0;
       for (const block of blocks) {
-        updateBlockHighlight(view, block, cache, boundScroll);
+        if (updateBlockHighlight(view, block, cache, boundScroll)) {
+          highlightedCount += 1;
+        }
       }
+
+      if (blocks.length === 0) {
+        retryCount = 0;
+        return;
+      }
+
+      if (retryCount >= 6) {
+        retryCount = 0;
+        return;
+      }
+
+      retryCount += 1;
+      scheduleUpdate(view);
     }, getDebounceMs(view.state.doc));
   }
 
   return new Plugin({
     view(view) {
+      retryCount = 0;
       scheduleUpdate(view);
 
       return {
         update(nextView, prevState) {
           if (nextView.state.doc !== prevState.doc) {
-            scheduleUpdate(nextView);
+            retryCount = 0;
           }
+          scheduleUpdate(nextView);
         },
         destroy() {
           if (debounceTimer) {

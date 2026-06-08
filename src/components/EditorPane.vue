@@ -1,7 +1,12 @@
 <template>
-  <div class="editor-pane">
+  <div class="editor-pane" :class="{ 'editor-pane--source': ui.sourceMode }">
     <FindReplaceBar v-if="activeSession" />
-    <EditorView v-if="activeSession" />
+    <SourceEditor
+      v-if="activeSession && ui.sourceMode"
+      :model-value="activeSession.content"
+      @update:model-value="updateSource"
+    />
+    <EditorView v-else-if="activeSession" />
     <div v-else class="editor-empty">
       <p class="editor-empty__title">Open a Markdown file to start writing</p>
       <div class="editor-empty__actions">
@@ -20,10 +25,13 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useDocumentsStore } from "@/stores/documents";
+import { useUiStore } from "@/stores/ui";
 import EditorView from "@/editor/EditorView.vue";
 import FindReplaceBar from "@/components/FindReplaceBar.vue";
+import SourceEditor from "@/components/SourceEditor.vue";
 
 const documents = useDocumentsStore();
+const ui = useUiStore();
 const activeSession = computed(() => documents.activeSession);
 
 function newFile() {
@@ -32,5 +40,13 @@ function newFile() {
 
 async function openFile() {
   await documents.openFileDialog();
+}
+
+function updateSource(nextContent: string) {
+  const session = activeSession.value;
+  if (!session) {
+    return;
+  }
+  documents.scheduleAutosave(nextContent);
 }
 </script>

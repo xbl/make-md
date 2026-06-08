@@ -50,6 +50,13 @@ describe("markdown round trip", () => {
     expect(output).toContain("```mermaid");
     expect(output).toContain("A-->B");
   });
+
+  it("parses markdown hard breaks from two trailing spaces and normalizes them to br tags", () => {
+    const source = "alpha  \nbeta";
+    const output = serializeMarkdown(parseMarkdown(source));
+
+    expect(output).toContain("alpha<br>beta");
+  });
 });
 
 describe("export html", () => {

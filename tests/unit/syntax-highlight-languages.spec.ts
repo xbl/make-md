@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveHighlightLanguage, isMermaidLanguage } from "@/editor/syntax-highlight/languages";
+import { resolveHighlightLanguage, isMermaidLanguage, highlightCode } from "@/editor/syntax-highlight/languages";
 
 describe("resolveHighlightLanguage", () => {
   it("maps common aliases", () => {
@@ -15,5 +15,10 @@ describe("resolveHighlightLanguage", () => {
   it("excludes mermaid", () => {
     expect(isMermaidLanguage("mermaid")).toBe(true);
     expect(isMermaidLanguage("Mermaid")).toBe(true);
+  });
+
+  it("highlights common code without an explicit language using auto-detection", () => {
+    const html = highlightCode("const answer = 42;", "");
+    expect(html).toContain("hljs-");
   });
 });

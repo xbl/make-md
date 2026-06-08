@@ -57,14 +57,14 @@ export function isMermaidLanguage(raw: string | null | undefined): boolean {
 }
 
 export function highlightCode(text: string, language: string): string {
-  if (language === "plaintext") {
-    return escapeHtml(text);
-  }
-
   ensureHighlightLanguagesRegistered();
+  const resolvedLanguage = language.trim() ? language : "plaintext";
 
   try {
-    return hljs.highlight(text, { language }).value;
+    if (resolvedLanguage === "plaintext") {
+      return hljs.highlightAuto(text).value;
+    }
+    return hljs.highlight(text, { language: resolvedLanguage }).value;
   } catch {
     return escapeHtml(text);
   }

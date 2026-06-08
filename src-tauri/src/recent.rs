@@ -28,6 +28,22 @@ pub fn add_recent_path(recent: Vec<String>, path: String, max: usize) -> Vec<Str
     next
 }
 
+pub fn remove_recent_path(recent: Vec<String>, path: String) -> Vec<String> {
+    recent.into_iter().filter(|item| item != &path).collect()
+}
+
+pub fn clear_recent_paths(_recent: Vec<String>) -> Vec<String> {
+    Vec::new()
+}
+
+fn save_recent_files(app: &tauri::AppHandle, recent: &[String]) -> Result<(), String> {
+    fs::write(
+        recent_file_path(app)?,
+        serde_json::to_string_pretty(recent).map_err(|err| err.to_string())?,
+    )
+    .map_err(|err| err.to_string())
+}
+
 #[tauri::command]
 pub fn load_recent_files(app: tauri::AppHandle) -> Result<Vec<String>, String> {
     let path = recent_file_path(&app)?;
@@ -42,17 +58,28 @@ pub fn load_recent_files(app: tauri::AppHandle) -> Result<Vec<String>, String> {
 pub fn save_recent_file(app: tauri::AppHandle, path: String) -> Result<Vec<String>, String> {
     let recent = load_recent_files(app.clone())?;
     let next = add_recent_path(recent, path, MAX_RECENT);
-    fs::write(
-        recent_file_path(&app)?,
-        serde_json::to_string_pretty(&next).unwrap(),
-    )
-    .map_err(|err| err.to_string())?;
+    save_recent_files(&app, &next)?;
+    Ok(next)
+}
+
+#[tauri::command]
+pub fn remove_recent_file(app: tauri::AppHandle, path: String) -> Result<Vec<String>, String> {
+    let recent = load_recent_files(app.clone())?;
+    let next = remove_recent_path(recent, path);
+    save_recent_files(&app, &next)?;
+    Ok(next)
+}
+
+#[tauri::command]
+pub fn clear_recent_files(app: tauri::AppHandle) -> Result<Vec<String>, String> {
+    let next = clear_recent_paths(load_recent_files(app.clone())?);
+    save_recent_files(&app, &next)?;
     Ok(next)
 }
 
 #[cfg(test)]
 mod tests {
-    use super::add_recent_path;
+    use super::{add_recent_path, clear_recent_paths, remove_recent_path};
 
     #[test]
     fn keeps_order_when_path_already_exists() {
@@ -66,5 +93,26 @@ mod tests {
         let recent = vec!["a.md".into(), "b.md".into()];
         let next = add_recent_path(recent, "c.md".into(), 10);
         assert_eq!(next, vec!["a.md", "b.md", "c.md"]);
+    }
+
+    #[test]
+    fn removes_an_existing_recent_path() {
+        let recent = vec!["a.md".into(), "b.md".into(), "c.md".into()];
+        let next = remove_recent_path(recent, "b.md".into());
+        assert_eq!(next, vec!["a.md", "c.md"]);
+    }
+
+    #[test]
+    fn removing_a_missing_path_leaves_recent_unchanged() {
+        let recent = vec!["a.md".into(), "b.md".into()];
+        let next = remove_recent_path(recent.clone(), "z.md".into());
+        assert_eq!(next, recent);
+    }
+
+    #[test]
+    fn clears_all_recent_paths() {
+        let recent = vec!["a.md".into(), "b.md".into()];
+        let next = clear_recent_paths(recent);
+        assert!(next.is_empty());
     }
 }

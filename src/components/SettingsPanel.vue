@@ -81,6 +81,7 @@
 import { computed, ref, watch } from "vue";
 import { chordToDisplay } from "@/lib/shortcuts/display";
 import { eventToChord } from "@/lib/shortcuts/bindings";
+import { isSystemReservedChord } from "@/lib/shortcuts/reserved";
 import { useShortcutsStore } from "@/stores/shortcuts";
 import { useUiStore } from "@/stores/ui";
 
@@ -152,6 +153,11 @@ function captureChord(commandId: string, event: KeyboardEvent) {
   const chord = eventToChord(event);
   if (!chord) {
     recordingHint.value = "Use a shortcut with modifier keys.";
+    return;
+  }
+
+  if (isSystemReservedChord(chord)) {
+    recordingHint.value = "This shortcut is reserved by the system and cannot be reassigned.";
     return;
   }
 

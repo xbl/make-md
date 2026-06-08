@@ -1,7 +1,7 @@
 import { Fragment } from "prosemirror-model";
 import { Plugin } from "prosemirror-state";
 import type { Slice } from "prosemirror-model";
-import type { EditorState } from "prosemirror-state";
+import type { EditorView } from "prosemirror-view";
 import { markdownSchema } from "@/editor/schema";
 import { serializeMarkdown } from "@/editor/markdown-serializer";
 
@@ -14,7 +14,7 @@ function sliceToMarkdownDoc(slice: Slice) {
   return markdownSchema.nodes.doc.create(null, nodes);
 }
 
-function selectionToMarkdown(slice: Slice, _state: EditorState) {
+function selectionToMarkdown(this: Plugin, slice: Slice, _view: EditorView) {
   return serializeMarkdown(sliceToMarkdownDoc(slice));
 }
 

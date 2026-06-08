@@ -1,25 +1,160 @@
 <template>
-  <div ref="mountRef" class="editor-view"></div>
+  <div class="editor-view-shell" @contextmenu="openContextMenu">
+    <div ref="mountRef" class="editor-view"></div>
+    <ContextMenu
+      :open="menu.state.open"
+      :x="menu.state.x"
+      :y="menu.state.y"
+      :items="menuItems"
+      @close="menu.close"
+      @select="handleMenuSelect"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { EditorState } from "prosemirror-state";
 import { EditorView as PMEditorView } from "prosemirror-view";
+import type { EditorState as PMEditorState } from "prosemirror-state";
+import type { Slice } from "prosemirror-model";
+import ContextMenu from "@/components/ContextMenu.vue";
 import { markdownSchema } from "@/editor/schema";
 import { parseMarkdown } from "@/editor/markdown-parser";
 import { serializeMarkdown } from "@/editor/markdown-serializer";
 import { createEditorPlugins } from "@/editor/plugins";
 import { createEditorNodeViews } from "@/editor/code-block-view";
+import {
+  createContextMenuController,
+  type ContextMenuActionItem,
+  type ContextMenuItem,
+} from "@/lib/context-menu";
 import { useDocumentsStore } from "@/stores/documents";
 import { useEditorStore } from "@/stores/editor";
 
 const mountRef = ref<HTMLDivElement | null>(null);
 const documents = useDocumentsStore();
 const editorStore = useEditorStore();
+const menu = createContextMenuController();
 let view: PMEditorView | null = null;
 
 const activeSession = computed(() => documents.activeSession);
+const hasSelection = computed(() => Boolean(view && !view.state.selection.empty));
+const canUseClipboard = computed(() => Boolean(window.navigator?.clipboard));
+
+const menuItems = computed<ContextMenuItem[]>(() => [
+  { type: "action", id: "clipboard.cut", label: "Cut", disabled: !hasSelection.value },
+  { type: "action", id: "clipboard.copy", label: "Copy", disabled: !hasSelection.value },
+  { type: "action", id: "clipboard.paste", label: "Paste", disabled: !canUseClipboard.value },
+  { type: "action", id: "edit.selectAll", label: "Select All" },
+  { type: "separator", id: "sep-edit-format" },
+  { type: "action", id: "format.bold", label: "Bold" },
+  { type: "action", id: "format.italic", label: "Italic" },
+  { type: "action", id: "format.inlineCode", label: "Inline Code" },
+  { type: "separator", id: "sep-format-paragraph" },
+  { type: "action", id: "paragraph.h1", label: "Heading 1" },
+  { type: "action", id: "paragraph.h2", label: "Heading 2" },
+  { type: "action", id: "paragraph.h3", label: "Heading 3" },
+  { type: "action", id: "paragraph.paragraph", label: "Paragraph" },
+  { type: "separator", id: "sep-paragraph-table" },
+  { type: "action", id: "paragraph.table", label: "Insert Table" },
+]);
+
+function dispatchEditorCommand(commandId: string) {
+  window.dispatchEvent(new CustomEvent("make-md:editor-command", { detail: { commandId } }));
+}
+
+function serializeSelectionForClipboard(state: PMEditorState) {
+  let result = "";
+  state.plugins.some((plugin) => {
+    const serializer = plugin.props.clipboardTextSerializer;
+    if (typeof serializer !== "function") {
+      return false;
+    }
+    if (!view) {
+      return false;
+    }
+    result = serializer.call(plugin, state.selection.content(), view);
+    return true;
+  });
+  return result;
+}
+
+async function copySelection() {
+  if (!view || view.state.selection.empty || !window.navigator?.clipboard) {
+    return;
+  }
+  const text = serializeSelectionForClipboard(view.state);
+  if (!text) {
+    return;
+  }
+  await window.navigator.clipboard.writeText(text);
+}
+
+async function cutSelection() {
+  if (!view || view.state.selection.empty || !window.navigator?.clipboard) {
+    return;
+  }
+  await copySelection();
+  view.dispatch(view.state.tr.deleteSelection().scrollIntoView());
+  view.focus();
+}
+
+async function pasteClipboard() {
+  const currentView = view;
+  if (!currentView || !window.navigator?.clipboard) {
+    return;
+  }
+  const text = await window.navigator.clipboard.readText();
+  if (!text) {
+    return;
+  }
+  const handled = currentView.someProp("handlePaste", (handler) =>
+    handler.call(
+      currentView,
+      currentView,
+      {
+        preventDefault() {},
+        clipboardData: {
+          items: [{ type: "text/plain" }],
+          getData(type: string) {
+            return type === "text/plain" ? text : "";
+          },
+        },
+      } as unknown as ClipboardEvent,
+      null as unknown as Slice,
+    ),
+  );
+  if (!handled) {
+    currentView.dispatch(currentView.state.tr.insertText(text).scrollIntoView());
+  }
+  currentView.focus();
+}
+
+async function handleMenuSelect(item: ContextMenuActionItem) {
+  if (item.id === "clipboard.cut") {
+    await cutSelection();
+    return;
+  }
+  if (item.id === "clipboard.copy") {
+    await copySelection();
+    return;
+  }
+  if (item.id === "clipboard.paste") {
+    await pasteClipboard();
+    return;
+  }
+  dispatchEditorCommand(item.id);
+}
+
+function openContextMenu(event: MouseEvent) {
+  if (!view || !activeSession.value) {
+    return;
+  }
+  event.preventDefault();
+  view.focus();
+  menu.openAt(event.clientX, event.clientY);
+}
 
 function syncSessionContent() {
   const session = activeSession.value;
@@ -28,6 +163,35 @@ function syncSessionContent() {
   }
   const content = serializeMarkdown(view.state.doc);
   documents.scheduleAutosave(content);
+}
+
+function syncViewFromSession() {
+  const session = activeSession.value;
+  if (!session || !view) {
+    return;
+  }
+
+  const currentContent = serializeMarkdown(view.state.doc);
+  if (currentContent === session.content) {
+    return;
+  }
+
+  const nextDoc = parseMarkdown(session.content || "");
+  const nextState = EditorState.create({
+    schema: markdownSchema,
+    doc: nextDoc,
+    plugins: createEditorPlugins({
+      getDocPath: () => activeSession.value?.path || undefined,
+      onImageError: (message) => window.alert(message),
+    }),
+  });
+
+  const hadFocus = view.hasFocus();
+  view.updateState(nextState);
+  editorStore.bumpDocVersion();
+  if (hadFocus) {
+    view.focus();
+  }
 }
 
 function mountEditor() {
@@ -79,10 +243,19 @@ watch(
   },
 );
 
+watch(
+  () => documents.sessions,
+  async () => {
+    await nextTick();
+    syncViewFromSession();
+  },
+);
+
 onBeforeUnmount(() => {
   void documents.flushAutosave();
   view?.destroy();
   view = null;
+  menu.close();
   editorStore.clearView();
 });
 </script>

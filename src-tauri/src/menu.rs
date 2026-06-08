@@ -1,4 +1,4 @@
-use tauri::menu::{Menu, MenuItem, Submenu};
+use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::{App, AppHandle, Emitter, Runtime};
 
 pub const MENU_EVENT_NAME: &str = "app://menu-command";
@@ -42,6 +42,7 @@ const COMMANDS: &[(&str, &str, &str, bool, Option<&str>)] = &[
     ("view.outline", "Outline", "view", true, Some("CmdOrCtrl+Ctrl+1")),
     ("view.files", "File Tree", "view", true, Some("CmdOrCtrl+Ctrl+3")),
     ("view.focus", "Focus Mode", "view", true, Some("F8")),
+    ("view.source", "Toggle Source", "view", true, Some("CmdOrCtrl+Alt+S")),
     ("view.commandPalette", "Command Palette", "view", true, Some("CmdOrCtrl+Shift+P")),
     ("export.html", "Export HTML", "export", true, Some("CmdOrCtrl+E")),
     ("export.pdf", "Export PDF", "export", true, Some("CmdOrCtrl+Shift+E")),
@@ -69,15 +70,12 @@ fn build_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
         ("view", "View"),
         ("export", "Export"),
     ] {
-        let items: tauri::Result<Vec<MenuItem<R>>> = COMMANDS
-            .iter()
-            .filter(|(_, _, item_category, _, _)| *item_category == category)
-            .map(|(id, item_label, _, enabled, accelerator)| {
-                MenuItem::with_id(app, *id, *item_label, *enabled, *accelerator)
-            })
-            .collect();
+        if category == "edit" {
+            top_level.push(build_edit_submenu(app, label)?);
+            continue;
+        }
 
-        let items = items?;
+        let items = build_command_items(app, category)?;
         let refs: Vec<&dyn tauri::menu::IsMenuItem<R>> =
             items.iter().map(|item| item as &dyn tauri::menu::IsMenuItem<R>).collect();
         top_level.push(Submenu::with_items(app, label, true, &refs)?);
@@ -86,4 +84,43 @@ fn build_menu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Menu<R>> {
     let top_refs: Vec<&dyn tauri::menu::IsMenuItem<R>> =
         top_level.iter().map(|submenu| submenu as &dyn tauri::menu::IsMenuItem<R>).collect();
     Menu::with_items(app, &top_refs)
+}
+
+fn build_command_items<R: Runtime>(
+    app: &AppHandle<R>,
+    category: &str,
+) -> tauri::Result<Vec<MenuItem<R>>> {
+    COMMANDS
+        .iter()
+        .filter(|(_, _, item_category, _, _)| *item_category == category)
+        .map(|(id, item_label, _, enabled, accelerator)| {
+            MenuItem::with_id(app, *id, *item_label, *enabled, *accelerator)
+        })
+        .collect()
+}
+
+fn build_edit_submenu<R: Runtime>(app: &AppHandle<R>, label: &str) -> tauri::Result<Submenu<R>> {
+    let edit_commands = build_command_items(app, "edit")?;
+    let undo = PredefinedMenuItem::undo(app, None)?;
+    let redo = PredefinedMenuItem::redo(app, None)?;
+    let separator_1 = PredefinedMenuItem::separator(app)?;
+    let cut = PredefinedMenuItem::cut(app, None)?;
+    let copy = PredefinedMenuItem::copy(app, None)?;
+    let paste = PredefinedMenuItem::paste(app, None)?;
+    let select_all = PredefinedMenuItem::select_all(app, None)?;
+    let separator_2 = PredefinedMenuItem::separator(app)?;
+
+    let mut refs: Vec<&dyn tauri::menu::IsMenuItem<R>> = vec![
+        &undo,
+        &redo,
+        &separator_1,
+        &cut,
+        &copy,
+        &paste,
+        &select_all,
+        &separator_2,
+    ];
+    refs.extend(edit_commands.iter().map(|item| item as &dyn tauri::menu::IsMenuItem<R>));
+
+    Submenu::with_items(app, label, true, &refs)
 }
