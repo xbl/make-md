@@ -46,6 +46,14 @@ export async function writeBinaryFile(path: string, bytes: number[]) {
   return { path, bytes };
 }
 
+export async function readBinaryFile(path: string) {
+  if (!isTauri()) {
+    return new Uint8Array([]);
+  }
+  const bytes = await invoke<number[]>("read_binary_file", { path });
+  return new Uint8Array(bytes);
+}
+
 export async function loadRecentFiles() {
   if (!isTauri()) {
     return [];

@@ -1,9 +1,15 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { markdownToWordPayload, wordPayloadToDocxBytes } from "@/lib/export-word";
+import {
+  __resetWordExportTauriDetectorForTests,
+  __setWordExportTauriDetectorForTests,
+  markdownToWordPayload,
+  wordPayloadToDocxBytes,
+} from "@/lib/export-word";
+import * as fileService from "@/lib/file-service";
 
 const mermaidRenderMock = vi.fn(async () => ({
   svg: '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="60"><rect width="120" height="60" fill="#fff"/><text x="10" y="30">diagram</text></svg>',
@@ -17,8 +23,13 @@ vi.mock("mermaid", () => ({
 }));
 
 describe("export word", () => {
+  afterEach(() => {
+    __resetWordExportTauriDetectorForTests();
+  });
+
   beforeEach(() => {
     vi.restoreAllMocks();
+    __setWordExportTauriDetectorForTests(() => false);
     mermaidRenderMock.mockReset();
     mermaidRenderMock.mockResolvedValue({
       svg: '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="60"><rect width="120" height="60" fill="#fff"/><text x="10" y="30">diagram</text></svg>',
@@ -183,6 +194,8 @@ describe("export word", () => {
       configurable: true,
       value: FailingImage,
     });
+    __setWordExportTauriDetectorForTests(() => true);
+    vi.spyOn(fileService, "readBinaryFile").mockResolvedValue(new Uint8Array([137, 80, 78, 71]));
 
     const payload = await markdownToWordPayload(
       "![整体高阶架构设计](../概要设计 images/SDSP领域-整体高阶架构设计.png)",
@@ -211,6 +224,49 @@ describe("export word", () => {
       expect(output).toContain("No errors detected");
     } finally {
       rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it("diagnoses the real SDSP outline markdown export package", async () => {
+    const mdPath = "/Users/blxie/Documents/项目/上海银行/二期/Markdown 文档/概要设计/SDSP 领域-概要设计.md";
+    const markdown = readFileSync(mdPath, "utf8");
+    const originalFetch = globalThis.fetch;
+
+    vi.stubGlobal("fetch", vi.fn(async (src: string | URL) => {
+      const fileUrl = new URL(String(src));
+      const bytes = readFileSync(fileUrl);
+      return {
+        ok: true,
+        arrayBuffer: async () => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
+      };
+    }));
+
+    const payload = await markdownToWordPayload(markdown, {
+      title: "SDSP 领域-概要设计",
+      docPath: mdPath,
+    });
+
+    const tempDir = mkdtempSync(join(tmpdir(), "make-md-word-real-"));
+    const docxPath = join(tempDir, "sdsp-outline.docx");
+
+    try {
+      expect(payload.blocks.filter((block) => block.type === "image").length).toBeGreaterThan(3);
+
+      const bytes = wordPayloadToDocxBytes(payload);
+      writeFileSync(docxPath, Buffer.from(bytes));
+
+      const unzipOutput = execFileSync("unzip", ["-t", docxPath], { encoding: "utf8" });
+      const relsXml = execFileSync("unzip", ["-p", docxPath, "word/_rels/document.xml.rels"], { encoding: "utf8" });
+      const documentXml = execFileSync("unzip", ["-p", docxPath, "word/document.xml"], { encoding: "utf8" });
+      const mediaList = execFileSync("unzip", ["-Z1", docxPath], { encoding: "utf8" });
+
+      expect(unzipOutput).toContain("No errors detected");
+      expect(relsXml).toContain("rIdImage1");
+      expect(documentXml).toContain("r:embed=\"rIdImage1\"");
+      expect(mediaList).toContain("word/media/image-1.png");
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+      vi.stubGlobal("fetch", originalFetch);
     }
   });
 

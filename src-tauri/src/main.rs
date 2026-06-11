@@ -22,6 +22,7 @@ fn main() {
             ai::ai_cancel,
             i18n::get_system_locale,
             fs::read_markdown_file,
+            fs::read_binary_file,
             fs::write_markdown_file,
             fs::write_binary_file,
             fs::pick_save_word_file,

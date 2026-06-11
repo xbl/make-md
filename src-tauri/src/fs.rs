@@ -19,6 +19,11 @@ pub fn write_binary_file(path: String, bytes: Vec<u8>) -> Result<(), String> {
     fs::write(PathBuf::from(path), bytes).map_err(|err| err.to_string())
 }
 
+#[tauri::command]
+pub fn read_binary_file(path: String) -> Result<Vec<u8>, String> {
+    fs::read(PathBuf::from(path)).map_err(|err| err.to_string())
+}
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SaveWordSelection {

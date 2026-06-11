@@ -1,7 +1,9 @@
 import mermaid from "mermaid";
 import { marked } from "marked";
-import { pickSaveWordFile, writeBinaryFile } from "@/lib/file-service";
+import { pickSaveWordFile, readBinaryFile, writeBinaryFile } from "@/lib/file-service";
 import { resolveMarkdownImageDisplaySrc } from "@/lib/markdown-image-src";
+import { resolveMarkdownImagePath } from "@/lib/markdown-image-src";
+import { isTauri } from "@tauri-apps/api/core";
 
 export type WordBlock =
   | { type: "paragraph"; text: string }
@@ -20,6 +22,7 @@ export type WordExportPayload = {
 
 let mermaidReady = false;
 const MARKDOWN_IMAGE_RE = /^!\[([^\]]*)\]\(([^)]+)\)$/;
+let tauriDetector = () => isTauri();
 
 function escapeXml(value: string) {
   return value
@@ -142,6 +145,19 @@ async function readImageBytes(src: string) {
   return new Uint8Array(await response.arrayBuffer());
 }
 
+async function readLocalImageBytes(src: string, docPath?: string) {
+  const resolvedPath = resolveMarkdownImagePath(src, docPath);
+  if (!resolvedPath.startsWith("/")) {
+    return null;
+  }
+
+  if (tauriDetector()) {
+    return readBinaryFile(resolvedPath);
+  }
+
+  return null;
+}
+
 function resolveMarkdownImageSource(src: string, docPath?: string) {
   return resolveMarkdownImageDisplaySrc(src, docPath);
 }
@@ -150,6 +166,10 @@ async function resolveMarkdownImageToPng(src: string, docPath?: string) {
   const resolved = resolveMarkdownImageSource(src, docPath);
   const ext = imageFileExtension(resolved);
   if (isNativeWordImageFormat(ext)) {
+    const localBytes = await readLocalImageBytes(src, docPath);
+    if (localBytes) {
+      return localBytes;
+    }
     return readImageBytes(resolved);
   }
   return imageUrlToPngBytes(resolved);
@@ -790,4 +810,12 @@ export async function exportMarkdownToWord(markdown: string, title: string, defa
   const bytes = wordPayloadToDocxBytes(payload);
   await writeBinaryFile(selection.path, Array.from(bytes));
   return selection.path;
+}
+
+export function __setWordExportTauriDetectorForTests(next: () => boolean) {
+  tauriDetector = next;
+}
+
+export function __resetWordExportTauriDetectorForTests() {
+  tauriDetector = () => isTauri();
 }
