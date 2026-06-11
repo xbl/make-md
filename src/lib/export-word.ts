@@ -1,6 +1,7 @@
 import mermaid from "mermaid";
 import { marked } from "marked";
-import { resolveImageSource } from "@/lib/image-source";
+import { isTauri } from "@tauri-apps/api/core";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { pickSaveWordFile, writeBinaryFile } from "@/lib/file-service";
 
 export type WordBlock =
@@ -124,10 +125,46 @@ async function imageUrlToPngBytes(src: string) {
   return new Uint8Array(await pngBlob.arrayBuffer());
 }
 
+function normalizePath(path: string) {
+  return path.replace(/\\/g, "/");
+}
+
+function resolveRelativePath(fromDir: string, target: string) {
+  const baseParts = normalizePath(fromDir).split("/").filter(Boolean);
+  const targetParts = normalizePath(target).split("/");
+  for (const part of targetParts) {
+    if (!part || part === ".") {
+      continue;
+    }
+    if (part === "..") {
+      baseParts.pop();
+      continue;
+    }
+    baseParts.push(part);
+  }
+  return `/${baseParts.join("/")}`;
+}
+
+function resolveMarkdownImageSource(src: string, docPath?: string) {
+  if (/^(https?:|data:|blob:)/i.test(src)) {
+    return src;
+  }
+
+  if (src.startsWith("/")) {
+    return isTauri() ? convertFileSrc(src) : `file://${src}`;
+  }
+
+  if (!docPath) {
+    return src;
+  }
+
+  const docDir = normalizePath(docPath).replace(/\/[^/]*$/, "");
+  const resolved = resolveRelativePath(docDir, src);
+  return isTauri() ? convertFileSrc(resolved) : `file://${resolved}`;
+}
+
 async function resolveMarkdownImageToPng(src: string, docPath?: string) {
-  const resolved = resolveImageSource(src, docPath, {
-    isTauriApp: false,
-  });
+  const resolved = resolveMarkdownImageSource(src, docPath);
   return imageUrlToPngBytes(resolved);
 }
 

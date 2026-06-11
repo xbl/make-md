@@ -98,7 +98,7 @@ function parseTable(lines: string[], startIndex: number): { node: PMNode; nextIn
   };
 }
 
-export function parseMarkdown(source: string): PMNode {
+export function parseMarkdown(source: string, docPath?: string): PMNode {
   const lines = source.split(/\r?\n/);
   const blocks: PMNode[] = [];
   let index = 0;
@@ -155,7 +155,7 @@ export function parseMarkdown(source: string): PMNode {
       blocks.push(
         markdownSchema.nodes.blockquote.createAndFill(
           null,
-          quoteLines.map((text) => paragraphFromMarkdown(text)),
+          quoteLines.map((text) => paragraphFromMarkdown(text, docPath)),
         )!,
       );
       continue;
@@ -218,7 +218,7 @@ export function parseMarkdown(source: string): PMNode {
       paragraphLines.push(lines[index]);
       index += 1;
     }
-    blocks.push(paragraphFromMarkdown(joinParagraphLines(paragraphLines)));
+    blocks.push(paragraphFromMarkdown(joinParagraphLines(paragraphLines), docPath));
   }
 
   if (blocks.length === 0) {

@@ -226,7 +226,7 @@ function syncViewFromSession() {
     return;
   }
 
-  const nextDoc = parseMarkdown(session.content || "");
+  const nextDoc = parseMarkdown(session.content || "", session.path || undefined);
   const nextState = EditorState.create({
     schema: markdownSchema,
     doc: nextDoc,
@@ -251,7 +251,7 @@ function mountEditor() {
     return;
   }
 
-  const doc = parseMarkdown(activeSession.value.content || "");
+  const doc = parseMarkdown(activeSession.value.content || "", activeSession.value.path || undefined);
   const state = EditorState.create({
     schema: markdownSchema,
     doc,

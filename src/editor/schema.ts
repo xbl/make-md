@@ -17,6 +17,44 @@ const codeBlockSpec: NodeSpec = {
   },
 };
 
+const imageSpec: NodeSpec = {
+  inline: true,
+  attrs: {
+    src: {},
+    alt: { default: null },
+    title: { default: null },
+    displaySrc: { default: null },
+  },
+  group: "inline",
+  draggable: true,
+  parseDOM: [
+    {
+      tag: "img[src]",
+      getAttrs(dom) {
+        if (!(dom instanceof HTMLImageElement)) {
+          return false;
+        }
+        return {
+          src: dom.getAttribute("src"),
+          alt: dom.getAttribute("alt"),
+          title: dom.getAttribute("title"),
+          displaySrc: dom.getAttribute("src"),
+        };
+      },
+    },
+  ],
+  toDOM(node) {
+    return [
+      "img",
+      {
+        src: node.attrs.displaySrc ?? node.attrs.src,
+        alt: node.attrs.alt,
+        title: node.attrs.title,
+      },
+    ];
+  },
+};
+
 const tableNodes: Record<string, NodeSpec> = {
   table: {
     content: "table_row+",
@@ -93,6 +131,7 @@ const taskNodes: Record<string, NodeSpec> = {
 };
 
 const nodes = addListNodes(basicSchema.spec.nodes, "paragraph block*", "block")
+  .update("image", imageSpec)
   .update("code_block", codeBlockSpec)
   .append(tableNodes)
   .append(taskNodes);
