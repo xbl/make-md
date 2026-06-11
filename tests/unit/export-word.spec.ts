@@ -1,4 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { markdownToWordPayload, wordPayloadToDocxBytes } from "@/lib/export-word";
 
 const mermaidRenderMock = vi.fn(async () => ({
@@ -94,6 +98,18 @@ describe("export word", () => {
     expect(text).toContain("word/media/image-1.png");
   });
 
+  it("declares numbering.xml in content types so Word can open the package without repair", () => {
+    const bytes = wordPayloadToDocxBytes({
+      title: "Numbering",
+      blocks: [{ type: "paragraph", text: "hello" }],
+    });
+
+    const text = new TextDecoder().decode(bytes);
+    expect(text).toContain(
+      '<Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/>',
+    );
+  });
+
   it("preserves inline markdown styles in exported document xml", () => {
     const bytes = wordPayloadToDocxBytes({
       title: "Styled",
@@ -124,6 +140,24 @@ describe("export word", () => {
     const text = new TextDecoder().decode(bytes);
     expect(text).toContain("word/media/image-1.png");
     expect(text).not.toContain("![架构图](../概要设计 images/image3.png)");
+  });
+
+  it("produces an image docx package that unzip can read without structural errors", async () => {
+    const payload = await markdownToWordPayload("![架构图](../概要设计 images/image3.png)", {
+      title: "Images",
+      docPath: "/Users/blxie/Documents/project/docs/design.md",
+    });
+    const bytes = wordPayloadToDocxBytes(payload);
+    const tempDir = mkdtempSync(join(tmpdir(), "make-md-word-"));
+    const docxPath = join(tempDir, "export.docx");
+
+    try {
+      writeFileSync(docxPath, Buffer.from(bytes));
+      const output = execFileSync("unzip", ["-t", docxPath], { encoding: "utf8" });
+      expect(output).toContain("No errors detected");
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
   });
 
   it("exports markdown tables as word tables with borders", async () => {
