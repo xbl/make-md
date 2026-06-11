@@ -9,6 +9,7 @@ export type CommandHandlerDeps = {
   saveAs: () => Promise<unknown>;
   exportHtml: () => Promise<unknown>;
   exportPdf: () => Promise<unknown>;
+  exportWord: () => Promise<unknown>;
   openFind: () => void;
   openReplace: () => void;
   toggleSidebar: () => void;
@@ -90,6 +91,7 @@ const COMMAND_SEEDS: CommandSeed[] = [
 
   def("export.html", "command.export.html", "export", "export", "Mod-e"),
   def("export.pdf", "command.export.pdf", "export", "export", "Mod-Shift-e"),
+  def("export.word", "command.export.word", "export", "export", null),
 ];
 
 export function getCommandCatalog(locale: SupportedLocale): CommandDef[] {
@@ -180,6 +182,9 @@ export function createCommandHandlers(deps: CommandHandlerDeps): Record<string, 
     },
     "export.pdf": async () => {
       await deps.exportPdf();
+    },
+    "export.word": async () => {
+      await deps.exportWord();
     },
   };
 }

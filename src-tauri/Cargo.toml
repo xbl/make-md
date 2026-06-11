@@ -17,6 +17,9 @@ reqwest = { version = "0.12", features = ["json", "stream"] }
 keyring = "3"
 tokio = { version = "1", features = ["sync"] }
 futures-util = "0.3"
+objc2 = "0.6.3"
+objc2-app-kit = { version = "0.3.2", features = ["std", "NSApplication", "NSButton", "NSCell", "NSControl", "NSSavePanel", "NSView"] }
+objc2-foundation = { version = "0.3.2", features = ["std", "NSArray", "NSGeometry", "NSString", "NSURL"] }
 
 [dev-dependencies]
 tempfile = "3"

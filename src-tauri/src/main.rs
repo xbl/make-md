@@ -23,6 +23,8 @@ fn main() {
             i18n::get_system_locale,
             fs::read_markdown_file,
             fs::write_markdown_file,
+            fs::write_binary_file,
+            fs::pick_save_word_file,
             menu::sync_menu_locale,
             recent::load_recent_files,
             recent::save_recent_file,

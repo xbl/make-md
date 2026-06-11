@@ -17,6 +17,7 @@ import { saveRecoverySnapshot, clearRecoverySnapshot, loadRecoverySnapshot } fro
 import { promptUnsavedChanges } from "@/lib/unsaved-prompt";
 import { markdownToHtml } from "@/lib/export-html";
 import { exportMarkdownToPdf } from "@/lib/export-pdf";
+import { exportMarkdownToWord } from "@/lib/export-word";
 
 type Session = ReturnType<typeof createDocumentSession>;
 
@@ -309,6 +310,21 @@ export const useDocumentsStore = defineStore("documents", {
       const defaultPath = session.path ? session.path.replace(/\.md$/i, ".pdf") : "untitled.pdf";
       try {
         return await exportMarkdownToPdf(session.content, title, defaultPath);
+      } catch (error) {
+        window.alert(String(error));
+        return null;
+      }
+    },
+    async exportActiveWord() {
+      const session = this.activeSession;
+      if (!session) {
+        return null;
+      }
+
+      const title = session.path ? session.path.split("/").pop() ?? "Document" : "Untitled";
+      const defaultPath = session.path ? session.path.replace(/\.md$/i, ".docx") : "untitled.docx";
+      try {
+        return await exportMarkdownToWord(session.content, title, defaultPath, session.path || undefined);
       } catch (error) {
         window.alert(String(error));
         return null;

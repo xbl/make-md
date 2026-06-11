@@ -271,6 +271,7 @@ onMounted(async () => {
     saveAs: () => documents.saveAsDialog(),
     exportHtml: () => documents.exportActiveHtml(),
     exportPdf: () => documents.exportActivePdf(),
+    exportWord: () => documents.exportActiveWord(),
     openFind: () => ui.openFindReplace("find"),
     openReplace: () => ui.openFindReplace("replace"),
     toggleSidebar: () => ui.toggleSidebar(),

@@ -5,6 +5,7 @@ import { normalizeFilePath } from "@/lib/file-path";
 const MARKDOWN_FILTER = [{ name: "Markdown", extensions: ["md", "markdown"] }];
 const HTML_FILTER = [{ name: "HTML", extensions: ["html", "htm"] }];
 const PDF_FILTER = [{ name: "PDF", extensions: ["pdf"] }];
+const WORD_FILTER = [{ name: "Word", extensions: ["docx"] }];
 
 function getE2eBridge() {
   if (typeof window === "undefined") {
@@ -35,6 +36,14 @@ export async function writeMarkdownFile(path: string, content: string) {
 
 export async function writeTextFile(path: string, content: string) {
   return writeMarkdownFile(path, content);
+}
+
+export async function writeBinaryFile(path: string, bytes: number[]) {
+  if (!isTauri()) {
+    return { path, bytes };
+  }
+  await invoke("write_binary_file", { path, bytes });
+  return { path, bytes };
 }
 
 export async function loadRecentFiles() {
@@ -134,4 +143,27 @@ export async function pickSaveHtmlFile(defaultPath?: string): Promise<string | n
     return null;
   }
   return normalizeFilePath(selected);
+}
+
+export type SaveWordSelection = {
+  path: string;
+  includeMermaidCode: boolean;
+};
+
+export async function pickSaveWordFile(defaultPath?: string): Promise<SaveWordSelection | null> {
+  if (!isTauri()) {
+    return null;
+  }
+  const selected = await invoke<SaveWordSelection | null>("pick_save_word_file", { defaultPath });
+  if (!selected) {
+    return null;
+  }
+  return {
+    path: normalizeFilePath(selected.path),
+    includeMermaidCode: selected.includeMermaidCode,
+  };
+}
+
+export function getWordSaveFilters() {
+  return WORD_FILTER;
 }

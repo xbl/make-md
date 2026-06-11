@@ -102,7 +102,7 @@
 |---|---|---|
 | 导出 HTML | `complete` | 已支持独立 HTML 导出。 |
 | 导出 PDF | `complete` | 已支持 PDF 导出，README 中注明 macOS 浏览器依赖。 |
-| 导出 Word | `complete` | 已支持导出 `.docx`；Mermaid 默认导出为 PNG 图片，可在导出保存面板中勾选是否额外导出 Mermaid 代码。 |
+| 导出 Word | `complete` | 已支持导出 `.docx`；Mermaid 默认导出为 PNG 图片，可在导出保存面板中勾选是否额外导出 Mermaid 代码；Markdown 图片会解析为嵌入图片导出，表格会导出为带边框的 Word 表格，而不是保留 Markdown 文本。 |
 | 带语法高亮的 HTML 导出 | `partial` | 设计期望与编辑器高亮保持一致，当前仍需持续核对实现对齐情况。 |
 
 ## 稳定性与恢复

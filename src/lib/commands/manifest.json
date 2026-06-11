@@ -40,5 +40,6 @@
   { "id": "view.source", "label": "Toggle Source", "category": "view", "enabled": true },
   { "id": "view.commandPalette", "label": "Command Palette", "category": "view", "enabled": true },
   { "id": "export.html", "label": "Export HTML", "category": "export", "enabled": true },
-  { "id": "export.pdf", "label": "Export PDF", "category": "export", "enabled": true }
+  { "id": "export.pdf", "label": "Export PDF", "category": "export", "enabled": true },
+  { "id": "export.word", "label": "Export Word", "category": "export", "enabled": true }
 ]

@@ -47,6 +47,7 @@ const COMMANDS: &[(&str, &str, &str, bool, Option<&str>)] = &[
     ("view.commandPalette", "menu.view.commandPalette", "view", true, Some("CmdOrCtrl+Shift+P")),
     ("export.html", "menu.export.html", "export", true, Some("CmdOrCtrl+E")),
     ("export.pdf", "menu.export.pdf", "export", true, Some("CmdOrCtrl+Shift+E")),
+    ("export.word", "menu.export.word", "export", true, None),
 ];
 
 pub fn install_menu<R: Runtime>(app: &mut App<R>) -> tauri::Result<()> {
