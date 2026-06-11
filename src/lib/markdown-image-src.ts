@@ -4,6 +4,14 @@ function normalizePath(path: string) {
   return path.replace(/\\/g, "/");
 }
 
+function decodeLocalPath(path: string) {
+  try {
+    return decodeURI(path);
+  } catch {
+    return path;
+  }
+}
+
 function resolveRelativePath(fromDir: string, target: string) {
   const baseParts = normalizePath(fromDir).split("/").filter(Boolean);
   const targetParts = normalizePath(target).split("/");
@@ -25,16 +33,18 @@ function encodeFileUrlPath(path: string) {
 }
 
 export function resolveMarkdownImagePath(src: string, docPath?: string) {
-  if (src.startsWith("/")) {
-    return normalizePath(src);
+  const localSrc = decodeLocalPath(src);
+
+  if (localSrc.startsWith("/")) {
+    return normalizePath(localSrc);
   }
 
   if (!docPath) {
-    return src;
+    return localSrc;
   }
 
   const docDir = normalizePath(docPath).replace(/\/[^/]*$/, "");
-  return resolveRelativePath(docDir, src);
+  return resolveRelativePath(docDir, localSrc);
 }
 
 export function resolveMarkdownImageDisplaySrc(src: string, docPath?: string) {
