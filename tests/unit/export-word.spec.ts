@@ -142,6 +142,36 @@ describe("export word", () => {
     expect(text).toContain("<w:t>2</w:t>");
   });
 
+  it("exports markdown lists as native word numbering instead of markdown prefixes", async () => {
+    const payload = await markdownToWordPayload("1. First\n2. Second\n\n- Bullet", {
+      title: "List",
+    });
+
+    expect(payload.blocks.map((block) => block.type)).toEqual(["listItem", "listItem", "listItem"]);
+
+    const bytes = wordPayloadToDocxBytes(payload);
+    const text = new TextDecoder().decode(bytes);
+    expect(text).toContain("word/numbering.xml");
+    expect(text).toContain("<w:numPr>");
+    expect(text).not.toContain("<w:t>1. First</w:t>");
+    expect(text).not.toContain("<w:t>- Bullet</w:t>");
+  });
+
+  it("exports blockquotes as styled quote paragraphs instead of markdown markers", async () => {
+    const payload = await markdownToWordPayload("> quoted text", {
+      title: "Quote",
+    });
+
+    expect(payload.blocks).toHaveLength(1);
+    expect(payload.blocks[0]?.type).toBe("blockquote");
+
+    const bytes = wordPayloadToDocxBytes(payload);
+    const text = new TextDecoder().decode(bytes);
+    expect(text).toContain('<w:ind w:left="720"/>');
+    expect(text).toContain('<w:shd w:val="clear" w:color="auto" w:fill="F5F5F5"/>');
+    expect(text).not.toContain("<w:t>&gt; quoted text</w:t>");
+  });
+
   it("falls back to mermaid code block when diagram rendering fails", async () => {
     mermaidRenderMock.mockRejectedValueOnce(new Error("Parse error"));
 

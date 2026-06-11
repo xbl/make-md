@@ -6,6 +6,8 @@ import { pickSaveWordFile, writeBinaryFile } from "@/lib/file-service";
 export type WordBlock =
   | { type: "paragraph"; text: string }
   | { type: "heading"; level: number; text: string }
+  | { type: "listItem"; text: string; ordered: boolean; level: number; number?: number }
+  | { type: "blockquote"; text: string }
   | { type: "code"; language: string; text: string }
   | { type: "mermaid"; code: string; png: Uint8Array }
   | { type: "image"; alt: string; png: Uint8Array }
@@ -140,6 +142,41 @@ function parseStandaloneMarkdownImage(text: string) {
   };
 }
 
+function pushListItems(
+  blocks: WordBlock[],
+  items: Array<{ text: string; number?: number; tokens?: unknown[] }>,
+  ordered: boolean,
+  level = 0,
+) {
+  for (const item of items) {
+    blocks.push({
+      type: "listItem",
+      ordered,
+      level,
+      number: item.number,
+      text: normalizeText(stripTags(item.text)),
+    });
+
+    for (const child of item.tokens ?? []) {
+      if (
+        child &&
+        typeof child === "object" &&
+        "type" in child &&
+        child.type === "list" &&
+        "items" in child &&
+        Array.isArray(child.items)
+      ) {
+        pushListItems(
+          blocks,
+          child.items as Array<{ text: string; number?: number; tokens?: unknown[] }>,
+          Boolean("ordered" in child && child.ordered),
+          level + 1,
+        );
+      }
+    }
+  }
+}
+
 export async function markdownToWordPayload(
   markdown: string,
   options?: { includeMermaidCode?: boolean; title?: string; docPath?: string },
@@ -214,13 +251,7 @@ export async function markdownToWordPayload(
         break;
       }
       case "list":
-        for (const item of token.items) {
-          const prefix = token.ordered ? `${item.number ?? 1}. ` : "- ";
-          blocks.push({
-            type: "paragraph",
-            text: normalizeText(prefix + stripTags(item.text)),
-          });
-        }
+        pushListItems(blocks, token.items, token.ordered);
         break;
       case "table":
         blocks.push({
@@ -236,8 +267,8 @@ export async function markdownToWordPayload(
         for (const item of token.tokens ?? []) {
           if (item.type === "paragraph") {
             blocks.push({
-              type: "paragraph",
-              text: normalizeText(`> ${stripTags(item.text)}`),
+              type: "blockquote",
+              text: normalizeText(stripTags(item.text)),
             });
           }
         }
@@ -293,6 +324,7 @@ function buildDocumentRelsXml(payload: WordExportPayload) {
   );
   const lines = [
     `<Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`,
+    `<Relationship Id="rIdNumbering" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/>`,
     ...imageBlocks.map(
       (_block, index) =>
         `<Relationship Id="rIdImage${index + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image-${index + 1}.png"/>`,
@@ -423,6 +455,31 @@ function buildTableXml(rows: string[][], headerRowCount: number) {
 </w:tbl>`;
 }
 
+function buildListItemXml(block: Extract<WordBlock, { type: "listItem" }>) {
+  const indentLeft = 720 * (block.level + 1);
+  const numbering = block.ordered
+    ? `<w:numPr><w:ilvl w:val="${block.level}"/><w:numId w:val="2"/></w:numPr>`
+    : `<w:numPr><w:ilvl w:val="${block.level}"/><w:numId w:val="1"/></w:numPr>`;
+  return `<w:p>
+  <w:pPr>
+    ${numbering}
+    <w:ind w:left="${indentLeft}" w:hanging="360"/>
+  </w:pPr>
+  ${richParagraphRuns(block.text)}
+</w:p>`;
+}
+
+function buildBlockquoteXml(text: string) {
+  return `<w:p>
+  <w:pPr>
+    <w:ind w:left="720"/>
+    <w:spacing w:before="120" w:after="120"/>
+    <w:shd w:val="clear" w:color="auto" w:fill="F5F5F5"/>
+  </w:pPr>
+  ${richParagraphRuns(text)}
+</w:p>`;
+}
+
 function buildDocumentXml(payload: WordExportPayload) {
   let imageIndex = 0;
   const body = payload.blocks
@@ -434,6 +491,14 @@ function buildDocumentXml(payload: WordExportPayload) {
 
       if (block.type === "paragraph") {
         return `<w:p>${richParagraphRuns(block.text)}</w:p>`;
+      }
+
+      if (block.type === "listItem") {
+        return buildListItemXml(block);
+      }
+
+      if (block.type === "blockquote") {
+        return buildBlockquoteXml(block.text);
       }
 
       if (block.type === "code") {
@@ -520,6 +585,26 @@ function buildStylesXml() {
   <w:style w:type="paragraph" w:styleId="Heading5"><w:name w:val="heading 5"/><w:basedOn w:val="Normal"/><w:qFormat/><w:rPr><w:b/><w:sz w:val="20"/></w:rPr></w:style>
   <w:style w:type="paragraph" w:styleId="Heading6"><w:name w:val="heading 6"/><w:basedOn w:val="Normal"/><w:qFormat/><w:rPr><w:b/><w:sz w:val="18"/></w:rPr></w:style>
 </w:styles>`;
+}
+
+function buildNumberingXml() {
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:abstractNum w:abstractNumId="1">
+    <w:multiLevelType w:val="multilevel"/>
+    <w:lvl w:ilvl="0"><w:numFmt w:val="bullet"/><w:lvlText w:val="•"/><w:lvlJc w:val="left"/></w:lvl>
+    <w:lvl w:ilvl="1"><w:numFmt w:val="bullet"/><w:lvlText w:val="◦"/><w:lvlJc w:val="left"/></w:lvl>
+    <w:lvl w:ilvl="2"><w:numFmt w:val="bullet"/><w:lvlText w:val="▪"/><w:lvlJc w:val="left"/></w:lvl>
+  </w:abstractNum>
+  <w:abstractNum w:abstractNumId="2">
+    <w:multiLevelType w:val="multilevel"/>
+    <w:lvl w:ilvl="0"><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/><w:lvlJc w:val="left"/></w:lvl>
+    <w:lvl w:ilvl="1"><w:numFmt w:val="lowerLetter"/><w:lvlText w:val="%2."/><w:lvlJc w:val="left"/></w:lvl>
+    <w:lvl w:ilvl="2"><w:numFmt w:val="lowerRoman"/><w:lvlText w:val="%3."/><w:lvlJc w:val="left"/></w:lvl>
+  </w:abstractNum>
+  <w:num w:numId="1"><w:abstractNumId w:val="1"/></w:num>
+  <w:num w:numId="2"><w:abstractNumId w:val="2"/></w:num>
+</w:numbering>`;
 }
 
 function buildCoreXml(title: string) {
@@ -656,6 +741,7 @@ export function wordPayloadToDocxBytes(payload: WordExportPayload) {
     { name: "docProps/app.xml", data: encodeUtf8(buildAppXml()) },
     { name: "word/document.xml", data: encodeUtf8(buildDocumentXml(payload)) },
     { name: "word/styles.xml", data: encodeUtf8(buildStylesXml()) },
+    { name: "word/numbering.xml", data: encodeUtf8(buildNumberingXml()) },
     { name: "word/_rels/document.xml.rels", data: encodeUtf8(buildDocumentRelsXml(payload)) },
     ...imageBlocks.map((block, index) => ({
       name: `word/media/image-${index + 1}.png`,
