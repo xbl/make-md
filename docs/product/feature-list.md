@@ -25,7 +25,8 @@
 | 行内代码启发式着色 | `complete` | 编辑器内已支持行内代码 token 着色。 |
 | Mermaid 图表块 | `complete` | 已支持 Mermaid 块渲染，并修复 Mermaid 预览 ready 后未正确替换源码块的显示问题。 |
 | 表格文档模型与解析 | `complete` | 已支持表格解析与渲染。 |
-| 插入表格命令 | `not_started` | `paragraph.table` 在共享命令清单中仍为禁用状态。 |
+| 插入表格命令 | `not_started` | 已有专门实现计划与表格编辑增强设计文档，但当前 `master` 仍未完成统一命令链路与可用插入入口。 |
+| 表格行列编辑手柄 | `not_started` | 已补充表格焦点态行列编辑增强 spec/plan，计划在表格获得焦点时显示插入/删除行列的浮层控件；当前 `master` 尚未实现。 |
 | 数学公式块 | `not_started` | 已在下一阶段计划中列出，但尚未实现。 |
 | 脚注 | `not_started` | 已在下一阶段计划中列出，但尚未实现。 |
 | Front matter 编辑 | `not_started` | 已在下一阶段计划中列出，但尚未实现。 |
@@ -117,7 +118,8 @@
 
 | 功能 | 状态 | 说明 |
 |---|---|---|
-| 偏好设置对话框 | `complete` | 设置面板已交付。 |
+| 偏好设置对话框 | `complete` | 当前 `master` 已有基础设置面板。 |
+| 统一 Settings Center | `not_started` | 已补充统一 settings center spec/plan，目标是把 `General`、`Shortcuts`、`AI` 合并到一个设置中心；当前 `master` 仍未实现。 |
 | 快捷键录制 UI | `complete` | 用户可录制与重置快捷键。 |
 | 设置接入原生菜单 | `complete` | 可从原生菜单打开偏好设置。 |
 | 国际化 | `complete` | 已支持 `en` / `zh-CN` 语言包、系统语言默认、手动切换、设置面板与侧边栏文案、本地命令与命令面板标签，以及 Tauri 原生菜单的即时切换。 |
