@@ -14,12 +14,20 @@ function isStructuredMarkdown(text: string) {
   );
 }
 
-function parsedDocToSlice(text: string) {
-  const doc = parseMarkdown(text);
+type MarkdownPasteOptions = {
+  getDocPath?: () => string | undefined;
+};
+
+function parsedDocToSlice(text: string, docPath?: string) {
+  const doc = parseMarkdown(text, docPath);
   return new Slice(Fragment.from(doc.content), 0, 0);
 }
 
-export function handleMarkdownPaste(view: EditorView, text: string): boolean {
+export function handleMarkdownPaste(
+  view: EditorView,
+  text: string,
+  options: MarkdownPasteOptions = {},
+): boolean {
   if (!text || !isStructuredMarkdown(text)) {
     return false;
   }
@@ -30,16 +38,16 @@ export function handleMarkdownPaste(view: EditorView, text: string): boolean {
     return false;
   }
 
-  view.dispatch(state.tr.replaceSelection(parsedDocToSlice(text)));
+  view.dispatch(state.tr.replaceSelection(parsedDocToSlice(text, options.getDocPath?.())));
   return true;
 }
 
-export function createMarkdownPastePlugin() {
+export function createMarkdownPastePlugin(options: MarkdownPasteOptions = {}) {
   return new Plugin({
     props: {
       handlePaste(view, event) {
         const text = event.clipboardData?.getData("text/plain") ?? "";
-        return handleMarkdownPaste(view, text);
+        return handleMarkdownPaste(view, text, options);
       },
     },
   });

@@ -57,6 +57,20 @@ describe("markdown round trip", () => {
 
     expect(output).toContain("alpha<br>beta");
   });
+
+  it("resolves markdown image display paths with spaces and chinese characters", () => {
+    const doc = parseMarkdown(
+      "![架构图](../概要设计 images/image 3.png)",
+      "/Users/blxie/Documents/make-md/docs/specs/设计说明.md",
+    );
+
+    const image = doc.firstChild?.firstChild;
+    expect(image?.type.name).toBe("image");
+    expect(image?.attrs.src).toBe("../概要设计 images/image 3.png");
+    expect(image?.attrs.displaySrc).toBe(
+      "file:///Users/blxie/Documents/make-md/docs/%E6%A6%82%E8%A6%81%E8%AE%BE%E8%AE%A1%20images/image%203.png",
+    );
+  });
 });
 
 describe("export html", () => {

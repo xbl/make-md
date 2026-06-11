@@ -31,7 +31,9 @@ export function createEditorPlugins(options: PluginOptions = {}) {
     createCodeBlockPlugin(),
     createEditorCommandEventsPlugin(),
     createClipboardPlugin(),
-    createMarkdownPastePlugin(),
+    createMarkdownPastePlugin({
+      getDocPath: options.getDocPath,
+    }),
     createSyntaxHighlightPlugin(),
     createInlineCodeDecorationsPlugin(),
     history(),

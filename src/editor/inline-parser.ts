@@ -4,45 +4,10 @@ import {
   tokenizeInlineMarkdown,
   type InlineToken,
 } from "@/editor/inline-mark/syntax";
-import { convertFileSrc, isTauri } from "@tauri-apps/api/core";
+import { resolveMarkdownImageDisplaySrc } from "@/lib/markdown-image-src";
 
 export { tokenizeInlineMarkdown as tokenizeInline } from "@/editor/inline-mark/syntax";
 export type { InlineToken } from "@/editor/inline-mark/syntax";
-
-function normalizePath(path: string) {
-  return path.replace(/\\/g, "/");
-}
-
-function resolveRelativePath(fromDir: string, target: string) {
-  const baseParts = normalizePath(fromDir).split("/").filter(Boolean);
-  const targetParts = normalizePath(target).split("/");
-  for (const part of targetParts) {
-    if (!part || part === ".") {
-      continue;
-    }
-    if (part === "..") {
-      baseParts.pop();
-      continue;
-    }
-    baseParts.push(part);
-  }
-  return `/${baseParts.join("/")}`;
-}
-
-function resolveImageDisplaySrc(src: string, docPath?: string) {
-  if (/^(https?:|data:|blob:)/i.test(src)) {
-    return src;
-  }
-  if (src.startsWith("/")) {
-    return isTauri() ? convertFileSrc(src) : `file://${src}`;
-  }
-  if (!docPath) {
-    return src;
-  }
-  const docDir = normalizePath(docPath).replace(/\/[^/]*$/, "");
-  const resolved = resolveRelativePath(docDir, src);
-  return isTauri() ? convertFileSrc(resolved) : `file://${resolved}`;
-}
 
 function applyMark(node: PMNode, markType: MarkType, attrs?: Record<string, unknown>): PMNode {
   const mark = markType.create(attrs);
@@ -92,7 +57,7 @@ function tokenToNodes(token: InlineToken, docPath?: string): PMNode[] {
         src: token.src,
         alt: token.alt,
         title: token.alt || null,
-        displaySrc: resolveImageDisplaySrc(token.src, docPath),
+        displaySrc: resolveMarkdownImageDisplaySrc(token.src, docPath),
       }),
     ];
   }
