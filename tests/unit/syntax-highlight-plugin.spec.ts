@@ -4,6 +4,7 @@ import { EditorView } from "prosemirror-view";
 import { collectCodeBlocksForHighlight } from "@/editor/syntax-highlight/plugin";
 import { markdownSchema } from "@/editor/schema";
 import { createCodeBlockNodeView } from "@/editor/code-block-view";
+import { createImageNodeView } from "@/editor/image-node-view";
 import { createSyntaxHighlightPlugin } from "@/editor/syntax-highlight/plugin";
 
 function typeInto(view: EditorView, text: string) {
@@ -38,6 +39,24 @@ describe("collectCodeBlocksForHighlight", () => {
     expect(blocks).toHaveLength(2);
     expect(blocks[0].language).toBe("plaintext");
     expect(blocks[1].language).toBe("typescript");
+  });
+});
+
+describe("createImageNodeView", () => {
+  it("renders displaySrc for local markdown images", () => {
+    const node = markdownSchema.node("image", {
+      src: "../概要设计 images/SDSP领域-整体高阶架构设计.png",
+      displaySrc: "asset:///Users/blxie/Documents/项目/上海银行/二期/Markdown 文档/概要设计 images/SDSP领域-整体高阶架构设计.png",
+      alt: "整体高阶架构设计",
+      title: null,
+    });
+
+    const nodeView = createImageNodeView(node, {} as EditorView, () => undefined);
+    const image = nodeView.dom as HTMLImageElement;
+
+    expect(image.src.startsWith("asset:///")).toBe(true);
+    expect(image.src).toContain("SDSP%E9%A2%86%E5%9F%9F-%E6%95%B4%E4%BD%93%E9%AB%98%E9%98%B6%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1.png");
+    expect(image.alt).toBe("整体高阶架构设计");
   });
 });
 

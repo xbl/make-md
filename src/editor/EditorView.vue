@@ -30,6 +30,7 @@ import { parseMarkdown } from "@/editor/markdown-parser";
 import { serializeMarkdown } from "@/editor/markdown-serializer";
 import { createEditorPlugins } from "@/editor/plugins";
 import { createEditorNodeViews } from "@/editor/code-block-view";
+import { createImageNodeView } from "@/editor/image-node-view";
 import {
   createContextMenuController,
   type ContextMenuActionItem,
@@ -264,7 +265,10 @@ function mountEditor() {
   view?.destroy();
   view = new PMEditorView(mountRef.value, {
     state,
-    nodeViews: createEditorNodeViews(),
+    nodeViews: {
+      ...createEditorNodeViews(),
+      image: createImageNodeView,
+    },
     dispatchTransaction(transaction) {
       const nextState = view?.state.apply(transaction);
       if (!nextState || !view) {
