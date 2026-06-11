@@ -28,3 +28,9 @@ Prefer small, targeted edits. Check `README.md` and the relevant `docs/superpowe
 When a task is completed, agents should automatically create a focused git commit before responding, unless the user explicitly says not to commit or the work is blocked.
 Maintain a product feature list document at `docs/product/feature-list.md`. Every time a feature is completed or materially changed, update the corresponding module section in that document before responding.
 Organize the feature list by product module, and keep each item marked with its current status such as `complete`, `partial`, or `not_started`.
+For bugs reported against a concrete user artifact such as a specific Markdown file, exported `.docx`, generated PDF, or screenshot, do not rely only on synthetic unit fixtures or guessed root causes. Reproduce against the exact artifact or an extracted minimal sample from it before claiming a fix.
+If the first fix attempt does not resolve the user-visible issue, stop making incremental guesses. Inspect the real output directly, for example by unpacking the exported file, checking generated XML, verifying embedded assets, or reading the exact runtime output, then update tests to cover the confirmed failure mode before changing code again.
+For export bugs, test both levels before declaring success:
+- behavior-level: the user-visible symptom is gone on the real exported artifact
+- structure-level: the generated package or file internals are valid, such as unzip/read checks, relationship files, content types, and embedded media entries
+When a test passes but the user's real artifact still fails, treat the test as insufficient rather than as evidence that the bug is fixed. Add a regression test derived from the real artifact shape and keep debugging until that test and the real artifact both pass.
