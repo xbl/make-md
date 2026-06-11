@@ -124,12 +124,34 @@ async function imageUrlToPngBytes(src: string) {
   return new Uint8Array(await pngBlob.arrayBuffer());
 }
 
+function imageFileExtension(src: string) {
+  const clean = src.split(/[?#]/)[0] ?? "";
+  const match = clean.match(/\.([a-z0-9]+)$/i);
+  return match?.[1]?.toLowerCase() ?? "";
+}
+
+function isNativeWordImageFormat(ext: string) {
+  return ext === "png" || ext === "jpg" || ext === "jpeg" || ext === "gif" || ext === "webp";
+}
+
+async function readImageBytes(src: string) {
+  const response = await fetch(src);
+  if (!response.ok) {
+    throw new Error(`Failed to load image: ${src}`);
+  }
+  return new Uint8Array(await response.arrayBuffer());
+}
+
 function resolveMarkdownImageSource(src: string, docPath?: string) {
   return resolveMarkdownImageDisplaySrc(src, docPath);
 }
 
 async function resolveMarkdownImageToPng(src: string, docPath?: string) {
   const resolved = resolveMarkdownImageSource(src, docPath);
+  const ext = imageFileExtension(resolved);
+  if (isNativeWordImageFormat(ext)) {
+    return readImageBytes(resolved);
+  }
   return imageUrlToPngBytes(resolved);
 }
 

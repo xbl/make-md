@@ -18,6 +18,7 @@ vi.mock("mermaid", () => ({
 
 describe("export word", () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     mermaidRenderMock.mockReset();
     mermaidRenderMock.mockResolvedValue({
       svg: '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="60"><rect width="120" height="60" fill="#fff"/><text x="10" y="30">diagram</text></svg>',
@@ -62,6 +63,20 @@ describe("export word", () => {
       }
       return document.createElement(tagName);
     }) as typeof document.createElement);
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: true,
+        headers: {
+          get(name: string) {
+            return name.toLowerCase() === "content-type" ? "image/png" : null;
+          },
+        },
+        arrayBuffer: async () => new Uint8Array([137, 80, 78, 71]).buffer,
+        blob: async () => new Blob([new Uint8Array([137, 80, 78, 71])], { type: "image/png" }),
+      })),
+    );
   });
 
   it("exports mermaid as image without source code by default", async () => {
@@ -140,6 +155,45 @@ describe("export word", () => {
     const text = new TextDecoder().decode(bytes);
     expect(text).toContain("word/media/image-1.png");
     expect(text).not.toContain("![架构图](../概要设计 images/image3.png)");
+  });
+
+  it("exports standalone markdown png images even when marked keeps them as plain paragraph text", async () => {
+    const payload = await markdownToWordPayload(
+      "![整体高阶架构设计](../概要设计 images/SDSP领域-整体高阶架构设计.png)",
+      {
+        title: "Images",
+        docPath: "/Users/blxie/Documents/项目/上海银行/二期/Markdown 文档/概要设计/SDSP 领域-概要设计.md",
+      },
+    );
+
+    expect(payload.blocks).toHaveLength(1);
+    expect(payload.blocks[0]?.type).toBe("image");
+  });
+
+  it("embeds local png images without depending on HTMLImage decode success", async () => {
+    class FailingImage {
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      set src(_value: string) {
+        queueMicrotask(() => this.onerror?.());
+      }
+    }
+
+    Object.defineProperty(globalThis, "Image", {
+      configurable: true,
+      value: FailingImage,
+    });
+
+    const payload = await markdownToWordPayload(
+      "![整体高阶架构设计](../概要设计 images/SDSP领域-整体高阶架构设计.png)",
+      {
+        title: "Images",
+        docPath: "/Users/blxie/Documents/项目/上海银行/二期/Markdown 文档/概要设计/SDSP 领域-概要设计.md",
+      },
+    );
+
+    expect(payload.blocks).toHaveLength(1);
+    expect(payload.blocks[0]?.type).toBe("image");
   });
 
   it("produces an image docx package that unzip can read without structural errors", async () => {
