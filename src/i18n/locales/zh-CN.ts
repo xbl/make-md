@@ -86,4 +86,7 @@ export const zhCN = {
   "settings.group.paragraph": "段落",
   "settings.group.format": "格式",
   "settings.group.view": "视图",
+  "settings.ai.provider.label": "默认服务商",
+  "settings.ai.provider.description": "选择默认使用的 AI 语言模型服务商。",
+  "settings.ai.model.default": "默认模型",
 } as const;

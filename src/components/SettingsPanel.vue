@@ -128,12 +128,12 @@
           <!-- AI tab -->
           <div v-else-if="ui.activeSettingsSection === 'ai'" class="settings-panel__section">
             <section class="settings-panel__category">
-              <h3 class="settings-panel__category-title">Provider</h3>
+              <h3 class="settings-panel__category-title">{{ t("settings.section.ai") }}</h3>
 
               <article class="settings-panel__row">
                 <div class="settings-panel__meta">
-                  <h4 class="settings-panel__command">Active Provider</h4>
-                  <p class="settings-panel__details">Choose which AI provider to use by default.</p>
+                  <h4 class="settings-panel__command">{{ t("settings.ai.provider.label") }}</h4>
+                  <p class="settings-panel__details">{{ t("settings.ai.provider.description") }}</p>
                 </div>
 
                 <div class="settings-panel__actions">
@@ -147,7 +147,7 @@
               <article class="settings-panel__row" v-for="provider in providerList" :key="provider.id">
                 <div class="settings-panel__meta">
                   <h4 class="settings-panel__command">{{ provider.label }}</h4>
-                  <p class="settings-panel__details">Default model: {{ ai.providers[provider.id].model }}</p>
+                  <p class="settings-panel__details">{{ t("settings.ai.model.default") }}: {{ ai.providers[provider.id].model }}</p>
                 </div>
               </article>
             </section>

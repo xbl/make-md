@@ -86,4 +86,7 @@ export const en = {
   "settings.group.paragraph": "Paragraph",
   "settings.group.format": "Format",
   "settings.group.view": "View",
+  "settings.ai.provider.label": "Active Provider",
+  "settings.ai.provider.description": "Choose which AI provider to use by default.",
+  "settings.ai.model.default": "Default model",
 } as const;

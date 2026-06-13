@@ -155,7 +155,7 @@ describe("SettingsPanel", () => {
     expect(wrapper.text()).toContain("跟随系统");
   });
 
-  it("opens the unified settings center to the requested section", async () => {
+  it("opens the unified settings center to the requested section and renders AI options", async () => {
     const { pinia, ui } = mountPanel();
     ui.openSettings("ai");
 
@@ -165,9 +165,10 @@ describe("SettingsPanel", () => {
       },
     });
 
-    // Wait for the next task when "AI Settings" or left nav switches are rendered.
-    // For now we just verify the store state works.
     expect(ui.activeSettingsSection).toBe("ai");
+    expect(wrapper.text()).toContain("Active Provider");
+    expect(wrapper.text()).toContain("DeepSeek");
+    expect(wrapper.text()).toContain("Default model: deepseek-chat");
   });
 
   it("renders left navigation and switches between general and shortcuts", async () => {
