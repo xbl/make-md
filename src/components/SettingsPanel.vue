@@ -125,11 +125,31 @@
             <p v-if="recordingHint" class="settings-panel__hint" role="status">{{ recordingHint }}</p>
           </div>
 
-          <!-- AI tab stub -->
+          <!-- AI tab -->
           <div v-else-if="ui.activeSettingsSection === 'ai'" class="settings-panel__section">
             <section class="settings-panel__category">
-              <h3 class="settings-panel__category-title">AI Settings</h3>
-              <p class="settings-panel__hint">AI settings will be folded here in the next task.</p>
+              <h3 class="settings-panel__category-title">Provider</h3>
+
+              <article class="settings-panel__row">
+                <div class="settings-panel__meta">
+                  <h4 class="settings-panel__command">Active Provider</h4>
+                  <p class="settings-panel__details">Choose which AI provider to use by default.</p>
+                </div>
+
+                <div class="settings-panel__actions">
+                  <select v-model="ai.activeProvider" class="settings-panel__capture">
+                    <option value="openai">OpenAI</option>
+                    <option value="deepseek">DeepSeek</option>
+                  </select>
+                </div>
+              </article>
+
+              <article class="settings-panel__row" v-for="provider in providerList" :key="provider.id">
+                <div class="settings-panel__meta">
+                  <h4 class="settings-panel__command">{{ provider.label }}</h4>
+                  <p class="settings-panel__details">Default model: {{ ai.providers[provider.id].model }}</p>
+                </div>
+              </article>
             </section>
           </div>
         </div>
@@ -147,11 +167,18 @@ import { isSystemReservedChord } from "@/lib/shortcuts/reserved";
 import { usePreferencesStore } from "@/stores/preferences";
 import { useShortcutsStore } from "@/stores/shortcuts";
 import { useUiStore } from "@/stores/ui";
+import { useAiStore } from "@/stores/ai";
 
 const ui = useUiStore();
 const preferences = usePreferencesStore();
 const shortcuts = useShortcutsStore();
+const ai = useAiStore();
 const { t, effectiveLocale } = useI18n();
+
+const providerList = [
+  { id: "openai" as const, label: "OpenAI" },
+  { id: "deepseek" as const, label: "DeepSeek" },
+];
 
 const sections = computed(() => [
   { id: "general" as const, label: t("settings.section.general"), title: t("settings.section.general"), description: t("settings.section.general.description") },
