@@ -234,6 +234,26 @@ describe("EditorPane", () => {
       }
     });
     expect(tableNode?.childCount).toBe(3); // was 2 rows, now 3
+    // Verify overlay is still visible
+    expect(wrapper.find("[data-testid='table-controls-overlay']").exists()).toBe(true);
+
+    // Find and click the insert column right button
+    const insertColumnRightButton = overlay.find("[data-action='insert-column-right']");
+    expect(insertColumnRightButton.exists()).toBe(true);
+    await insertColumnRightButton.trigger("click");
+    await nextTick();
+
+    // Verify table has a new column
+    tableNode = null;
+    view.state.doc.descendants((node) => {
+      if (node.type.name === "table") {
+        tableNode = node;
+        return false;
+      }
+    });
+    expect(tableNode?.firstChild?.childCount).toBe(3); // was 2 cols, now 3
+    // Verify overlay is still visible
+    expect(wrapper.find("[data-testid='table-controls-overlay']").exists()).toBe(true);
 
     // Move selection outside the table
     // Place selection back in the first paragraph "Hello"

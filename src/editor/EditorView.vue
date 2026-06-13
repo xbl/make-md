@@ -305,10 +305,7 @@ function updateTableOverlay() {
 
 function handleTableAction(action: TableAction) {
   if (view && activeContext) {
-    const success = applyTableAction(view, action, activeContext);
-    if (success) {
-      updateTableOverlay();
-    }
+    applyTableAction(view, action, activeContext);
   }
 }
 
