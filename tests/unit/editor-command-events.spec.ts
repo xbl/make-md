@@ -578,4 +578,112 @@ describe("editor command events", () => {
     view.destroy();
     document.body.removeChild(mount);
   });
+
+  it("converts paragraph to heading 1 when paragraph.increaseHeading is dispatched", () => {
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc: markdownSchema.node("doc", null, [
+        markdownSchema.node("paragraph", null, [markdownSchema.text("Hello")]),
+      ]),
+      plugins: createEditorPlugins(),
+    });
+
+    const view = new EditorView(mount, { state });
+    window.dispatchEvent(new CustomEvent("make-md:editor-command", { detail: { commandId: "paragraph.increaseHeading" } }));
+
+    expect(view.state.doc.firstChild?.type.name).toBe("heading");
+    expect(view.state.doc.firstChild?.attrs.level).toBe(1);
+
+    view.destroy();
+    document.body.removeChild(mount);
+  });
+
+  it("does not change paragraph when paragraph.decreaseHeading is dispatched", () => {
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc: markdownSchema.node("doc", null, [
+        markdownSchema.node("paragraph", null, [markdownSchema.text("Hello")]),
+      ]),
+      plugins: createEditorPlugins(),
+    });
+
+    const view = new EditorView(mount, { state });
+    window.dispatchEvent(new CustomEvent("make-md:editor-command", { detail: { commandId: "paragraph.decreaseHeading" } }));
+
+    expect(view.state.doc.firstChild?.type.name).toBe("paragraph");
+
+    view.destroy();
+    document.body.removeChild(mount);
+  });
+
+  it("increases heading level from h3 to h2 when paragraph.increaseHeading is dispatched", () => {
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc: markdownSchema.node("doc", null, [
+        markdownSchema.node("heading", { level: 3 }, [markdownSchema.text("Hello")]),
+      ]),
+      plugins: createEditorPlugins(),
+    });
+
+    const view = new EditorView(mount, { state });
+    window.dispatchEvent(new CustomEvent("make-md:editor-command", { detail: { commandId: "paragraph.increaseHeading" } }));
+
+    expect(view.state.doc.firstChild?.type.name).toBe("heading");
+    expect(view.state.doc.firstChild?.attrs.level).toBe(2);
+
+    view.destroy();
+    document.body.removeChild(mount);
+  });
+
+  it("decreases heading level from h2 to h3 when paragraph.decreaseHeading is dispatched", () => {
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc: markdownSchema.node("doc", null, [
+        markdownSchema.node("heading", { level: 2 }, [markdownSchema.text("Hello")]),
+      ]),
+      plugins: createEditorPlugins(),
+    });
+
+    const view = new EditorView(mount, { state });
+    window.dispatchEvent(new CustomEvent("make-md:editor-command", { detail: { commandId: "paragraph.decreaseHeading" } }));
+
+    expect(view.state.doc.firstChild?.type.name).toBe("heading");
+    expect(view.state.doc.firstChild?.attrs.level).toBe(3);
+
+    view.destroy();
+    document.body.removeChild(mount);
+  });
+
+  it("converts h6 to paragraph when paragraph.decreaseHeading is dispatched", () => {
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc: markdownSchema.node("doc", null, [
+        markdownSchema.node("heading", { level: 6 }, [markdownSchema.text("Hello")]),
+      ]),
+      plugins: createEditorPlugins(),
+    });
+
+    const view = new EditorView(mount, { state });
+    window.dispatchEvent(new CustomEvent("make-md:editor-command", { detail: { commandId: "paragraph.decreaseHeading" } }));
+
+    expect(view.state.doc.firstChild?.type.name).toBe("paragraph");
+
+    view.destroy();
+    document.body.removeChild(mount);
+  });
 });

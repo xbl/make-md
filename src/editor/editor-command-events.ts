@@ -274,6 +274,42 @@ function applyCodeFenceCommand(view: import("prosemirror-view").EditorView): boo
   return applied;
 }
 
+function applyHeadingLevelAdjustmentCommand(
+  commandId: string,
+  view: import("prosemirror-view").EditorView,
+): boolean {
+  if (commandId !== "paragraph.increaseHeading" && commandId !== "paragraph.decreaseHeading") {
+    return false;
+  }
+
+  const { state, dispatch } = view;
+  const { $from } = state.selection;
+  const currentBlockNode = $from.parent;
+  const currentBlockType = currentBlockNode.type.name;
+
+  if (commandId === "paragraph.increaseHeading") {
+    if (currentBlockType === "paragraph") {
+      return setBlockType(markdownSchema.nodes.heading, { level: 1 })(state, dispatch, view);
+    } else if (currentBlockType === "heading") {
+      const level = currentBlockNode.attrs.level;
+      if (level > 1) {
+        return setBlockType(markdownSchema.nodes.heading, { level: level - 1 })(state, dispatch, view);
+      }
+    }
+  } else if (commandId === "paragraph.decreaseHeading") {
+    if (currentBlockType === "heading") {
+      const level = currentBlockNode.attrs.level;
+      if (level < 6) {
+        return setBlockType(markdownSchema.nodes.heading, { level: level + 1 })(state, dispatch, view);
+      } else if (level === 6) {
+        return setBlockType(markdownSchema.nodes.paragraph)(state, dispatch, view);
+      }
+    }
+  }
+
+  return false;
+}
+
 export function createEditorCommandEventsPlugin(options: CommandEventsOptions = {}) {
   return new Plugin({
     view(view) {
@@ -286,6 +322,10 @@ export function createEditorCommandEventsPlugin(options: CommandEventsOptions = 
 
         if (commandId === "format.image") {
           void applyImageCommand(view, options);
+          return;
+        }
+
+        if (applyHeadingLevelAdjustmentCommand(commandId, view)) {
           return;
         }
 
