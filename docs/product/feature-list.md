@@ -24,7 +24,7 @@
 | 围栏代码语法高亮 | `complete` | 已支持带语言标记的代码块高亮，并修复了真实文件打开后 `ts`、`json` 等代码块高亮层被编辑器视图回收的问题。 |
 | 行内代码启发式着色 | `complete` | 编辑器内已支持行内代码 token 着色。 |
 | Mermaid 图表块 | `complete` | 已支持 Mermaid 块渲染，并修复 Mermaid 预览 ready 后未正确替换源码块的显示问题。 |
-| 复制 Mermaid 为 PNG | `partial` | 已实现 SVG-to-PNG 转换 helper 函数并有充分单元测试，整体功能实现中。 |
+| 复制 Mermaid 为 PNG | `complete` | 已完整集成右键检测、动态上下文菜单项注入、Clipboard API 写入以及错误提示，并通过充分的单元测试验证。 |
 | 表格文档模型与解析 | `complete` | 已支持表格解析与渲染。 |
 | 插入表格命令 | `not_started` | 已有专门实现计划与表格编辑增强设计文档，但当前 `master` 仍未完成统一命令链路与可用插入入口。 |
 | 表格行列编辑手柄 | `not_started` | 已补充表格焦点态行列编辑增强 spec/plan，计划在表格获得焦点时显示插入/删除行列的浮层控件；当前 `master` 尚未实现。 |
