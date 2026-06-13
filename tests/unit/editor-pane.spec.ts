@@ -211,6 +211,14 @@ describe("EditorPane", () => {
     const overlay = wrapper.find("[data-testid='table-controls-overlay']");
     expect(overlay.exists()).toBe(true);
 
+    // Assert all row/column controls exist
+    expect(overlay.find("[data-action='insert-row-above']").exists()).toBe(true);
+    expect(overlay.find("[data-action='insert-row-below']").exists()).toBe(true);
+    expect(overlay.find("[data-action='remove-row']").exists()).toBe(true);
+    expect(overlay.find("[data-action='insert-column-left']").exists()).toBe(true);
+    expect(overlay.find("[data-action='insert-column-right']").exists()).toBe(true);
+    expect(overlay.find("[data-action='remove-column']").exists()).toBe(true);
+
     // Find and click the insert row below button
     const insertRowBelowButton = overlay.find("[data-action='insert-row-below']");
     expect(insertRowBelowButton.exists()).toBe(true);
