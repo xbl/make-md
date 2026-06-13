@@ -163,4 +163,63 @@ describe("EditorPane", () => {
 
     expect(wrapper.find("[data-testid='ai-edit-toolbar']").exists()).toBe(false);
   });
+
+  it("shows and hides the table controls overlay based on table selection and dispatches actions", async () => {
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const documents = useDocumentsStore();
+    const editorStore = useEditorStore();
+
+    const session = documents.createNewDocument();
+    // Create a simple table
+    session.markSaved("| A | B |\n|---|---|\n| C | D |");
+
+    const wrapper = mount(EditorPane, {
+      attachTo: document.body,
+      global: {
+        plugins: [pinia],
+      },
+    });
+
+    await nextTick();
+    await nextTick();
+
+    const view = editorStore.view;
+    expect(view).toBeTruthy();
+    if (!view) {
+      throw new Error("expected editor view");
+    }
+
+    // Initially cursor is at start (not in table cells text yet, or empty)
+    expect(wrapper.find("[data-testid='table-controls-overlay']").exists()).toBe(false);
+
+    // Place cursor inside first cell (pos 4)
+    view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, 4)));
+    await nextTick();
+
+    // Verify overlay appears
+    const overlay = wrapper.find("[data-testid='table-controls-overlay']");
+    expect(overlay.exists()).toBe(true);
+
+    // Find and click the insert row below button
+    const insertRowBelowButton = overlay.find("[data-action='insert-row-below']");
+    expect(insertRowBelowButton.exists()).toBe(true);
+    await insertRowBelowButton.trigger("click");
+    await nextTick();
+
+    // Verify table has a new row
+    expect(view.state.doc.firstChild?.childCount).toBe(3); // was 2 rows, now 3
+
+    // Move selection outside the table
+    // Let's insert a paragraph after the table
+    const { markdownSchema } = await import("@/editor/schema");
+    view.dispatch(view.state.tr.insert(view.state.doc.content.size, markdownSchema.node("paragraph", null, [markdownSchema.text("outside")])));
+    view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, view.state.doc.content.size - 2)));
+    await nextTick();
+
+    // Verify overlay is hidden
+    expect(wrapper.find("[data-testid='table-controls-overlay']").exists()).toBe(false);
+
+    wrapper.unmount();
+  });
 });
