@@ -163,9 +163,9 @@ async function handleMenuSelect(item: ContextMenuActionItem) {
   if (item.id === "mermaid.copyPng") {
     if (rightClickedSvg.value) {
       try {
-        const pngBlob = await convertSvgToPngBlob(rightClickedSvg.value);
+        const pngPromise = convertSvgToPngBlob(rightClickedSvg.value);
         await window.navigator.clipboard.write([
-          new ClipboardItem({ "image/png": pngBlob }),
+          new ClipboardItem({ "image/png": pngPromise }),
         ]);
       } catch (error) {
         window.alert(error instanceof Error ? error.message : String(error));
