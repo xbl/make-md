@@ -120,7 +120,7 @@
 | 功能 | 状态 | 说明 |
 |---|---|---|
 | 偏好设置对话框 | `complete` | 当前 `master` 已有基础设置面板。 |
-| 统一 Settings Center | `not_started` | 已补充统一 settings center spec/plan，目标是把 `General`、`Shortcuts`、`AI` 合并到一个设置中心；当前 `master` 仍未实现。 |
+| 统一 Settings Center | `complete` | 成功将 General、Shortcuts、AI 偏好设置合并到单一的统一设置中心（SettingsPanel），支持侧边栏切页及多语言本土化，并彻底清除了遗留的独立 AI 偏好设置面板及用例。 |
 | 快捷键录制 UI | `complete` | 用户可录制与重置快捷键。 |
 | 设置接入原生菜单 | `complete` | 可从原生菜单打开偏好设置。 |
 | 国际化 | `complete` | 已支持 `en` / `zh-CN` 语言包、系统语言默认、手动切换、设置面板与侧边栏文案、本地命令与命令面板标签，以及 Tauri 原生菜单的即时切换。 |
