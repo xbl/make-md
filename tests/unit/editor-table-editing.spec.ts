@@ -113,7 +113,7 @@ describe("table-editing state extraction and transforms", () => {
     view.destroy();
   });
 
-  it("removes row and blocks last row removal", () => {
+  it("removes row and deletes table on last row removal", () => {
     const table = buildTestTable();
     const doc = markdownSchema.node("doc", null, [table]);
     const state = EditorState.create({
@@ -131,12 +131,12 @@ describe("table-editing state extraction and transforms", () => {
     expect(applied).toBe(true);
     expect(view.state.doc.firstChild?.childCount).toBe(1);
 
-    // Try to remove the last row (should no-op)
+    // Try to remove the last row (should delete the entire table node)
     context = getActiveTableContext(view, mount);
     expect(context).not.toBeNull();
     applied = applyTableAction(view, "remove-row", context!);
-    expect(applied).toBe(false);
-    expect(view.state.doc.firstChild?.childCount).toBe(1);
+    expect(applied).toBe(true);
+    expect(view.state.doc.firstChild?.type.name).not.toBe("table"); // table is gone!
 
     view.destroy();
   });
@@ -163,7 +163,7 @@ describe("table-editing state extraction and transforms", () => {
     view.destroy();
   });
 
-  it("removes column and blocks last column removal", () => {
+  it("removes column and deletes table on last column removal", () => {
     const table = buildTestTable();
     const doc = markdownSchema.node("doc", null, [table]);
     const state = EditorState.create({
@@ -181,11 +181,11 @@ describe("table-editing state extraction and transforms", () => {
     expect(applied).toBe(true);
     expect(view.state.doc.firstChild?.firstChild?.childCount).toBe(1);
 
-    // Try to remove the last column (should no-op)
+    // Try to remove the last column (should delete the entire table node)
     context = getActiveTableContext(view, mount);
     applied = applyTableAction(view, "remove-column", context!);
-    expect(applied).toBe(false);
-    expect(view.state.doc.firstChild?.firstChild?.childCount).toBe(1);
+    expect(applied).toBe(true);
+    expect(view.state.doc.firstChild?.type.name).not.toBe("table"); // table is gone!
 
     view.destroy();
   });

@@ -16,6 +16,7 @@ export type ActiveTableContext = {
   rowCount: number;
   columnCount: number;
   rect: TableOverlayRect;
+  cellRect: TableOverlayRect;
 };
 
 export type TableAction =
@@ -35,6 +36,7 @@ export function getActiveTableContext(
     return null;
   }
 
+  let cellPos = -1;
   let cellNode: PMNode | null = null;
   let rowNode: PMNode | null = null;
   let tablePos = -1;
@@ -43,6 +45,7 @@ export function getActiveTableContext(
   for (let depth = $from.depth; depth > 0; depth--) {
     const node = $from.node(depth);
     if (node.type.name === "table_cell" || node.type.name === "table_header") {
+      cellPos = $from.before(depth);
       cellNode = node;
     } else if (node.type.name === "table_row") {
       rowNode = node;
@@ -79,9 +82,15 @@ export function getActiveTableContext(
   }
 
   const tableDom = view.nodeDOM(tablePos) as HTMLElement | null;
+  const cellDom = cellPos !== -1 ? (view.nodeDOM(cellPos) as HTMLElement | null) : null;
+
   const tableRect = tableDom
     ? tableDom.getBoundingClientRect()
     : { left: 0, top: 0, width: 0, height: 0 };
+  const cellClientRect = cellDom
+    ? cellDom.getBoundingClientRect()
+    : tableRect;
+
   const containerRect = container.getBoundingClientRect();
 
   const rect: TableOverlayRect = {
@@ -91,6 +100,13 @@ export function getActiveTableContext(
     height: tableRect.height,
   };
 
+  const cellRect: TableOverlayRect = {
+    left: cellClientRect.left - containerRect.left,
+    top: cellClientRect.top - containerRect.top,
+    width: cellClientRect.width,
+    height: cellClientRect.height,
+  };
+
   return {
     tablePos,
     rowIndex,
@@ -98,6 +114,7 @@ export function getActiveTableContext(
     rowCount,
     columnCount,
     rect,
+    cellRect,
   };
 }
 
@@ -143,7 +160,9 @@ export function applyTableAction(
     }
     case "remove-row": {
       if (context.rowCount <= 1) {
-        return false;
+        const tr = view.state.tr.delete(context.tablePos, context.tablePos + tableNode.nodeSize);
+        view.dispatch(tr);
+        return true;
       }
       newRows = [...rows];
       newRows.splice(context.rowIndex, 1);
@@ -175,7 +194,9 @@ export function applyTableAction(
     }
     case "remove-column": {
       if (context.columnCount <= 1) {
-        return false;
+        const tr = view.state.tr.delete(context.tablePos, context.tablePos + tableNode.nodeSize);
+        view.dispatch(tr);
+        return true;
       }
       newRows = rows.map((row) => {
         const cells: PMNode[] = [];

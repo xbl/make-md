@@ -11,7 +11,10 @@
     }"
   >
     <!-- Row controls overlaying on the left -->
-    <div class="table-controls-overlay__row-controls">
+    <div
+      class="table-controls-overlay__row-controls"
+      :style="{ top: `${cellRect.top - top + cellRect.height / 2}px` }"
+    >
       <button
         type="button"
         data-action="insert-row-above"
@@ -32,7 +35,6 @@
         type="button"
         data-action="remove-row"
         title="Remove row"
-        :disabled="rowCount <= 1"
         @click="emit('action', 'remove-row')"
       >
         ×
@@ -40,7 +42,10 @@
     </div>
 
     <!-- Column controls overlaying at the top -->
-    <div class="table-controls-overlay__col-controls">
+    <div
+      class="table-controls-overlay__col-controls"
+      :style="{ left: `${cellRect.left - left + cellRect.width / 2}px` }"
+    >
       <button
         type="button"
         data-action="insert-column-left"
@@ -61,7 +66,6 @@
         type="button"
         data-action="remove-column"
         title="Remove column"
-        :disabled="columnCount <= 1"
         @click="emit('action', 'remove-column')"
       >
         ×
@@ -83,6 +87,7 @@ defineProps<{
   columnIndex: number;
   rowCount: number;
   columnCount: number;
+  cellRect: { left: number; top: number; width: number; height: number };
 }>();
 
 const emit = defineEmits<{
@@ -111,7 +116,6 @@ const emit = defineEmits<{
 
 .table-controls-overlay__row-controls {
   right: calc(100% + 8px);
-  top: 50%;
   transform: translateY(-50%);
   flex-direction: column;
   justify-content: center;
@@ -121,7 +125,6 @@ const emit = defineEmits<{
 
 .table-controls-overlay__col-controls {
   bottom: calc(100% + 8px);
-  left: 50%;
   transform: translateX(-50%);
   flex-direction: row;
   justify-content: center;

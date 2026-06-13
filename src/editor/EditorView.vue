@@ -16,6 +16,7 @@
       :column-index="tableOverlay.columnIndex"
       :row-count="tableOverlay.rowCount"
       :column-count="tableOverlay.columnCount"
+      :cell-rect="tableOverlay.cellRect"
       @action="handleTableAction"
     />
     <ContextMenu
@@ -68,6 +69,7 @@ const tableOverlay = ref({
   columnIndex: 0,
   rowCount: 0,
   columnCount: 0,
+  cellRect: { left: 0, top: 0, width: 0, height: 0 },
 });
 
 const mountRef = ref<HTMLDivElement | null>(null);
@@ -293,6 +295,7 @@ function updateTableOverlay() {
       columnIndex: activeContext.columnIndex,
       rowCount: activeContext.rowCount,
       columnCount: activeContext.columnCount,
+      cellRect: activeContext.cellRect,
     };
   } else {
     tableOverlay.value.visible = false;
