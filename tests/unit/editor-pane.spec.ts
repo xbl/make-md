@@ -171,8 +171,8 @@ describe("EditorPane", () => {
     const editorStore = useEditorStore();
 
     const session = documents.createNewDocument();
-    // Create a simple table
-    session.markSaved("| A | B |\n|---|---|\n| C | D |");
+    // Create a paragraph before the table so initial selection is outside
+    session.markSaved("Hello\n\n| A | B |\n|---|---|\n| C | D |");
 
     const wrapper = mount(EditorPane, {
       attachTo: document.body,
@@ -190,11 +190,21 @@ describe("EditorPane", () => {
       throw new Error("expected editor view");
     }
 
-    // Initially cursor is at start (not in table cells text yet, or empty)
+    // Initially cursor is at start (outside table)
     expect(wrapper.find("[data-testid='table-controls-overlay']").exists()).toBe(false);
 
-    // Place cursor inside first cell (pos 4)
-    view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, 4)));
+    // Find first cell position dynamically
+    let cellPos = -1;
+    view.state.doc.descendants((node, pos) => {
+      if (node.type.name === "table_cell" || node.type.name === "table_header") {
+        cellPos = pos + 1;
+        return false;
+      }
+    });
+    expect(cellPos).toBeGreaterThan(0);
+
+    // Place cursor inside cell
+    view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, cellPos)));
     await nextTick();
 
     // Verify overlay appears
@@ -208,13 +218,18 @@ describe("EditorPane", () => {
     await nextTick();
 
     // Verify table has a new row
-    expect(view.state.doc.firstChild?.childCount).toBe(3); // was 2 rows, now 3
+    let tableNode: any = null;
+    view.state.doc.descendants((node) => {
+      if (node.type.name === "table") {
+        tableNode = node;
+        return false;
+      }
+    });
+    expect(tableNode?.childCount).toBe(3); // was 2 rows, now 3
 
     // Move selection outside the table
-    // Let's insert a paragraph after the table
-    const { markdownSchema } = await import("@/editor/schema");
-    view.dispatch(view.state.tr.insert(view.state.doc.content.size, markdownSchema.node("paragraph", null, [markdownSchema.text("outside")])));
-    view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, view.state.doc.content.size - 2)));
+    // Place selection back in the first paragraph "Hello"
+    view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, 1)));
     await nextTick();
 
     // Verify overlay is hidden

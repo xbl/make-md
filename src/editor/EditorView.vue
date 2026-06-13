@@ -6,6 +6,18 @@
       :top="selectionToolbar.top"
     />
     <div ref="mountRef" class="editor-view"></div>
+    <TableControlsOverlay
+      :visible="tableOverlay.visible"
+      :left="tableOverlay.left"
+      :top="tableOverlay.top"
+      :width="tableOverlay.width"
+      :height="tableOverlay.height"
+      :row-index="tableOverlay.rowIndex"
+      :column-index="tableOverlay.columnIndex"
+      :row-count="tableOverlay.rowCount"
+      :column-count="tableOverlay.columnCount"
+      @action="handleTableAction"
+    />
     <ContextMenu
       :open="menu.state.open"
       :x="menu.state.x"
@@ -25,6 +37,8 @@ import type { EditorState as PMEditorState } from "prosemirror-state";
 import type { Slice } from "prosemirror-model";
 import AiEditToolbar from "@/components/AiEditToolbar.vue";
 import ContextMenu from "@/components/ContextMenu.vue";
+import TableControlsOverlay from "@/editor/TableControlsOverlay.vue";
+import { getActiveTableContext, applyTableAction, type TableAction, type ActiveTableContext } from "@/editor/table-editing";
 import { markdownSchema } from "@/editor/schema";
 import { parseMarkdown } from "@/editor/markdown-parser";
 import { serializeMarkdown } from "@/editor/markdown-serializer";
@@ -43,6 +57,18 @@ import { useI18n } from "@/composables/useI18n";
 
 const { t } = useI18n();
 const rightClickedSvg = ref<string | null>(null);
+
+const tableOverlay = ref({
+  visible: false,
+  left: 0,
+  top: 0,
+  width: 0,
+  height: 0,
+  rowIndex: 0,
+  columnIndex: 0,
+  rowCount: 0,
+  columnCount: 0,
+});
 
 const mountRef = ref<HTMLDivElement | null>(null);
 const documents = useDocumentsStore();
@@ -246,6 +272,43 @@ function updateSelectionToolbar() {
   }
 }
 
+let activeContext: ActiveTableContext | null = null;
+
+function updateTableOverlay() {
+  if (!view || !mountRef.value) {
+    tableOverlay.value.visible = false;
+    activeContext = null;
+    return;
+  }
+
+  activeContext = getActiveTableContext(view, mountRef.value);
+  if (activeContext) {
+    tableOverlay.value = {
+      visible: true,
+      left: activeContext.rect.left,
+      top: activeContext.rect.top,
+      width: activeContext.rect.width,
+      height: activeContext.rect.height,
+      rowIndex: activeContext.rowIndex,
+      columnIndex: activeContext.columnIndex,
+      rowCount: activeContext.rowCount,
+      columnCount: activeContext.columnCount,
+    };
+  } else {
+    tableOverlay.value.visible = false;
+    activeContext = null;
+  }
+}
+
+function handleTableAction(action: TableAction) {
+  if (view && activeContext) {
+    const success = applyTableAction(view, action, activeContext);
+    if (success) {
+      updateTableOverlay();
+    }
+  }
+}
+
 function syncSessionContent() {
   const session = activeSession.value;
   if (!session || !view) {
@@ -280,6 +343,7 @@ function syncViewFromSession() {
   view.updateState(nextState);
   editorStore.bumpDocVersion();
   updateSelectionToolbar();
+  updateTableOverlay();
   if (hadFocus) {
     view.focus();
   }
@@ -315,6 +379,7 @@ function mountEditor() {
       }
       view.updateState(nextState);
       updateSelectionToolbar();
+      updateTableOverlay();
       if (transaction.docChanged) {
         editorStore.bumpDocVersion();
         syncSessionContent();
@@ -323,6 +388,7 @@ function mountEditor() {
   });
   editorStore.setView(view);
   updateSelectionToolbar();
+  updateTableOverlay();
   view.focus();
 }
 
@@ -353,6 +419,8 @@ onBeforeUnmount(() => {
   view = null;
   hideSelectionToolbar();
   menu.close();
+  tableOverlay.value.visible = false;
+  activeContext = null;
   editorStore.clearView();
 });
 </script>
