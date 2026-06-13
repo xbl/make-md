@@ -155,7 +155,22 @@
               <article class="settings-panel__row" v-for="provider in providerList" :key="provider.id">
                 <div class="settings-panel__meta">
                   <h4 class="settings-panel__command">{{ provider.label }}</h4>
-                  <p class="settings-panel__details">{{ t("settings.ai.model.default") }}: {{ ai.providers[provider.id].model }}</p>
+                  <p class="settings-panel__details">Default model: {{ ai.providers[provider.id].model }}</p>
+                </div>
+                <div class="settings-panel__actions">
+                  <input
+                    type="password"
+                    v-model="apiKeys[provider.id]"
+                    placeholder="API Key"
+                    class="settings-panel__capture"
+                  />
+                  <button
+                    class="settings-panel__secondary-action"
+                    type="button"
+                    @click="updateKey(provider.id)"
+                  >
+                    Save
+                  </button>
                 </div>
               </article>
             </section>
@@ -167,7 +182,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
 import { useI18n } from "@/composables/useI18n";
 import { chordToDisplay } from "@/lib/shortcuts/display";
 import { eventToChord } from "@/lib/shortcuts/bindings";
@@ -176,12 +191,33 @@ import { usePreferencesStore } from "@/stores/preferences";
 import { useShortcutsStore } from "@/stores/shortcuts";
 import { useUiStore } from "@/stores/ui";
 import { useAiStore } from "@/stores/ai";
+import { loadApiKey, saveApiKey } from "@/lib/file-service";
 
 const ui = useUiStore();
 const preferences = usePreferencesStore();
 const shortcuts = useShortcutsStore();
 const ai = useAiStore();
 const { t, effectiveLocale } = useI18n();
+
+async function loadKeys() {
+  for (const provider of providerList) {
+    const key = await loadApiKey(provider.id);
+    if (key) {
+      apiKeys.value[provider.id] = key;
+    }
+  }
+}
+
+async function updateKey(provider: string) {
+  const key = apiKeys.value[provider];
+  if (key) {
+    await saveApiKey(provider, key);
+  }
+}
+
+onMounted(() => {
+  loadKeys();
+});
 
 const sections = computed(() => [
   { id: "general" as const, label: t("settings.section.general"), title: t("settings.section.general"), description: t("settings.section.general.description") },
@@ -198,6 +234,7 @@ const providerList = [
   { id: "deepseek" as const, label: "DeepSeek" },
 ];
 
+const apiKeys = ref<Record<string, string>>({});
 const recordingCommandId = ref<string | null>(null);
 const recordingHint = ref("");
 const platform = computed(() => (navigator.userAgent.includes("Mac") ? "darwin" : "win32"));
