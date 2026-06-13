@@ -512,4 +512,70 @@ describe("editor command events", () => {
     view.destroy();
     document.body.removeChild(mount);
   });
+
+  it("wraps paragraph in blockquote when paragraph.quote is dispatched", () => {
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc: markdownSchema.node("doc", null, [
+        markdownSchema.node("paragraph", null, [markdownSchema.text("Hello")]),
+      ]),
+      plugins: createEditorPlugins(),
+    });
+
+    const view = new EditorView(mount, { state });
+    window.dispatchEvent(new CustomEvent("make-md:editor-command", { detail: { commandId: "paragraph.quote" } }));
+
+    expect(view.state.doc.firstChild?.type.name).toBe("blockquote");
+    expect(serializeMarkdown(view.state.doc)).toContain("> Hello");
+
+    view.destroy();
+    document.body.removeChild(mount);
+  });
+
+  it("wraps paragraph in unordered list when paragraph.unorderedList is dispatched", () => {
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc: markdownSchema.node("doc", null, [
+        markdownSchema.node("paragraph", null, [markdownSchema.text("Hello")]),
+      ]),
+      plugins: createEditorPlugins(),
+    });
+
+    const view = new EditorView(mount, { state });
+    window.dispatchEvent(new CustomEvent("make-md:editor-command", { detail: { commandId: "paragraph.unorderedList" } }));
+
+    expect(view.state.doc.firstChild?.type.name).toBe("bullet_list");
+    expect(serializeMarkdown(view.state.doc)).toContain("- Hello");
+
+    view.destroy();
+    document.body.removeChild(mount);
+  });
+
+  it("wraps paragraph in ordered list when paragraph.orderedList is dispatched", () => {
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc: markdownSchema.node("doc", null, [
+        markdownSchema.node("paragraph", null, [markdownSchema.text("Hello")]),
+      ]),
+      plugins: createEditorPlugins(),
+    });
+
+    const view = new EditorView(mount, { state });
+    window.dispatchEvent(new CustomEvent("make-md:editor-command", { detail: { commandId: "paragraph.orderedList" } }));
+
+    expect(view.state.doc.firstChild?.type.name).toBe("ordered_list");
+    expect(serializeMarkdown(view.state.doc)).toContain("1. Hello");
+
+    view.destroy();
+    document.body.removeChild(mount);
+  });
 });

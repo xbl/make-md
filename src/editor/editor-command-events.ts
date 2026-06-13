@@ -1,4 +1,5 @@
-import { selectAll, setBlockType, toggleMark } from "prosemirror-commands";
+import { selectAll, setBlockType, toggleMark, wrapIn } from "prosemirror-commands";
+import { wrapInList } from "prosemirror-schema-list";
 import { Plugin } from "prosemirror-state";
 import { TextSelection } from "prosemirror-state";
 import { findMatches } from "@/editor/find-replace";
@@ -38,6 +39,18 @@ async function applyImageCommand(
     options.onImageError?.(String(error));
     return false;
   }
+}
+
+function applyQuoteCommand(view: import("prosemirror-view").EditorView): boolean {
+  return wrapIn(markdownSchema.nodes.blockquote)(view.state, view.dispatch, view);
+}
+
+function applyUnorderedListCommand(view: import("prosemirror-view").EditorView): boolean {
+  return wrapInList(markdownSchema.nodes.bullet_list)(view.state, view.dispatch, view);
+}
+
+function applyOrderedListCommand(view: import("prosemirror-view").EditorView): boolean {
+  return wrapInList(markdownSchema.nodes.ordered_list)(view.state, view.dispatch, view);
 }
 
 function applyHeadingCommand(commandId: string, view: import("prosemirror-view").EditorView): boolean {
@@ -282,6 +295,24 @@ export function createEditorCommandEventsPlugin(options: CommandEventsOptions = 
 
         if (applyParagraphCommand(commandId, view)) {
           return;
+        }
+
+        if (commandId === "paragraph.quote") {
+          if (applyQuoteCommand(view)) {
+            return;
+          }
+        }
+
+        if (commandId === "paragraph.unorderedList") {
+          if (applyUnorderedListCommand(view)) {
+            return;
+          }
+        }
+
+        if (commandId === "paragraph.orderedList") {
+          if (applyOrderedListCommand(view)) {
+            return;
+          }
         }
 
         if (applyFormatCommand(commandId, view)) {
