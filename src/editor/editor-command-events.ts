@@ -5,6 +5,40 @@ import { findMatches } from "@/editor/find-replace";
 import { findNextMatch, findReplaceKey } from "@/editor/find-replace-plugin";
 import { createEditLinkCommand } from "@/editor/inline-mark/link-command";
 import { markdownSchema } from "@/editor/schema";
+import { pickImageFile } from "@/lib/file-service";
+import { copyImageAsset } from "@/lib/image-assets";
+import { insertImage } from "@/lib/image-asset-plugin";
+
+export type CommandEventsOptions = {
+  getDocPath?: () => string | undefined;
+  onImageError?: (message: string) => void;
+};
+
+async function applyImageCommand(
+  view: import("prosemirror-view").EditorView,
+  options: CommandEventsOptions,
+): Promise<boolean> {
+  const docPath = options.getDocPath?.();
+  if (!docPath) {
+    options.onImageError?.("Save the document before inserting images.");
+    return false;
+  }
+
+  const filePath = await pickImageFile();
+  if (!filePath) {
+    return false;
+  }
+
+  try {
+    const src = await copyImageAsset(docPath, filePath);
+    const alt = filePath.split("/").pop() ?? "image";
+    await insertImage(view, src, alt);
+    return true;
+  } catch (error) {
+    options.onImageError?.(String(error));
+    return false;
+  }
+}
 
 function applyHeadingCommand(commandId: string, view: import("prosemirror-view").EditorView): boolean {
   const match = /^paragraph\.h([1-6])$/.exec(commandId);
@@ -227,13 +261,18 @@ function applyCodeFenceCommand(view: import("prosemirror-view").EditorView): boo
   return applied;
 }
 
-export function createEditorCommandEventsPlugin() {
+export function createEditorCommandEventsPlugin(options: CommandEventsOptions = {}) {
   return new Plugin({
     view(view) {
       function onEditorCommand(event: Event) {
         const detail = (event as CustomEvent<{ commandId?: string }>).detail;
         const commandId = detail?.commandId;
         if (!commandId) {
+          return;
+        }
+
+        if (commandId === "format.image") {
+          void applyImageCommand(view, options);
           return;
         }
 

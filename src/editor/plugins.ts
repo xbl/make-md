@@ -29,7 +29,10 @@ export function createEditorPlugins(options: PluginOptions = {}) {
     createMermaidPlugin(),
     createFindReplacePlugin(),
     createCodeBlockPlugin(),
-    createEditorCommandEventsPlugin(),
+    createEditorCommandEventsPlugin({
+      getDocPath: options.getDocPath,
+      onImageError: options.onImageError,
+    }),
     createClipboardPlugin(),
     createMarkdownPastePlugin({
       getDocPath: options.getDocPath,

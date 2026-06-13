@@ -7,6 +7,18 @@ import { createEditorPlugins } from "@/editor/plugins";
 import { setFindReplaceState } from "@/editor/find-replace-plugin";
 import { serializeMarkdown } from "@/editor/markdown-serializer";
 
+vi.mock("@/lib/file-service", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/file-service")>();
+  return {
+    ...actual,
+    pickImageFile: vi.fn(),
+  };
+});
+
+vi.mock("@/lib/image-assets", () => ({
+  copyImageAsset: vi.fn(async (docPath: string, sourcePath: string) => "assets/test-image.png"),
+}));
+
 describe("editor command events", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -466,6 +478,36 @@ describe("editor command events", () => {
 
     expect(view.state.selection.from).toBe(1);
     expect(view.state.selection.to).toBe(6);
+
+    view.destroy();
+    document.body.removeChild(mount);
+  });
+
+  it("inserts an image when format.image is dispatched", async () => {
+    const mount = document.createElement("div");
+    document.body.appendChild(mount);
+
+    const { pickImageFile } = await import("@/lib/file-service");
+    vi.mocked(pickImageFile).mockResolvedValue("/absolute/path/to/test-image.png");
+
+    const state = EditorState.create({
+      schema: markdownSchema,
+      doc: markdownSchema.node("doc", null, [
+        markdownSchema.node("paragraph", null, [markdownSchema.text("Hello")]),
+      ]),
+      plugins: createEditorPlugins({
+        getDocPath: () => "/path/to/doc.md",
+        onImageError: () => {},
+      }),
+    });
+
+    const view = new EditorView(mount, { state });
+    window.dispatchEvent(new CustomEvent("make-md:editor-command", { detail: { commandId: "format.image" } }));
+
+    // Wait for the async task to complete
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(serializeMarkdown(view.state.doc)).toContain("![test-image.png](assets/test-image.png)");
 
     view.destroy();
     document.body.removeChild(mount);

@@ -8,7 +8,7 @@ type ImageAssetOptions = {
   onError: (message: string) => void;
 };
 
-async function insertImage(view: EditorView, src: string, alt = "image") {
+export async function insertImage(view: EditorView, src: string, alt = "image") {
   const { from } = view.state.selection;
   const node = markdownSchema.nodes.image.create({ src, alt, title: alt });
   view.dispatch(view.state.tr.insert(from, node));

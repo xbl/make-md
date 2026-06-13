@@ -153,6 +153,26 @@ export async function pickSaveHtmlFile(defaultPath?: string): Promise<string | n
   return normalizeFilePath(selected);
 }
 
+export async function pickImageFile(): Promise<string | null> {
+  if (!isTauri()) {
+    return null;
+  }
+  const selected = await open({
+    multiple: false,
+    directory: false,
+    filters: [
+      {
+        name: "Images",
+        extensions: ["png", "jpg", "jpeg", "gif", "webp", "bmp"],
+      },
+    ],
+  });
+  if (!selected || Array.isArray(selected)) {
+    return null;
+  }
+  return normalizeFilePath(selected);
+}
+
 export type SaveWordSelection = {
   path: string;
   includeMermaidCode: boolean;
