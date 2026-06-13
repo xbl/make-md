@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 
 export type EditorTheme = "dark" | "light";
+export type SettingsSection = "general" | "shortcuts" | "ai";
 
 function getStorage(): Storage | null {
   return typeof globalThis.localStorage === "undefined" ? null : globalThis.localStorage;
@@ -15,6 +16,7 @@ export const useUiStore = defineStore("ui", {
   state: () => ({
     commandPaletteOpen: false,
     settingsOpen: false,
+    activeSettingsSection: "general" as SettingsSection,
     settingsShortcutRecording: false,
     sidebarCollapsed: false,
     focusMode: false,
@@ -33,15 +35,24 @@ export const useUiStore = defineStore("ui", {
     closeCommandPalette() {
       this.commandPaletteOpen = false;
     },
-    openSettings() {
+    openSettings(section?: SettingsSection) {
+      if (section) {
+        this.activeSettingsSection = section;
+      }
       this.settingsOpen = true;
+    },
+    setActiveSettingsSection(section: SettingsSection) {
+      this.activeSettingsSection = section;
     },
     closeSettings() {
       this.settingsOpen = false;
       this.settingsShortcutRecording = false;
     },
-    toggleSettings() {
+    toggleSettings(section?: SettingsSection) {
       this.settingsOpen = !this.settingsOpen;
+      if (this.settingsOpen && section) {
+        this.activeSettingsSection = section;
+      }
       if (!this.settingsOpen) {
         this.settingsShortcutRecording = false;
       }

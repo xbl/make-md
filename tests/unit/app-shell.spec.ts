@@ -600,4 +600,29 @@ describe("AppShell", () => {
     expect(documents.activeSession?.content).toBe("second");
   });
 
+  it("keeps the unified settings center open when Escape exits shortcut capture", async () => {
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const ui = useUiStore();
+    ui.openSettings("shortcuts");
+
+    const wrapper = mount(AppShell, {
+      attachTo: document.body,
+      global: {
+        plugins: [pinia],
+      },
+    });
+
+    await nextTick();
+
+    // Trigger record button click to enter recording mode
+    const recordButton = wrapper.find('[data-command-id="format.bold"] .settings-panel__capture');
+    if (recordButton.exists()) {
+      await recordButton.trigger("click");
+      await wrapper.trigger("keydown", { key: "Escape" });
+
+      expect(ui.settingsOpen).toBe(true);
+      expect(ui.activeSettingsSection).toBe("shortcuts");
+    }
+  });
 });

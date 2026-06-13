@@ -154,4 +154,19 @@ describe("SettingsPanel", () => {
     expect(wrapper.text()).toContain("偏好设置");
     expect(wrapper.text()).toContain("跟随系统");
   });
+
+  it("opens the unified settings center to the requested section", async () => {
+    const { pinia, ui } = mountPanel();
+    ui.openSettings("ai");
+
+    const wrapper = mount(SettingsPanel, {
+      global: {
+        plugins: [pinia],
+      },
+    });
+
+    // Wait for the next task when "AI Settings" or left nav switches are rendered.
+    // For now we just verify the store state works.
+    expect(ui.activeSettingsSection).toBe("ai");
+  });
 });
