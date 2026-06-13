@@ -38,6 +38,11 @@ import {
 } from "@/lib/context-menu";
 import { useDocumentsStore } from "@/stores/documents";
 import { useEditorStore } from "@/stores/editor";
+import { convertSvgToPngBlob } from "@/lib/image-helpers";
+import { useI18n } from "@/composables/useI18n";
+
+const { t } = useI18n();
+const rightClickedSvg = ref<string | null>(null);
 
 const mountRef = ref<HTMLDivElement | null>(null);
 const documents = useDocumentsStore();
@@ -54,23 +59,34 @@ const activeSession = computed(() => documents.activeSession);
 const hasSelection = computed(() => Boolean(view && !view.state.selection.empty));
 const canUseClipboard = computed(() => Boolean(window.navigator?.clipboard));
 
-const menuItems = computed<ContextMenuItem[]>(() => [
-  { type: "action", id: "clipboard.cut", label: "Cut", disabled: !hasSelection.value },
-  { type: "action", id: "clipboard.copy", label: "Copy", disabled: !hasSelection.value },
-  { type: "action", id: "clipboard.paste", label: "Paste", disabled: !canUseClipboard.value },
-  { type: "action", id: "edit.selectAll", label: "Select All" },
-  { type: "separator", id: "sep-edit-format" },
-  { type: "action", id: "format.bold", label: "Bold" },
-  { type: "action", id: "format.italic", label: "Italic" },
-  { type: "action", id: "format.inlineCode", label: "Inline Code" },
-  { type: "separator", id: "sep-format-paragraph" },
-  { type: "action", id: "paragraph.h1", label: "Heading 1" },
-  { type: "action", id: "paragraph.h2", label: "Heading 2" },
-  { type: "action", id: "paragraph.h3", label: "Heading 3" },
-  { type: "action", id: "paragraph.paragraph", label: "Paragraph" },
-  { type: "separator", id: "sep-paragraph-table" },
-  { type: "action", id: "paragraph.table", label: "Insert Table" },
-]);
+const menuItems = computed<ContextMenuItem[]>(() => {
+  const items: ContextMenuItem[] = [
+    { type: "action", id: "clipboard.cut", label: "Cut", disabled: !hasSelection.value },
+    { type: "action", id: "clipboard.copy", label: "Copy", disabled: !hasSelection.value },
+    { type: "action", id: "clipboard.paste", label: "Paste", disabled: !canUseClipboard.value },
+    { type: "action", id: "edit.selectAll", label: "Select All" },
+    { type: "separator", id: "sep-edit-format" },
+    { type: "action", id: "format.bold", label: "Bold" },
+    { type: "action", id: "format.italic", label: "Italic" },
+    { type: "action", id: "format.inlineCode", label: "Inline Code" },
+    { type: "separator", id: "sep-format-paragraph" },
+    { type: "action", id: "paragraph.h1", label: "Heading 1" },
+    { type: "action", id: "paragraph.h2", label: "Heading 2" },
+    { type: "action", id: "paragraph.h3", label: "Heading 3" },
+    { type: "action", id: "paragraph.paragraph", label: "Paragraph" },
+    { type: "separator", id: "sep-paragraph-table" },
+    { type: "action", id: "paragraph.table", label: "Insert Table" },
+  ];
+
+  if (rightClickedSvg.value) {
+    items.unshift(
+      { type: "action", id: "mermaid.copyPng", label: t("editor.menu.copyMermaidPng") },
+      { type: "separator", id: "sep-mermaid" },
+    );
+  }
+
+  return items;
+});
 
 function dispatchEditorCommand(commandId: string) {
   window.dispatchEvent(new CustomEvent("make-md:editor-command", { detail: { commandId } }));
@@ -144,6 +160,19 @@ async function pasteClipboard() {
 }
 
 async function handleMenuSelect(item: ContextMenuActionItem) {
+  if (item.id === "mermaid.copyPng") {
+    if (rightClickedSvg.value) {
+      try {
+        const pngBlob = await convertSvgToPngBlob(rightClickedSvg.value);
+        await window.navigator.clipboard.write([
+          new ClipboardItem({ "image/png": pngBlob }),
+        ]);
+      } catch (error) {
+        window.alert(error instanceof Error ? error.message : String(error));
+      }
+    }
+    return;
+  }
   if (item.id === "clipboard.cut") {
     await cutSelection();
     return;
@@ -164,6 +193,16 @@ function openContextMenu(event: MouseEvent) {
     return;
   }
   event.preventDefault();
+
+  const target = event.target as HTMLElement | null;
+  const container = target?.closest(".mermaid-preview.mermaid-preview--ready");
+  if (container) {
+    const svgEl = container.querySelector("svg");
+    rightClickedSvg.value = svgEl ? svgEl.outerHTML : null;
+  } else {
+    rightClickedSvg.value = null;
+  }
+
   view.focus();
   menu.openAt(event.clientX, event.clientY);
 }
