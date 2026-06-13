@@ -281,7 +281,7 @@ function updateTableOverlay() {
     return;
   }
 
-  activeContext = getActiveTableContext(view, mountRef.value);
+  activeContext = getActiveTableContext(view, mountRef.value.parentElement || mountRef.value);
   if (activeContext) {
     tableOverlay.value = {
       visible: true,

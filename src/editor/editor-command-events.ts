@@ -191,6 +191,11 @@ function promptCodeBlockLanguage(currentLanguage: string): string | null {
 }
 
 function promptPositiveInteger(label: string, fallback: string): number | null {
+  const isTauriEnv = typeof window !== "undefined" && (Boolean((window as any).__TAURI__) || Boolean((window as any).__TAURI_INTERNALS__));
+  if (isTauriEnv) {
+    return Number(fallback);
+  }
+
   const value = window.prompt(label, fallback);
   if (value === null) {
     return null;
