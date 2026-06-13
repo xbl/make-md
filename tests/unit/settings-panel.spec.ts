@@ -25,7 +25,7 @@ describe("SettingsPanel", () => {
 
   it("renders when settings are open and records a shortcut override", async () => {
     const { pinia, ui, shortcuts } = mountPanel();
-    ui.openSettings();
+    ui.openSettings("shortcuts");
     const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
 
     const wrapper = mount(SettingsPanel, {
@@ -35,7 +35,7 @@ describe("SettingsPanel", () => {
     });
 
     expect(wrapper.find("[data-testid='settings-panel']").exists()).toBe(true);
-    expect(wrapper.text()).toContain("Preferences");
+    expect(wrapper.text()).toContain("Keyboard shortcuts");
     expect(wrapper.text()).toContain("Bold");
 
     const recordButton = wrapper.find("[data-command-id='format.bold'] .settings-panel__capture");
@@ -53,7 +53,7 @@ describe("SettingsPanel", () => {
     const { pinia, ui, shortcuts } = mountPanel();
     shortcuts.applyOverride("format.bold", "Mod-Shift-b");
     shortcuts.applyOverride("format.italic", "Mod-Shift-i");
-    ui.openSettings();
+    ui.openSettings("shortcuts");
 
     const wrapper = mount(SettingsPanel, {
       global: {
@@ -71,7 +71,7 @@ describe("SettingsPanel", () => {
 
   it("groups enabled commands by category and excludes disabled commands from rebinding", async () => {
     const { pinia, ui } = mountPanel();
-    ui.openSettings();
+    ui.openSettings("shortcuts");
 
     const wrapper = mount(SettingsPanel, {
       global: {
@@ -89,7 +89,7 @@ describe("SettingsPanel", () => {
 
   it("shows an inline hint for invalid chords and clears recording when preferences close", async () => {
     const { pinia, ui, shortcuts } = mountPanel();
-    ui.openSettings();
+    ui.openSettings("shortcuts");
 
     const wrapper = mount(SettingsPanel, {
       global: {
@@ -116,7 +116,7 @@ describe("SettingsPanel", () => {
 
   it("rejects system reserved shortcuts and keeps the existing binding", async () => {
     const { pinia, ui, shortcuts } = mountPanel();
-    ui.openSettings();
+    ui.openSettings("shortcuts");
 
     const wrapper = mount(SettingsPanel, {
       global: {
@@ -137,7 +137,7 @@ describe("SettingsPanel", () => {
   it("shows a language selector and updates labels when the locale changes", async () => {
     const { pinia, preferences, ui } = mountPanel();
     await preferences.initialize();
-    ui.openSettings();
+    ui.openSettings("general");
 
     const wrapper = mount(SettingsPanel, {
       global: {
@@ -145,13 +145,13 @@ describe("SettingsPanel", () => {
       },
     });
 
-    expect(wrapper.text()).toContain("Preferences");
+    expect(wrapper.text()).toContain("General");
     expect(wrapper.get("[data-testid='language-select']").exists()).toBe(true);
 
     await preferences.setLanguagePreference("zh-CN");
     await nextTick();
 
-    expect(wrapper.text()).toContain("偏好设置");
+    expect(wrapper.text()).toContain("通用");
     expect(wrapper.text()).toContain("跟随系统");
   });
 
@@ -168,5 +168,28 @@ describe("SettingsPanel", () => {
     // Wait for the next task when "AI Settings" or left nav switches are rendered.
     // For now we just verify the store state works.
     expect(ui.activeSettingsSection).toBe("ai");
+  });
+
+  it("renders left navigation and switches between general and shortcuts", async () => {
+    const { pinia, preferences, ui } = mountPanel();
+    await preferences.initialize();
+    ui.openSettings("general");
+
+    const wrapper = mount(SettingsPanel, {
+      global: {
+        plugins: [pinia],
+      },
+    });
+
+    expect(wrapper.text()).toContain("General");
+    expect(wrapper.text()).toContain("Shortcuts");
+    expect(wrapper.text()).toContain("AI");
+    expect(wrapper.text()).toContain("Language");
+
+    await wrapper.get('[data-settings-section="shortcuts"]').trigger("click");
+
+    expect(wrapper.text()).toContain("Keyboard shortcuts");
+    expect(wrapper.text()).toContain("File");
+    expect(wrapper.text()).not.toContain("Current language");
   });
 });
