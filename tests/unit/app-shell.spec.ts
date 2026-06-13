@@ -116,7 +116,7 @@ describe("AppShell", () => {
       },
     });
 
-    ui.openSettings();
+    ui.openSettings("shortcuts");
     await nextTick();
 
     const recordButton = wrapper.find("[data-command-id='format.bold'] .settings-panel__capture");
