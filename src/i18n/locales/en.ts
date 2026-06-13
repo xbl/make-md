@@ -73,4 +73,5 @@ export const en = {
   "command.export.html": "Export HTML",
   "command.export.pdf": "Export PDF",
   "command.export.word": "Export Word",
+  "editor.menu.copyMermaidPng": "Copy Diagram as PNG",
 } as const;

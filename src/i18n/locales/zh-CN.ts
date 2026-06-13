@@ -73,4 +73,5 @@ export const zhCN = {
   "command.export.html": "导出 HTML",
   "command.export.pdf": "导出 PDF",
   "command.export.word": "导出 Word",
+  "editor.menu.copyMermaidPng": "复制图表为 PNG",
 } as const;
