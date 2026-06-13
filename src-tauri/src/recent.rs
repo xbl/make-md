@@ -44,6 +44,19 @@ fn save_recent_files(app: &tauri::AppHandle, recent: &[String]) -> Result<(), St
     .map_err(|err| err.to_string())
 }
 
+pub fn filter_existing_paths(paths: Vec<String>) -> (Vec<String>, bool) {
+    let mut existing = Vec::new();
+    let mut changed = false;
+    for path in paths {
+        if std::path::Path::new(&path).exists() {
+            existing.push(path);
+        } else {
+            changed = true;
+        }
+    }
+    (existing, changed)
+}
+
 #[tauri::command]
 pub fn load_recent_files(app: tauri::AppHandle) -> Result<Vec<String>, String> {
     let path = recent_file_path(&app)?;
@@ -51,7 +64,15 @@ pub fn load_recent_files(app: tauri::AppHandle) -> Result<Vec<String>, String> {
         return Ok(Vec::new());
     }
     let raw = fs::read_to_string(path).map_err(|err| err.to_string())?;
-    Ok(serde_json::from_str(&raw).map_err(|err| err.to_string())?)
+    let files: Vec<String> = serde_json::from_str(&raw).map_err(|err| err.to_string())?;
+    
+    let (existing, changed) = filter_existing_paths(files);
+    
+    if changed {
+        save_recent_files(&app, &existing)?;
+    }
+    
+    Ok(existing)
 }
 
 #[tauri::command]
@@ -114,5 +135,30 @@ mod tests {
         let recent = vec!["a.md".into(), "b.md".into()];
         let next = clear_recent_paths(recent);
         assert!(next.is_empty());
+    }
+
+    #[test]
+    fn filters_out_non_existent_paths() {
+        use super::filter_existing_paths;
+        use std::fs::File;
+
+        // Create a temporary file to guarantee it exists
+        let temp_dir = std::env::temp_dir();
+        let temp_file_path = temp_dir.join("make_md_temp_test_recent_file.md");
+        let _file = File::create(&temp_file_path).unwrap();
+        let temp_file_str = temp_file_path.to_string_lossy().into_owned();
+
+        let paths = vec![
+            temp_file_str.clone(),
+            "/this/path/does/not/exist/at/all/12345.md".to_string(),
+        ];
+
+        let (filtered, changed) = filter_existing_paths(paths);
+        
+        // Clean up temp file
+        let _ = std::fs::remove_file(temp_file_path);
+
+        assert!(changed);
+        assert_eq!(filtered, vec![temp_file_str]);
     }
 }
