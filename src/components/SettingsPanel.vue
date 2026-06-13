@@ -3,17 +3,24 @@
     <section class="settings-panel__dialog" :aria-label="t('settings.title')" role="dialog" aria-modal="true">
       <!-- Left sidebar navigation -->
       <aside class="settings-panel__nav" aria-label="Settings sections">
-        <button
-          v-for="section in sections"
-          :key="section.id"
-          type="button"
-          class="settings-panel__nav-item"
-          :class="{ 'settings-panel__nav-item--active': ui.activeSettingsSection === section.id }"
-          :data-settings-section="section.id"
-          @click="ui.setActiveSettingsSection(section.id)"
-        >
-          {{ section.label }}
-        </button>
+        <div class="settings-panel__nav-header">
+          <span class="settings-panel__nav-logo">make-md</span>
+          <span class="settings-panel__nav-version">v0.1.0</span>
+        </div>
+        <div class="settings-panel__nav-links">
+          <button
+            v-for="section in sections"
+            :key="section.id"
+            type="button"
+            class="settings-panel__nav-item"
+            :class="{ 'settings-panel__nav-item--active': ui.activeSettingsSection === section.id }"
+            :data-settings-section="section.id"
+            @click="ui.setActiveSettingsSection(section.id)"
+          >
+            <span class="settings-panel__nav-dot"></span>
+            {{ section.label }}
+          </button>
+        </div>
       </aside>
 
       <!-- Right content area -->
@@ -26,15 +33,15 @@
           <div class="settings-panel__header-actions">
             <button
               v-if="ui.activeSettingsSection === 'shortcuts'"
-              class="settings-panel__secondary"
-              :title="t('settings.resetAll')"
+              class="settings-panel__secondary-action"
               type="button"
+              :title="t('settings.resetAll')"
               @click="resetAll"
             >
               {{ t("settings.resetAll") }}
             </button>
             <button
-              class="settings-panel__close"
+              class="settings-panel__close-action"
               type="button"
               :aria-label="t('settings.close')"
               @click="ui.closeSettings()"
@@ -58,7 +65,7 @@
                 <div class="settings-panel__actions">
                   <select
                     data-testid="language-select"
-                    class="settings-panel__capture"
+                    class="settings-panel__select"
                     :value="preferences.languagePreference"
                     @change="onLanguageChange"
                   >
@@ -91,6 +98,7 @@
                 </div>
 
                 <div class="settings-panel__actions">
+                  <!-- Typewriter-style keyboard keycap -->
                   <button
                     class="settings-panel__capture"
                     type="button"
@@ -102,7 +110,7 @@
                     {{ recordingCommandId === command.id ? t("settings.capture") : getDisplay(shortcuts.effectiveChord(command.id)) }}
                   </button>
                   <button
-                    class="settings-panel__secondary"
+                    class="settings-panel__reset-btn"
                     title="Reset shortcut"
                     type="button"
                     @click="shortcuts.resetCommand(command.id)"
@@ -128,7 +136,7 @@
           <!-- AI tab -->
           <div v-else-if="ui.activeSettingsSection === 'ai'" class="settings-panel__section">
             <section class="settings-panel__category">
-              <h3 class="settings-panel__category-title">{{ t("settings.section.ai") }}</h3>
+              <h3 class="settings-panel__category-title">AI Provider</h3>
 
               <article class="settings-panel__row">
                 <div class="settings-panel__meta">
@@ -137,7 +145,7 @@
                 </div>
 
                 <div class="settings-panel__actions">
-                  <select v-model="ai.activeProvider" class="settings-panel__capture">
+                  <select v-model="ai.activeProvider" class="settings-panel__select">
                     <option value="openai">OpenAI</option>
                     <option value="deepseek">DeepSeek</option>
                   </select>
@@ -175,11 +183,6 @@ const shortcuts = useShortcutsStore();
 const ai = useAiStore();
 const { t, effectiveLocale } = useI18n();
 
-const providerList = [
-  { id: "openai" as const, label: "OpenAI" },
-  { id: "deepseek" as const, label: "DeepSeek" },
-];
-
 const sections = computed(() => [
   { id: "general" as const, label: t("settings.section.general"), title: t("settings.section.general"), description: t("settings.section.general.description") },
   { id: "shortcuts" as const, label: t("settings.section.shortcuts"), title: t("settings.shortcuts.title"), description: t("settings.section.shortcuts.description") },
@@ -189,6 +192,11 @@ const sections = computed(() => [
 const activeSection = computed(() => {
   return sections.value.find((s) => s.id === ui.activeSettingsSection) ?? sections.value[0];
 });
+
+const providerList = [
+  { id: "openai" as const, label: "OpenAI" },
+  { id: "deepseek" as const, label: "DeepSeek" },
+];
 
 const recordingCommandId = ref<string | null>(null);
 const recordingHint = ref("");
@@ -291,18 +299,52 @@ function captureChord(commandId: string, event: KeyboardEvent) {
   flex-direction: row;
   width: min(860px, 100%);
   height: min(720px, calc(100vh - 48px));
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: var(--shadow-lg, 0 10px 25px rgba(0,0,0,0.1));
   overflow: hidden;
+  font-family: var(--font-ui, system-ui, sans-serif);
 }
 
+/* Left sidebar navigation */
 .settings-panel__nav {
-  width: 180px;
-  background: var(--bg-secondary, #f7fafc);
+  width: 220px;
+  background: var(--bg-sidebar);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  padding: 20px 10px;
-  gap: 6px;
+  padding: 24px 16px;
   flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.settings-panel__nav-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 32px;
+  padding-left: 8px;
+}
+
+.settings-panel__nav-logo {
+  font-family: var(--font-editor, serif);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+}
+
+.settings-panel__nav-version {
+  font-size: 10px;
+  color: var(--text-faint);
+  font-family: monospace;
+}
+
+.settings-panel__nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .settings-panel__nav-item {
@@ -315,7 +357,18 @@ function captureChord(commandId: string, event: KeyboardEvent) {
   color: var(--text-secondary);
   font-size: var(--text-sm, 13px);
   font-weight: 500;
-  transition: background 0.15s, color 0.15s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-panel__nav-dot {
+  width: 5px;
+  height: 5px;
+  background: transparent;
+  border-radius: 50%;
+  transition: all 0.2s ease;
 }
 
 .settings-panel__nav-item:hover {
@@ -324,21 +377,268 @@ function captureChord(commandId: string, event: KeyboardEvent) {
 }
 
 .settings-panel__nav-item--active {
-  background: var(--bg-active, #edf2f7);
+  background: var(--bg-active);
   color: var(--accent, #3182ce);
 }
 
+.settings-panel__nav-item--active .settings-panel__nav-dot {
+  background: var(--accent, #3182ce);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+/* Right content area */
 .settings-panel__content {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
   height: 100%;
+  background: var(--bg-elevated);
+}
+
+.settings-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
+}
+
+.settings-panel__title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+
+.settings-panel__subtitle {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: var(--text-sm, 13px);
+}
+
+.settings-panel__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.settings-panel__secondary-action,
+.settings-panel__close-action {
+  font-family: inherit;
+  font-size: var(--text-sm, 13px);
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.settings-panel__secondary-action:hover,
+.settings-panel__close-action:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.settings-panel__close-action {
+  border-color: transparent;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.settings-panel__close-action:hover {
+  background: color-mix(in srgb, var(--bg-hover) 85%, var(--accent) 15%);
 }
 
 .settings-panel__list {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 22px 22px;
+  padding: 24px 28px 28px;
+  box-sizing: border-box;
+}
+
+.settings-panel__category {
+  margin-bottom: 28px;
+}
+
+.settings-panel__category:last-child {
+  margin-bottom: 0;
+}
+
+.settings-panel__category-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.2px;
+}
+
+/* Settings Row - Clean and Spacious Card Layout */
+.settings-panel__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  background: var(--bg-paper);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.settings-panel__row:hover {
+  border-color: var(--border-strong);
+}
+
+.settings-panel__meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-panel__command {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.settings-panel__details {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.settings-panel__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* Custom Dropdown select */
+.settings-panel__select {
+  font-family: inherit;
+  font-size: var(--text-sm, 13px);
+  padding: 6px 32px 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  appearance: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%235c5c57'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+}
+
+.settings-panel__select:hover {
+  border-color: var(--border-strong);
+}
+
+.settings-panel__select:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* Mechanical Typewriter-style Keycaps */
+.settings-panel__capture {
+  font-family: var(--font-monospace, monospace);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-bottom: 2px solid var(--border-strong);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  min-width: 100px;
+  text-align: center;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: -0.2px;
+}
+
+.settings-panel__capture:hover {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+  background: var(--bg-hover);
+  box-shadow: none;
+}
+
+/* Pulsing Recording Amber State */
+.settings-panel__capture--recording {
+  border-color: #d69e2e !important;
+  border-bottom: 2px solid #b7791f !important;
+  color: #b7791f !important;
+  background: color-mix(in srgb, var(--bg-elevated) 90%, #ecc94b) !important;
+  animation: pulse-recording 1.5s infinite ease-in-out;
+  font-weight: 600;
+}
+
+@keyframes pulse-recording {
+  0%, 100% {
+    box-shadow: 0 0 0 0px rgba(214, 158, 46, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(214, 158, 46, 0.2);
+  }
+}
+
+.settings-panel__reset-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: var(--text-sm, 13px);
+  padding: 6px 8px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.settings-panel__reset-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.settings-panel__hint {
+  font-size: 12px;
+  color: #dd6b20;
+  background: color-mix(in srgb, var(--bg-elevated) 95%, #ecc94b);
+  border: 1px solid color-mix(in srgb, var(--border) 80%, #ecc94b);
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-top: 16px;
+}
+
+/* Custom Scrollbar for list */
+.settings-panel__list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.settings-panel__list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.settings-panel__list::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 10px;
+}
+
+.settings-panel__list::-webkit-scrollbar-thumb:hover {
+  background: var(--text-faint);
 }
 </style>
