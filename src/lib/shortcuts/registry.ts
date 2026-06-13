@@ -61,7 +61,7 @@ const COMMAND_SEEDS: CommandSeed[] = [
   def("format.inlineCode", "command.format.inlineCode", "format", "editor", "Mod-Shift-Backquote"),
   def("format.strike", "command.format.strike", "format", "editor", "Ctrl-Shift-Backquote"),
   def("format.link", "command.format.link", "format", "editor", "Mod-k"),
-  def("format.image", "command.format.image", "format", "editor", "Mod-Control-i", false),
+  def("format.image", "command.format.image", "format", "editor", "Mod-Control-i"),
   def("format.clear", "command.format.clear", "format", "editor", "Mod-Backslash"),
 
   def("paragraph.h1", "command.paragraph.h1", "paragraph", "editor", "Mod-1"),
@@ -77,7 +77,7 @@ const COMMAND_SEEDS: CommandSeed[] = [
   def("paragraph.orderedList", "command.paragraph.orderedList", "paragraph", "editor", "Mod-Alt-o"),
   def("paragraph.unorderedList", "command.paragraph.unorderedList", "paragraph", "editor", "Mod-Alt-u"),
   def("paragraph.codeFence", "command.paragraph.codeFence", "paragraph", "editor", "Mod-Alt-c"),
-  def("paragraph.table", "command.paragraph.table", "paragraph", "editor", "Mod-Alt-t", false),
+  def("paragraph.table", "command.paragraph.table", "paragraph", "editor", "Mod-Alt-t"),
 
   def("view.sidebar", "command.view.sidebar", "view", "view", "Mod-Shift-l"),
   def("view.outline", "command.view.outline", "view", "view", "Mod-Control-1"),
