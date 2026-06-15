@@ -201,6 +201,10 @@ function handleEscape(event: KeyboardEvent) {
 }
 
 async function handleKeydown(event: KeyboardEvent) {
+  if (ui.settingsShortcutRecording) {
+    return;
+  }
+
   if (handleEscape(event)) {
     return;
   }
