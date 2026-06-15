@@ -319,9 +319,13 @@ onMounted(async () => {
     });
 
     unlistenClose = await appWindow.onCloseRequested(async (event) => {
-      const ok = await documents.confirmBeforeQuit();
-      if (!ok) {
-        event.preventDefault();
+      try {
+        const ok = await documents.confirmBeforeQuit();
+        if (!ok) {
+          event.preventDefault();
+        }
+      } catch (err) {
+        console.error("close handler failed, allowing window to close:", err);
       }
     });
   }
