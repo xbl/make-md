@@ -98,42 +98,48 @@ export function createImageToolbarPlugin() {
     }
   }
 
+  let editorView: EditorView;
+
+  const onEditorClick = (event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    const container = target?.closest?.(".md-image-container");
+    if (!container) return;
+    const img = container.querySelector("img");
+    if (!img) return;
+    try {
+      const pos = editorView.posAtDOM(img, 0);
+      if (isImageNode(editorView.state.doc.nodeAt(pos)) && bar) {
+        bar.dataset.imagePos = String(pos);
+        positionBar(bar, editorView, pos);
+        refreshSizeLabel(bar, editorView, pos);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const onDocumentClick = (event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (target?.closest?.(".md-image-container")) return;
+    if (target?.closest?.(".md-image-toolbar")) return;
+    if (bar) bar.style.display = "none";
+  };
+
   return new Plugin({
     key: imageToolbarKey,
-    view(editorView) {
+    view(ev) {
+      editorView = ev;
       bar = buildToolbarDom();
       editorView.dom.parentElement?.appendChild(bar);
       attachBarEvents(editorView);
 
-      // Detect image clicks
-      editorView.dom.addEventListener("click", (event: MouseEvent) => {
-        const target = event.target as HTMLElement;
-        const container = target?.closest?.(".md-image-container");
-        if (!container) return;
-        const img = container.querySelector("img");
-        if (!img) return;
-        try {
-          const pos = editorView.posAtDOM(img, 0);
-          if (isImageNode(editorView.state.doc.nodeAt(pos)) && bar) {
-            bar.dataset.imagePos = String(pos);
-            positionBar(bar, editorView, pos);
-            refreshSizeLabel(bar, editorView, pos);
-          }
-        } catch {
-          // ignore
-        }
-      });
-
-      // Hide toolbar on clicks elsewhere
-      document.addEventListener("click", (event: MouseEvent) => {
-        const target = event.target as HTMLElement;
-        if (target?.closest?.(".md-image-container")) return;
-        if (target?.closest?.(".md-image-toolbar")) return;
-        if (bar) bar.style.display = "none";
-      });
+      editorView.dom.addEventListener("click", onEditorClick);
+      document.addEventListener("click", onDocumentClick);
 
       return {
         destroy() {
+          document.removeEventListener("click", onDocumentClick);
+          editorView.dom.removeEventListener("click", onEditorClick);
           bar?.remove();
           bar = null;
         },
