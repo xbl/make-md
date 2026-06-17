@@ -52,12 +52,29 @@ function tokenToNodes(token: InlineToken, docPath?: string): PMNode[] {
     return output;
   }
   if (token.type === "image") {
+    let width: number | null = null;
+    let height: number | null = null;
+    let align: string | null = null;
+    if (token.title) {
+      const sizeMatch = /(\d+)x(\d+)/.exec(token.title);
+      if (sizeMatch) {
+        width = Number(sizeMatch[1]);
+        height = Number(sizeMatch[2]);
+      }
+      const alignMatch = /align=(inline|left|center|right)/.exec(token.title);
+      if (alignMatch) {
+        align = alignMatch[1];
+      }
+    }
     return [
       nodes.image.create({
         src: token.src,
         alt: token.alt,
-        title: token.alt || null,
+        title: token.title || null,
         displaySrc: resolveMarkdownImageDisplaySrc(token.src, docPath),
+        width,
+        height,
+        align: align || "inline",
       }),
     ];
   }
