@@ -68,9 +68,7 @@ export function createImageNodeView(
     }
   }
 
-  container.addEventListener("click", (event) => {
-    event.stopPropagation();
-    event.preventDefault();
+  container.addEventListener("click", () => {
     setSelected(true);
   });
 
