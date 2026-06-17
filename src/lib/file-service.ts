@@ -61,6 +61,20 @@ export async function loadRecentFiles() {
   return invoke<string[]>("load_recent_files");
 }
 
+export async function saveApiKey(provider: string, apiKey: string) {
+  if (!isTauri()) {
+    return;
+  }
+  await invoke("save_api_key", { provider, apiKey });
+}
+
+export async function loadApiKey(provider: string) {
+  if (!isTauri()) {
+    return null;
+  }
+  return invoke<string | null>("load_api_key", { provider });
+}
+
 export async function saveRecentFile(path: string) {
   if (!isTauri()) {
     return [path];

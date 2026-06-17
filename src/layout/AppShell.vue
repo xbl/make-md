@@ -22,6 +22,7 @@
 
     <CommandPalette />
     <SettingsPanel />
+    <ToastNotification />
     <div v-if="markdownDragActive" class="app-shell__drag-overlay" data-testid="markdown-drop-overlay">
       <div class="app-shell__drag-overlay-card">
         <p class="app-shell__drag-overlay-title">{{ t("app.dragOverlay.title") }}</p>
@@ -41,6 +42,7 @@ import EditorPane from "@/components/EditorPane.vue";
 import StatusBar from "@/components/StatusBar.vue";
 import CommandPalette from "@/components/CommandPalette.vue";
 import SettingsPanel from "@/components/SettingsPanel.vue";
+import ToastNotification from "@/components/ToastNotification.vue";
 import { useI18n } from "@/composables/useI18n";
 import { createAppCommandRuntime } from "@/lib/app-commands";
 import { useDocumentsStore } from "@/stores/documents";

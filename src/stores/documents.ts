@@ -16,6 +16,7 @@ import {
 import { createAutosaveQueue } from "@/lib/autosave";
 import { saveRecoverySnapshot, clearRecoverySnapshot, loadRecoverySnapshot } from "@/lib/recovery";
 import { promptUnsavedChanges } from "@/lib/unsaved-prompt";
+import { promptExternalChange } from "@/lib/external-change-prompt";
 import { markdownToHtml } from "@/lib/export-html";
 import { exportMarkdownToPdf } from "@/lib/export-pdf";
 import { exportMarkdownToWord } from "@/lib/export-word";
@@ -23,6 +24,19 @@ import { exportMarkdownToWord } from "@/lib/export-word";
 type Session = ReturnType<typeof createDocumentSession>;
 
 let autosaveQueue: ReturnType<typeof createAutosaveQueue> | null = null;
+
+const SELF_WRITE_IGNORE_MS = 500;
+const selfWriteTimestamps = new Map<string, number>();
+
+function markSelfWrite(path: string) {
+  if (!path) return;
+  selfWriteTimestamps.set(path, Date.now());
+}
+
+function isRecentSelfWrite(path: string): boolean {
+  const last = selfWriteTimestamps.get(path);
+  return last !== undefined && Date.now() - last < SELF_WRITE_IGNORE_MS;
+}
 
 function sessionLabel(session: Session) {
   if (!session.path) {
@@ -51,6 +65,7 @@ export const useDocumentsStore = defineStore("documents", {
             return;
           }
           await writeMarkdownFile(session.path, content);
+          markSelfWrite(session.path);
           session.markSaved(content);
           await clearRecoverySnapshot(session.id);
         });
@@ -124,6 +139,7 @@ export const useDocumentsStore = defineStore("documents", {
 
       await this.flushAutosave();
       await writeMarkdownFile(session.path, session.content);
+      markSelfWrite(session.path);
       session.markSaved(session.content);
       this.recentFiles = await saveRecentFile(session.path);
       await clearRecoverySnapshot(session.id);
@@ -141,6 +157,7 @@ export const useDocumentsStore = defineStore("documents", {
       }
 
       await writeMarkdownFile(path, session.content);
+      markSelfWrite(path);
       const previousId = session.id;
       session.setPath(path);
       session.markSaved(session.content);
@@ -180,6 +197,28 @@ export const useDocumentsStore = defineStore("documents", {
       session.markSaved(content);
       this.sessions = [...this.sessions];
       return true;
+    },
+    async handleExternalFileChange(payload: { path: string; kind: "modified" | "removed" }) {
+      if (isRecentSelfWrite(payload.path)) {
+        return;
+      }
+      const session = this.sessions.find((item) => item.path === payload.path);
+      if (!session) {
+        return;
+      }
+      if (payload.kind === "removed") {
+        session.markMissing(true);
+        this.sessions = [...this.sessions];
+        return;
+      }
+      if (!session.isDirty()) {
+        await this.refreshSessionFromDisk(payload.path);
+        return;
+      }
+      const action = await promptExternalChange(sessionLabel(session));
+      if (action === "reload") {
+        await this.refreshSessionFromDisk(payload.path, true);
+      }
     },
     async flushAutosave() {
       await this.getAutosaveQueue().flush();
