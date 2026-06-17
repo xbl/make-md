@@ -176,6 +176,9 @@ export function createImageNodeView(
       return false;
     },
     ignoreMutation() {
+      // No contentDOM: the NodeView owns its entire DOM subtree.
+      // ProseMirror should never try to reconcile mutations here;
+      // the update() method handles all attribute syncing from transactions.
       return true;
     },
   };
