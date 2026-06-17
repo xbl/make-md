@@ -23,6 +23,18 @@ interface ImageNodeInfo {
   displaySrc: string | null;
 }
 
+function mimeTypeFromPath(path: string): string {
+  const ext = path.split(".").pop()?.toLowerCase();
+  const map: Record<string, string> = {
+    png: "image/png",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    gif: "image/gif",
+    webp: "image/webp",
+  };
+  return map[ext ?? ""] ?? "image/png";
+}
+
 export function findImageAtClick(
   view: EditorView,
   event: MouseEvent,
@@ -59,8 +71,9 @@ export async function copyImageToClipboard(
   if (isTauri()) {
     const { invoke } = await import("@tauri-apps/api/core");
     const bytes = await invoke<number[]>("read_binary_file", { path: absPath });
-    const blob = new Blob([new Uint8Array(bytes)], { type: "image/png" });
-    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    const mimeType = mimeTypeFromPath(absPath);
+    const blob = new Blob([new Uint8Array(bytes)], { type: mimeType });
+    await navigator.clipboard.write([new ClipboardItem({ [mimeType]: blob })]);
   } else {
     const response = await fetch(`file://${encodeURI(absPath)}`);
     const blob = await response.blob();
@@ -78,6 +91,7 @@ export async function saveImageAs(
 ): Promise<void> {
   const absPath = resolveImageAbsolutePath(docPath, src);
   if (!absPath) throw new Error("Cannot save remote images");
+  if (!isTauri()) throw new Error("Save As is only available in the desktop app");
 
   const { save } = await import("@tauri-apps/plugin-dialog");
   const fileName = src.split("/").pop() ?? "image.png";
@@ -98,6 +112,7 @@ export async function revealImageInFinder(
 ): Promise<void> {
   const absPath = resolveImageAbsolutePath(docPath, src);
   if (!absPath) throw new Error("Cannot reveal remote images");
+  if (!isTauri()) throw new Error("Reveal in Finder is only available in the desktop app");
 
   const { invoke } = await import("@tauri-apps/api/core");
   await invoke("reveal_in_finder", { path: absPath });
