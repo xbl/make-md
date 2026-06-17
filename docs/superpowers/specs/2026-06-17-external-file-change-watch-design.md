@@ -181,7 +181,7 @@ export async function promptExternalChange(fileName: string): Promise<ExternalCh
 }
 ```
 
-i18n strings are added to `src/i18n/locales/en.ts` and `src/i18n/locales/zh-CN.ts` under keys `documents.externalChange.reloadPrompt`, `documents.externalChange.keepPrompt`, `documents.externalChange.titleReload`, `documents.externalChange.titleKeep`. The prompt module reads them via the existing i18n helper used by `unsaved-prompt.ts`'s siblings.
+i18n strings are hardcoded English in this prompt module, mirroring the existing `unsaved-prompt.ts` pattern. (Following that established convention; i18n migration for both prompts is a separate concern.)
 
 ### AppShell wiring (`src/layout/AppShell.vue`)
 
@@ -294,7 +294,6 @@ Tauri event emission is not unit-tested directly; the integration test runs thro
 - `src/stores/documents.ts` — lifecycle hooks, `handleExternalFileChange`, self-write timestamps
 - `src/layout/AppShell.vue` — register `onFileChanged`, cleanup
 - `src/editor/EditorView.vue` — cursor preservation in `syncViewFromSession`
-- `src/i18n/locales/en.ts`, `src/i18n/locales/zh-CN.ts` — prompt strings
 
 ---
 
