@@ -54,10 +54,13 @@ import {
 import { useDocumentsStore } from "@/stores/documents";
 import { useEditorStore } from "@/stores/editor";
 import { convertSvgToPngBlob } from "@/lib/image-helpers";
+import { findImageAtClick, copyImageToClipboard, copyImageMarkdownPath, saveImageAs, revealImageInFinder } from "@/lib/image-commands";
 import { useI18n } from "@/composables/useI18n";
 
 const { t } = useI18n();
 const rightClickedSvg = ref<string | null>(null);
+const rightClickedImage = ref<{ src: string; alt: string; docPath: string | undefined } | null>(null);
+let pendingImageContext: { src: string; alt: string; docPath: string | undefined } | null = null;
 
 const tableOverlay = ref({
   visible: false,
@@ -88,7 +91,29 @@ const hasSelection = computed(() => Boolean(view && !view.state.selection.empty)
 const canUseClipboard = computed(() => Boolean(window.navigator?.clipboard));
 
 const menuItems = computed<ContextMenuItem[]>(() => {
-  const items: ContextMenuItem[] = [
+  const items: ContextMenuItem[] = [];
+
+  // Image items come first
+  if (rightClickedImage.value) {
+    items.push(
+      { type: "action", id: "image.copyImage", label: t("menu.image.copyImage") },
+      { type: "action", id: "image.copyPath", label: t("menu.image.copyPath") },
+      { type: "action", id: "image.saveAs", label: t("menu.image.saveAs") },
+      { type: "action", id: "image.revealInFinder", label: t("menu.image.revealInFinder") },
+      { type: "separator", id: "sep-image" },
+    );
+  }
+
+  // Mermaid items next
+  if (rightClickedSvg.value) {
+    items.push(
+      { type: "action", id: "mermaid.copyPng", label: t("editor.menu.copyMermaidPng") },
+      { type: "separator", id: "sep-mermaid" },
+    );
+  }
+
+  // Standard items
+  items.push(
     { type: "action", id: "clipboard.cut", label: "Cut", disabled: !hasSelection.value },
     { type: "action", id: "clipboard.copy", label: "Copy", disabled: !hasSelection.value },
     { type: "action", id: "clipboard.paste", label: "Paste", disabled: !canUseClipboard.value },
@@ -104,14 +129,7 @@ const menuItems = computed<ContextMenuItem[]>(() => {
     { type: "action", id: "paragraph.paragraph", label: "Paragraph" },
     { type: "separator", id: "sep-paragraph-table" },
     { type: "action", id: "paragraph.table", label: "Insert Table" },
-  ];
-
-  if (rightClickedSvg.value) {
-    items.unshift(
-      { type: "action", id: "mermaid.copyPng", label: t("editor.menu.copyMermaidPng") },
-      { type: "separator", id: "sep-mermaid" },
-    );
-  }
+  );
 
   return items;
 });
@@ -188,6 +206,46 @@ async function pasteClipboard() {
 }
 
 async function handleMenuSelect(item: ContextMenuActionItem) {
+  // Image commands
+  if (item.id === "image.copyImage" && pendingImageContext) {
+    try {
+      await copyImageToClipboard(
+        pendingImageContext.docPath,
+        pendingImageContext.src,
+      );
+    } catch (error) {
+      window.alert(String(error));
+    }
+    return;
+  }
+  if (item.id === "image.copyPath" && pendingImageContext) {
+    copyImageMarkdownPath(pendingImageContext);
+    return;
+  }
+  if (item.id === "image.saveAs" && pendingImageContext) {
+    try {
+      await saveImageAs(
+        pendingImageContext.docPath,
+        pendingImageContext.src,
+      );
+    } catch (error) {
+      window.alert(String(error));
+    }
+    return;
+  }
+  if (item.id === "image.revealInFinder" && pendingImageContext) {
+    try {
+      await revealImageInFinder(
+        pendingImageContext.docPath,
+        pendingImageContext.src,
+      );
+    } catch (error) {
+      window.alert(String(error));
+    }
+    return;
+  }
+
+  // Mermaid (existing)
   if (item.id === "mermaid.copyPng") {
     if (rightClickedSvg.value) {
       try {
@@ -201,6 +259,7 @@ async function handleMenuSelect(item: ContextMenuActionItem) {
     }
     return;
   }
+
   if (item.id === "clipboard.cut") {
     await cutSelection();
     return;
@@ -223,6 +282,28 @@ function openContextMenu(event: MouseEvent) {
   event.preventDefault();
 
   const target = event.target as HTMLElement | null;
+
+  // Check for image click first
+  const imgEl = target?.closest?.(".md-image-container img") as HTMLImageElement | null;
+  if (imgEl && view) {
+    const result = findImageAtClick(view, event);
+    if (result) {
+      rightClickedImage.value = {
+        src: result.info.src,
+        alt: result.info.alt,
+        docPath: activeSession.value?.path,
+      };
+      pendingImageContext = rightClickedImage.value;
+    } else {
+      rightClickedImage.value = null;
+      pendingImageContext = null;
+    }
+  } else {
+    rightClickedImage.value = null;
+    pendingImageContext = null;
+  }
+
+  // Check for mermaid (existing logic)
   const container = target?.closest(".mermaid-preview.mermaid-preview--ready");
   if (container) {
     const svgEl = container.querySelector("svg");
