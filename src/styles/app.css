@@ -1082,6 +1082,93 @@ button {
   margin: 0.8em 0;
 }
 
+/* Image container */
+.md-image-container {
+  position: relative;
+  display: inline-block;
+}
+.md-image-container--selected .md-image-wrapper {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Resize handles */
+.md-image-wrapper {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
+.md-image-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #3b82f6;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  z-index: 2;
+  display: none;
+}
+.md-image-container--selected .md-image-handle {
+  display: block;
+}
+.md-image-handle--nw { top: -4px; left: -4px; cursor: nw-resize; }
+.md-image-handle--n  { top: -4px; left: 50%; margin-left: -4px; cursor: n-resize; }
+.md-image-handle--ne { top: -4px; right: -4px; cursor: ne-resize; }
+.md-image-handle--e  { top: 50%; margin-top: -4px; right: -4px; cursor: e-resize; }
+.md-image-handle--se { bottom: -4px; right: -4px; cursor: se-resize; }
+.md-image-handle--s  { bottom: -4px; left: 50%; margin-left: -4px; cursor: s-resize; }
+.md-image-handle--sw { bottom: -4px; left: -4px; cursor: sw-resize; }
+.md-image-handle--w  { top: 50%; margin-top: -4px; left: -4px; cursor: w-resize; }
+
+/* Alignment */
+.md-image--align-left {
+  float: left;
+  margin-right: 1em;
+  margin-bottom: 0.5em;
+}
+.md-image--align-center {
+  display: block;
+  margin: 0 auto;
+}
+.md-image--align-right {
+  float: right;
+  margin-left: 1em;
+  margin-bottom: 0.5em;
+}
+
+/* Floating toolbar */
+.md-image-toolbar {
+  position: absolute;
+  z-index: 100;
+  display: flex;
+  gap: 4px;
+  padding: 4px 6px;
+  background: #1e1e1e;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  align-items: center;
+}
+.md-image-toolbar__size {
+  font-size: 11px;
+  color: #aaa;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+.md-image-toolbar__btn {
+  background: transparent;
+  color: #ccc;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  cursor: pointer;
+}
+.md-image-toolbar__btn:hover {
+  background: #333;
+  color: #fff;
+}
+
 .editor-view .ProseMirror hr {
   border: 0;
   border-top: 1px solid var(--border);
