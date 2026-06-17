@@ -17,6 +17,7 @@ import { createAutosaveQueue } from "@/lib/autosave";
 import { saveRecoverySnapshot, clearRecoverySnapshot, loadRecoverySnapshot } from "@/lib/recovery";
 import { promptUnsavedChanges } from "@/lib/unsaved-prompt";
 import { promptExternalChange } from "@/lib/external-change-prompt";
+import { watchFile, unwatchFile } from "@/lib/file-watch";
 import { markdownToHtml } from "@/lib/export-html";
 import { exportMarkdownToPdf } from "@/lib/export-pdf";
 import { exportMarkdownToWord } from "@/lib/export-word";
@@ -115,6 +116,7 @@ export const useDocumentsStore = defineStore("documents", {
         content,
       });
       this.openSession(session);
+      void watchFile(path);
       this.recentFiles = await saveRecentFile(path);
       if (restored) {
         session.markDirty();
@@ -159,6 +161,7 @@ export const useDocumentsStore = defineStore("documents", {
       await writeMarkdownFile(path, session.content);
       markSelfWrite(path);
       const previousId = session.id;
+      const previousPath = session.path;
       session.setPath(path);
       session.markSaved(session.content);
 
@@ -169,6 +172,10 @@ export const useDocumentsStore = defineStore("documents", {
       });
       this.sessions = this.sessions.filter((item) => item.id !== previousId);
       this.openSession(nextSession);
+      if (previousPath) {
+        void unwatchFile(previousPath);
+      }
+      void watchFile(path);
       this.recentFiles = await saveRecentFile(path);
       await clearRecoverySnapshot(path);
       await clearRecoverySnapshot(previousId);
@@ -252,6 +259,9 @@ export const useDocumentsStore = defineStore("documents", {
       }
 
       this.sessions = this.sessions.filter((item) => item.id !== id);
+      if (session.path) {
+        void unwatchFile(session.path);
+      }
       if (this.activeSessionId === id) {
         this.activeSessionId = this.sessions[this.sessions.length - 1]?.id ?? "";
       }
@@ -325,6 +335,8 @@ export const useDocumentsStore = defineStore("documents", {
       if (this.activeSessionId === oldPath) {
         this.activeSessionId = newPath;
       }
+      void unwatchFile(oldPath);
+      void watchFile(newPath);
     },
     async exportActiveHtml() {
       const session = this.activeSession;

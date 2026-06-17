@@ -118,4 +118,32 @@ describe("documents handleExternalFileChange", () => {
       vi.useRealTimers();
     }
   });
+
+  it("calls watchFile when opening a path-backed session", async () => {
+    const fileService = await import("@/lib/file-service");
+    const fileWatch = await import("@/lib/file-watch");
+    const store = useDocumentsStore();
+    vi.mocked(fileService.readMarkdownFile).mockResolvedValueOnce({ path: "/a.md", content: "" });
+    await store.openFile("/a.md");
+    expect(fileWatch.watchFile).toHaveBeenCalledWith("/a.md");
+  });
+
+  it("calls unwatchFile when closing a session", async () => {
+    const fileService = await import("@/lib/file-service");
+    const fileWatch = await import("@/lib/file-watch");
+    const store = useDocumentsStore();
+    vi.mocked(fileService.readMarkdownFile).mockResolvedValueOnce({ path: "/a.md", content: "" });
+    await store.openFile("/a.md");
+    vi.mocked(fileWatch.unwatchFile).mockClear();
+    await store.closeSession("/a.md");
+    expect(fileWatch.unwatchFile).toHaveBeenCalledWith("/a.md");
+  });
+
+  it("does not call watchFile for untitled sessions", async () => {
+    const fileWatch = await import("@/lib/file-watch");
+    const store = useDocumentsStore();
+    vi.mocked(fileWatch.watchFile).mockClear();
+    store.createNewDocument();
+    expect(fileWatch.watchFile).not.toHaveBeenCalled();
+  });
 });

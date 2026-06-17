@@ -1,7 +1,12 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { createDocumentSession } from "../../src/lib/document-session";
 import { useDocumentsStore } from "../../src/stores/documents";
+
+vi.mock("@/lib/file-watch", () => ({
+  watchFile: vi.fn(async () => {}),
+  unwatchFile: vi.fn(async () => {}),
+}));
 
 describe("documents retarget path", () => {
   beforeEach(() => {
