@@ -46,4 +46,20 @@ describe("documents external refresh", () => {
     expect(store.activeSession?.content).toBe("local edits");
     expect(store.activeSession?.isDirty()).toBe(true);
   });
+
+  it("force-refreshes a dirty session when force=true", async () => {
+    const fileService = await import("@/lib/file-service");
+    const store = useDocumentsStore();
+    vi.mocked(fileService.readMarkdownFile).mockReset();
+    vi.mocked(fileService.readMarkdownFile).mockResolvedValueOnce({ path: "/tmp/note.md", content: "first" });
+    const session = await store.openFile("/tmp/note.md");
+    session?.updateContent("local edits");
+
+    vi.mocked(fileService.readMarkdownFile).mockResolvedValueOnce({ path: "/tmp/note.md", content: "second" });
+    const refreshed = await store.refreshSessionFromDisk("/tmp/note.md", true);
+
+    expect(refreshed).toBe(true);
+    expect(store.activeSession?.content).toBe("second");
+    expect(store.activeSession?.isDirty()).toBe(false);
+  });
 });

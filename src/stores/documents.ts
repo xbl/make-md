@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { createDocumentSession } from "@/lib/document-session";
+import { toastSuccess } from "@/composables/useToast";
 import {
   clearRecentFiles,
   loadRecentFiles,
@@ -166,9 +167,12 @@ export const useDocumentsStore = defineStore("documents", {
         this.getAutosaveQueue().schedule(content);
       }
     },
-    async refreshSessionFromDisk(path: string) {
+    async refreshSessionFromDisk(path: string, force = false) {
       const session = this.sessions.find((item) => item.path === path || item.id === path);
-      if (!session || session.isDirty()) {
+      if (!session) {
+        return false;
+      }
+      if (!force && session.isDirty()) {
         return false;
       }
 
@@ -324,7 +328,11 @@ export const useDocumentsStore = defineStore("documents", {
       const title = session.path ? session.path.split("/").pop() ?? "Document" : "Untitled";
       const defaultPath = session.path ? session.path.replace(/\.md$/i, ".docx") : "untitled.docx";
       try {
-        return await exportMarkdownToWord(session.content, title, defaultPath, session.path || undefined);
+        const filePath = await exportMarkdownToWord(session.content, title, defaultPath, session.path || undefined);
+        if (filePath) {
+          toastSuccess(`Word exported: ${filePath.split("/").pop()}`);
+        }
+        return filePath;
       } catch (error) {
         window.alert(String(error));
         return null;
