@@ -8,6 +8,7 @@ export function createDocumentSession(input: DocumentSessionInput) {
   let content = input.content;
   let savedContent = input.content;
   let dirty = false;
+  let missing = false;
 
   return {
     id: input.id,
@@ -20,6 +21,7 @@ export function createDocumentSession(input: DocumentSessionInput) {
     updateContent(nextContent: string) {
       content = nextContent;
       dirty = nextContent !== savedContent;
+      missing = false;
     },
     setPath(nextPath: string) {
       input.path = nextPath;
@@ -31,9 +33,16 @@ export function createDocumentSession(input: DocumentSessionInput) {
       content = nextSavedContent;
       savedContent = nextSavedContent;
       dirty = false;
+      missing = false;
     },
     isDirty() {
       return dirty;
+    },
+    isMissing() {
+      return missing;
+    },
+    markMissing(value: boolean) {
+      missing = value;
     },
   };
 }
