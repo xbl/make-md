@@ -10,6 +10,7 @@ mod workspace;
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .manage(workspace::file_watch::FileWatchState::default())
         .setup(|app| {
             menu::install_menu(app)?;
             Ok(())
@@ -20,6 +21,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             ai::ai_stream,
             ai::ai_cancel,
+            ai::save_api_key,
+            ai::load_api_key,
             i18n::get_system_locale,
             fs::read_markdown_file,
             fs::read_binary_file,
@@ -43,6 +46,8 @@ fn main() {
             workspace::files::reveal_in_finder,
             workspace::assets::copy_image_asset,
             workspace::assets::copy_image_bytes,
+            workspace::file_watch::watch_file,
+            workspace::file_watch::unwatch_file,
             pdf::export_pdf,
         ])
         .run(tauri::generate_context!())
