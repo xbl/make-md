@@ -9,7 +9,7 @@ export type InlineToken =
 
 /** Single source of truth for inline Markdown delimiters (parser, input rules, paste). */
 export const INLINE_MARKDOWN_PATTERN =
-  /!\[([^\]]*)\]\(([^)]+)\)|\[([^\]]*)\]\(([^)]+)\)|\*\*([^*]+)\*\*|~~([^~]+)~~|(?<!\*)\*([^*]+)\*(?!\*)|_([^_]+)_|`([^`]+)`/g;
+  /!\[([^\]]*)\]\(([^)]+)\)|\[([^\]]*)\]\(([^)]+)\)|`([^`]+)`|\*\*([^*]+)\*\*|~~([^~]+)~~|(?<!\*)\*([^*]+)\*(?!\*)|(?<!\w)_([^_]+)_(?!\w)/g;
 
 export const INPUT_RULE_PATTERNS = {
   strong: /\*\*([^*\n]+)\*\*$/,
@@ -35,13 +35,13 @@ export function tokenizeInlineMarkdown(text: string): InlineToken[] {
     } else if (match[3] !== undefined && match[4] !== undefined) {
       tokens.push({ type: "link", text: match[3], href: match[4] });
     } else if (match[5] !== undefined) {
-      tokens.push({ type: "strong", value: match[5] });
+      tokens.push({ type: "code", value: match[5] });
     } else if (match[6] !== undefined) {
-      tokens.push({ type: "strike", value: match[6] });
-    } else if (match[7] !== undefined || match[8] !== undefined) {
-      tokens.push({ type: "em", value: match[7] ?? match[8]! });
-    } else if (match[9] !== undefined) {
-      tokens.push({ type: "code", value: match[9] });
+      tokens.push({ type: "strong", value: match[6] });
+    } else if (match[7] !== undefined) {
+      tokens.push({ type: "strike", value: match[7] });
+    } else if (match[8] !== undefined || match[9] !== undefined) {
+      tokens.push({ type: "em", value: match[8] ?? match[9]! });
     }
 
     lastIndex = match.index + match[0].length;
