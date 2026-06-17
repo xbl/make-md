@@ -55,6 +55,7 @@ import { pickFolder } from "@/lib/file-service";
 import { createShortcutDispatcher, type ShortcutDispatcher } from "@/lib/shortcuts/dispatcher";
 import { startMenuBridge } from "@/lib/menu-bridge";
 import { onWorkspaceChanged } from "@/lib/workspace-service";
+import { onFileChanged } from "@/lib/file-watch";
 
 const documents = useDocumentsStore();
 const editorStore = useEditorStore();
@@ -66,6 +67,7 @@ const { t } = useI18n();
 let unlistenClose: (() => void) | null = null;
 let unlistenDragDrop: (() => void) | null = null;
 let stopWorkspaceChangeWatch: (() => void) | null = null;
+let stopFileChangeWatch: (() => void) | null = null;
 const activeSessionId = computed(() => documents.activeSessionId);
 let dispatcher: ShortcutDispatcher | null = null;
 let stopMenuBridge: (() => void) | null = null;
@@ -338,12 +340,16 @@ onMounted(async () => {
   stopWorkspaceChangeWatch = await onWorkspaceChanged(async () => {
     await refreshOpenSessionsFromDisk();
   });
+  stopFileChangeWatch = await onFileChanged((payload) => {
+    void documents.handleExternalFileChange(payload);
+  });
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("keydown", handleKeydown, true);
   stopMenuBridge?.();
   stopWorkspaceChangeWatch?.();
+  stopFileChangeWatch?.();
   unlistenDragDrop?.();
   unlistenClose?.();
   void documents.flushAutosave();

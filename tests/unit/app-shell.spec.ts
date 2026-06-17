@@ -42,6 +42,12 @@ vi.mock("@/lib/menu-bridge", () => ({
   startMenuBridge: vi.fn(async () => () => {}),
 }));
 
+vi.mock("@/lib/file-watch", () => ({
+  watchFile: vi.fn(async () => {}),
+  unwatchFile: vi.fn(async () => {}),
+  onFileChanged: vi.fn(async () => () => {}),
+}));
+
 vi.mock("@/lib/workspace-service", () => ({
   listMarkdownTree: vi.fn(async () => ({ name: "root", path: "/tmp", kind: "folder", children: [] })),
   startFolderWatch: vi.fn(async () => {}),
