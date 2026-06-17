@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { EditorState } from "prosemirror-state";
+import { EditorState, TextSelection } from "prosemirror-state";
 import { EditorView as PMEditorView } from "prosemirror-view";
 import type { EditorState as PMEditorState } from "prosemirror-state";
 import type { Slice } from "prosemirror-model";
@@ -329,7 +329,19 @@ function syncViewFromSession() {
     return;
   }
 
+  const previousFrom = view.state.selection.from;
+  const previousDocSize = view.state.doc.content.size;
+  const fractionFromStart = previousDocSize > 0 ? previousFrom / previousDocSize : 0;
+
   const nextDoc = parseMarkdown(session.content || "", session.path || undefined);
+  const nextDocSize = nextDoc.content.size;
+  let targetPos = Math.min(previousFrom, nextDocSize);
+  // If the doc shrank a lot, fall back to the same fractional position so the cursor
+  // doesn't end up far past the end of meaningful content.
+  if (targetPos === nextDocSize && previousFrom > nextDocSize) {
+    targetPos = Math.max(0, Math.floor(fractionFromStart * nextDocSize));
+  }
+
   const nextState = EditorState.create({
     schema: markdownSchema,
     doc: nextDoc,
@@ -339,8 +351,19 @@ function syncViewFromSession() {
     }),
   });
 
+  // Apply the preserved cursor position via a transaction on the fresh state.
+  let stateWithSelection = nextState;
+  try {
+    const $pos = nextState.doc.resolve(Math.min(targetPos, nextState.doc.content.size));
+    stateWithSelection = nextState.apply(
+      nextState.tr.setSelection(TextSelection.near($pos)),
+    );
+  } catch {
+    // Fall back silently if the position can't be resolved (e.g., empty doc).
+  }
+
   const hadFocus = view.hasFocus();
-  view.updateState(nextState);
+  view.updateState(stateWithSelection);
   editorStore.bumpDocVersion();
   updateSelectionToolbar();
   updateTableOverlay();
