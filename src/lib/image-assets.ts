@@ -1,3 +1,11 @@
+import { resolveMarkdownImagePath } from "@/lib/markdown-image-src";
+
+export function resolveImageAbsolutePath(docPath: string | undefined, src: string): string | null {
+  if (/^(https?:|data:|blob:)/i.test(src)) return null;
+  const resolved = resolveMarkdownImagePath(src, docPath);
+  return resolved.startsWith("/") ? resolved : null;
+}
+
 export function assetRelativePath(docPath: string, absoluteAssetPath: string): string {
   const docDir = docPath.replace(/[/\\][^/\\]+$/, "");
   const normalized = absoluteAssetPath.replace(/\\/g, "/");
