@@ -69,6 +69,7 @@ function onInput(event: Event) {
     return;
   }
   emit("update:modelValue", target.value);
+  editorStore.setSourceContent(target.value);
   syncSelection();
 }
 
@@ -115,6 +116,7 @@ function onKeydown(event: KeyboardEvent) {
 }
 
 onMounted(() => {
+  editorStore.setSourceContent(props.modelValue);
   editorStore.setSourceEditor({
     getValue: () => inputRef.value?.value ?? props.modelValue,
     getSelection: () => ({

@@ -13,6 +13,7 @@ export type SourceEditorAdapter = {
 export const useEditorStore = defineStore("editor", () => {
   const view = shallowRef<EditorView | null>(null);
   const sourceEditor = shallowRef<SourceEditorAdapter | null>(null);
+  const sourceContent = ref("");
   const docVersion = ref(0);
 
   function setView(nextView: EditorView | null) {
@@ -32,14 +33,23 @@ export const useEditorStore = defineStore("editor", () => {
 
   function setSourceEditor(adapter: SourceEditorAdapter | null) {
     sourceEditor.value = adapter;
+    if (!adapter) {
+      sourceContent.value = "";
+    }
+  }
+
+  function setSourceContent(next: string) {
+    sourceContent.value = next;
   }
 
   return {
     view,
     sourceEditor,
+    sourceContent,
     docVersion,
     setView,
     setSourceEditor,
+    setSourceContent,
     bumpDocVersion,
     clearView,
   };

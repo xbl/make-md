@@ -31,11 +31,18 @@ const statusText = computed(() => {
 const modeText = computed(() => (ui.sourceMode ? "Source" : "Rich Text"));
 
 const wordCountText = computed(() => {
-  const view = editorStore.view;
-  if (!view) {
+  let text = "";
+  if (ui.sourceMode) {
+    text = editorStore.sourceContent;
+  } else {
+    const view = editorStore.view;
+    if (view) {
+      text = view.state.doc.textContent;
+    }
+  }
+  if (!text) {
     return "";
   }
-  const text = view.state.doc.textContent;
   const words = countWords(text);
   const minutes = readingTimeMinutes(words);
   return `${words} words · ${minutes} min`;
