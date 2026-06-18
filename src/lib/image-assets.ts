@@ -1,8 +1,21 @@
 import { resolveMarkdownImagePath } from "@/lib/markdown-image-src";
 
+function extractPathFromAssetUrl(src: string): string | null {
+  const match = src.match(/^asset:\/*localhost\/(.+)/i);
+  if (!match) return null;
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return null;
+  }
+}
+
 export function resolveImageAbsolutePath(docPath: string | undefined, src: string): string | null {
   if (/^(https?:|data:|blob:)/i.test(src)) return null;
-  const resolved = resolveMarkdownImagePath(src, docPath);
+
+  // Handle Tauri asset:// URLs (from copy/paste between documents)
+  const assetPath = extractPathFromAssetUrl(src);
+  const resolved = resolveMarkdownImagePath(assetPath ?? src, docPath);
   return resolved.startsWith("/") ? resolved : null;
 }
 
