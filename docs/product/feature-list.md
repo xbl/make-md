@@ -1,6 +1,6 @@
 # 产品功能清单
 
-最后更新：2026-06-11
+最后更新：2026-06-18
 
 状态说明：
 - `complete`：已完成并可在产品中正常使用
@@ -32,6 +32,16 @@
 | 脚注 | `not_started` | 已在下一阶段计划中列出，但尚未实现。 |
 | Front matter 编辑 | `not_started` | 已在下一阶段计划中列出，但尚未实现。 |
 | TOC 目录支持 | `not_started` | 已在下一阶段计划中列出，但尚未实现。 |
+| 高亮 `==text==` | `not_started` | Typora 兼容。行内文本高亮标记。 |
+| 下标/上标 `~sub~` / `^sup^` | `not_started` | Typora 兼容。技术文档常用。 |
+| Emoji 自动补全 `:smile:` | `not_started` | Typora 兼容。冒号触发 emoji 提示。 |
+| 打字机模式 | `not_started` | 光标固定在屏幕垂直中部，适合长文专注写作。 |
+| 自动配对标点 | `not_started` | 括号、引号等自动闭合。 |
+| HTML 块 | `not_started` | 支持内嵌 HTML 标签渲染（视频、网页嵌入等）。 |
+| 粘贴富文本（HTML → Markdown） | `not_started` | 从网页或 Word 粘贴内容时自动转换为 Markdown。 |
+| 字数统计 | `complete` | 状态栏实时显示字数/字符数（CJK + 英文混合计数）。 |
+| 阅读时间 | `complete` | 状态栏显示预估阅读时间（按 200 词/分钟计算）。 |
+| 拼写检查 | `not_started` | 系统级拼写检查与右键拼写建议。 |
 
 ## 查找与替换
 
@@ -56,6 +66,8 @@
 | 最近文件 | `complete` | 已支持持久化、右键菜单移除/清空，以及在无工作区时从侧边栏 Recent 列表继续打开或在 Finder 中定位文件。 |
 | 未保存变更提示 | `complete` | 已实现脏文档提示流程。 |
 | 复制选区为 Markdown | `complete` | 编辑器复制已改为输出 Markdown 文本，支持全选复制后粘贴保留 Markdown 结构。 |
+| 快速打开文件 (Cmd+P) | `not_started` | 模糊搜索当前工作区文件并快速打开。 |
+| Wiki 链接 `[[page]]` | `not_started` | 笔记间互链跳转支持。 |
 
 ## 大纲与导航
 
@@ -64,6 +76,7 @@
 | 文档大纲面板 | `complete` | 大纲侧边栏标签页已交付。 |
 | 点击标题跳转 | `complete` | 大纲项可跳转到标题位置。 |
 | 侧边栏分区切换 | `complete` | 已有 Files 与 Outline 标签切换。 |
+| 大纲滚动同步 | `not_started` | 编辑器滚动时大纲自动高亮当前所在标题。 |
 
 ## 图片与资源
 
@@ -97,6 +110,8 @@
 | 命令面板快捷键 | `complete` | 快捷键与处理逻辑已存在。 |
 | Files / Outline 聚焦命令 | `partial` | View 类命令 ID 已存在，但端到端行为仍需继续验证。 |
 | 主题切换 | `complete` | README 已说明支持浅色/深色主题。 |
+| Vim 模式 | `not_started` | Vim 键位编辑模式。 |
+| 自定义主题 | `not_started` | 用户自定义 CSS 主题系统。 |
 
 ## 导出
 
@@ -106,6 +121,11 @@
 | 导出 PDF | `complete` | 已支持 PDF 导出，README 中注明 macOS 浏览器依赖。 |
 | 导出 Word | `complete` | 已支持导出 `.docx`；Mermaid 默认导出为 PNG 图片，可在导出保存面板中勾选是否额外导出 Mermaid 代码；Markdown 图片会解析为嵌入图片导出，表格会导出为带边框的 Word 表格，而不是保留 Markdown 文本；并已补齐 `word/numbering.xml` 的 content type 声明，避免 Word 打开时提示修复文档。本地 PNG/JPG/GIF/WebP 图片现已优先走文件系统字节读取并直接嵌入，不再依赖浏览器 `fetch` 或图片解码成功后才导出。 |
 | 带语法高亮的 HTML 导出 | `partial` | 设计期望与编辑器高亮保持一致，当前仍需持续核对实现对齐情况。 |
+| 导出图片 (PNG/JPEG) | `not_started` | 将当前文档渲染导出为图片。 |
+| 导出 ePub | `not_started` | 电子书格式导出。 |
+| 导出 LaTeX | `not_started` | LaTeX 源文件导出。 |
+| Pandoc 集成 | `not_started` | 通过 Pandoc 扩展支持更多导出/导入格式。 |
+| 复制为 HTML | `not_started` | 将编辑器选区复制为 HTML 格式到剪贴板。 |
 
 ## 稳定性与恢复
 
