@@ -72,13 +72,14 @@ export function createImageNodeView(
     setSelected(true);
   });
 
-  // Document-level click to deselect
-  function onDocClick(event: MouseEvent) {
-    if (!container.contains(event.target as Node)) {
-      setSelected(false);
-    }
+  // Document-level mousedown to deselect (fires before ProseMirror selection)
+  function onDocMouseDown(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (container.contains(target)) return;
+    if (target?.closest?.(".editor-toolbar")) return;
+    setSelected(false);
   }
-  document.addEventListener("click", onDocClick);
+  document.addEventListener("mousedown", onDocMouseDown);
 
   // Resize handle drag
   let draggingHandle: string | null = null;
@@ -163,7 +164,7 @@ export function createImageNodeView(
       return true;
     },
     destroy() {
-      document.removeEventListener("click", onDocClick);
+      document.removeEventListener("mousedown", onDocMouseDown);
       document.removeEventListener("mousemove", onHandleMouseMove);
       document.removeEventListener("mouseup", onHandleMouseUp);
     },
