@@ -6,11 +6,11 @@ export const imageToolbarKey = new PluginKey<{ imagePos: number | null }>("image
 
 function buildToolbarDom(): HTMLDivElement {
   const bar = document.createElement("div");
-  bar.className = "md-image-toolbar";
+  bar.className = "editor-toolbar";
   bar.style.display = "none";
 
   const sizeLabel = document.createElement("span");
-  sizeLabel.className = "md-image-toolbar__size";
+  sizeLabel.className = "editor-toolbar__size";
   bar.appendChild(sizeLabel);
 
   const alignDefs = [
@@ -21,7 +21,7 @@ function buildToolbarDom(): HTMLDivElement {
   ];
   for (const { align, label } of alignDefs) {
     const btn = document.createElement("button");
-    btn.className = "md-image-toolbar__btn";
+    btn.className = "editor-toolbar__btn";
     btn.dataset.align = align;
     btn.textContent = label;
     btn.addEventListener("mousedown", (e) => {
@@ -31,7 +31,7 @@ function buildToolbarDom(): HTMLDivElement {
   }
 
   const resetBtn = document.createElement("button");
-  resetBtn.className = "md-image-toolbar__btn md-image-toolbar__reset";
+  resetBtn.className = "editor-toolbar__btn";
   resetBtn.textContent = "Reset Size";
   resetBtn.addEventListener("mousedown", (e) => {
     e.preventDefault();
@@ -48,7 +48,7 @@ function positionBar(bar: HTMLDivElement, view: EditorView, pos: number) {
     const end = node ? view.coordsAtPos(pos + node.nodeSize) : start;
     const editorBox = view.dom.getBoundingClientRect();
     const center = (start.left + end.right) / 2 - editorBox.left;
-    bar.style.left = `${Math.max(8, center - bar.offsetWidth / 2)}px`;
+    bar.style.left = `${Math.max(8, center)}px`;
     bar.style.top = `${Math.max(0, start.top - editorBox.top - bar.offsetHeight - 8)}px`;
     bar.style.display = "";
   } catch {
@@ -61,7 +61,7 @@ function refreshSizeLabel(bar: HTMLDivElement, view: EditorView, pos: number) {
   if (!node) return;
   const w = node.attrs.width ?? "natural";
   const h = node.attrs.height ?? "natural";
-  const label = bar.querySelector(".md-image-toolbar__size") as HTMLSpanElement | null;
+  const label = bar.querySelector(".editor-toolbar__size") as HTMLSpanElement | null;
   if (label) label.textContent = `${w} × ${h}`;
 }
 
@@ -83,7 +83,7 @@ export function createImageToolbarPlugin() {
         }
       };
     });
-    const resetBtn = bar.querySelector<HTMLButtonElement>(".md-image-toolbar__reset");
+    const resetBtn = bar.querySelector<HTMLButtonElement>(".editor-toolbar__btn:not([data-align])");
     if (resetBtn) {
       resetBtn.onclick = () => {
         const pos = Number(bar?.dataset.imagePos);
@@ -121,7 +121,7 @@ export function createImageToolbarPlugin() {
   const onDocumentClick = (event: MouseEvent) => {
     const target = event.target as HTMLElement;
     if (target?.closest?.(".md-image-container")) return;
-    if (target?.closest?.(".md-image-toolbar")) return;
+    if (target?.closest?.(".editor-toolbar")) return;
     if (bar) bar.style.display = "none";
   };
 

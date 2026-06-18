@@ -1,9 +1,9 @@
 <template>
-  <div class="ai-edit-toolbar" :style="toolbarStyle" data-testid="ai-edit-toolbar">
-    <button v-for="preset in presets" :key="preset.id" type="button" class="ai-edit-toolbar__button">
+  <div class="editor-toolbar" :style="toolbarStyle" data-testid="ai-edit-toolbar">
+    <button v-for="preset in presets" :key="preset.id" type="button" class="editor-toolbar__btn">
       {{ preset.label }}
     </button>
-    <button type="button" class="ai-edit-toolbar__button">Custom...</button>
+    <button type="button" class="editor-toolbar__btn">Custom...</button>
   </div>
 </template>
 

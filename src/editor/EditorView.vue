@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { EditorState, TextSelection } from "prosemirror-state";
+import { EditorState, NodeSelection, TextSelection } from "prosemirror-state";
 import { EditorView as PMEditorView } from "prosemirror-view";
 import type { EditorState as PMEditorState } from "prosemirror-state";
 import type { Slice } from "prosemirror-model";
@@ -331,7 +331,7 @@ function updateSelectionToolbar() {
   }
 
   const { selection } = view.state;
-  if (selection.empty) {
+  if (selection.empty || selection instanceof NodeSelection) {
     hideSelectionToolbar();
     return;
   }
