@@ -101,6 +101,10 @@ export const en = {
   "ai.expand": "Expand",
   "ai.condense": "Condense",
   "ai.custom": "Custom...",
+  "ai.testKey": "Test",
+  "ai.testKeyTesting": "Testing...",
+  "ai.testKeySuccess": "Key is valid",
+  "ai.testKeyFail": "Key is invalid",
   // Image toolbar
   "image.alignInline": "Inline",
   "image.alignLeft": "Left",

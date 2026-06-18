@@ -163,6 +163,7 @@
                     v-model="apiKeys[provider.id]"
                     placeholder="API Key"
                     class="settings-panel__capture"
+                    @input="keyTestResult[provider.id] = null"
                   />
                   <button
                     class="settings-panel__secondary-action"
@@ -171,6 +172,24 @@
                   >
                     Save
                   </button>
+                  <button
+                    class="settings-panel__secondary-action"
+                    type="button"
+                    :disabled="testingKey[provider.id]"
+                    @click="testKey(provider.id)"
+                  >
+                    {{ testingKey[provider.id] ? t("ai.testKeyTesting") : t("ai.testKey") }}
+                  </button>
+                  <span
+                    v-if="keyTestResult[provider.id] === 'success'"
+                    class="settings-panel__test-result--success"
+                    :title="t('ai.testKeySuccess')"
+                  >&#10003;</span>
+                  <span
+                    v-else-if="keyTestResult[provider.id] === 'fail'"
+                    class="settings-panel__test-result--fail"
+                    :title="t('ai.testKeyFail')"
+                  >&#10007;</span>
                 </div>
               </article>
             </section>
@@ -212,6 +231,40 @@ async function updateKey(provider: string) {
   const key = apiKeys.value[provider];
   if (key) {
     await saveApiKey(provider, key);
+    keyTestResult.value[provider] = null;
+  }
+}
+
+async function testKey(providerId: string) {
+  testingKey.value[providerId] = true;
+  keyTestResult.value[providerId] = null;
+
+  try {
+    let apiKey = apiKeys.value[providerId];
+    if (!apiKey) {
+      apiKey = await loadApiKey(providerId) ?? "";
+    }
+    if (!apiKey) {
+      keyTestResult.value[providerId] = "fail";
+      return;
+    }
+
+    const config = ai.providers[providerId as keyof typeof ai.providers];
+    const { createOpenAI } = await import("@ai-sdk/openai");
+    const { generateText } = await import("ai");
+
+    const openai = createOpenAI({ apiKey, baseURL: config.baseUrl || undefined });
+
+    await generateText({
+      model: openai(config.model),
+      prompt: "Hi",
+    });
+
+    keyTestResult.value[providerId] = "success";
+  } catch {
+    keyTestResult.value[providerId] = "fail";
+  } finally {
+    testingKey.value[providerId] = false;
   }
 }
 
@@ -235,6 +288,8 @@ const providerList = [
 ];
 
 const apiKeys = ref<Record<string, string>>({});
+const testingKey = ref<Record<string, boolean>>({});
+const keyTestResult = ref<Record<string, "success" | "fail" | null>>({});
 const recordingCommandId = ref<string | null>(null);
 const recordingHint = ref("");
 const platform = computed(() => (navigator.userAgent.includes("Mac") ? "darwin" : "win32"));
@@ -649,6 +704,18 @@ function captureChord(commandId: string, event: KeyboardEvent) {
 .settings-panel__reset-btn:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
+}
+
+.settings-panel__test-result--success {
+  color: #38a169;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.settings-panel__test-result--fail {
+  color: #e53e3e;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .settings-panel__hint {

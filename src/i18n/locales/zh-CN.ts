@@ -101,6 +101,10 @@ export const zhCN = {
   "ai.expand": "扩展",
   "ai.condense": "精简",
   "ai.custom": "自定义...",
+  "ai.testKey": "测试",
+  "ai.testKeyTesting": "测试中...",
+  "ai.testKeySuccess": "密钥有效",
+  "ai.testKeyFail": "密钥无效",
   // Image toolbar
   "image.alignInline": "内联",
   "image.alignLeft": "左对齐",
