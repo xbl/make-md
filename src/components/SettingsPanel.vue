@@ -278,9 +278,9 @@ async function testKey(providerId: string) {
   keyTestResult.value[providerId] = null;
 
   try {
-    let apiKey = apiKeys.value[providerId];
+    let apiKey = (apiKeys.value[providerId] ?? "").trim();
     if (!apiKey) {
-      apiKey = await loadApiKey(providerId) ?? "";
+      apiKey = ((await loadApiKey(providerId)) ?? "").trim();
     }
     if (!apiKey) {
       keyTestResult.value[providerId] = "fail";
@@ -289,14 +289,18 @@ async function testKey(providerId: string) {
     }
 
     const config = ai.providers[providerId as keyof typeof ai.providers];
+    const baseUrl = config.baseUrl.trim() || DEFAULT_BASE_URLS[providerId];
+    const model = config.model.trim();
+
+    console.log(`[testKey] provider=${providerId} baseUrl=${baseUrl} model=${model} keyLen=${apiKey.length}`);
+
     const { createOpenAI } = await import("@ai-sdk/openai");
     const { generateText } = await import("ai");
 
-    const baseUrl = config.baseUrl || DEFAULT_BASE_URLS[providerId];
     const openai = createOpenAI({ apiKey, baseURL: baseUrl });
 
     await generateText({
-      model: openai(config.model),
+      model: openai(model),
       prompt: "Hi",
     });
 
