@@ -302,9 +302,11 @@ async function testKey(providerId: string) {
 
     keyTestResult.value[providerId] = "success";
     toastSuccess(t("ai.testKeySuccess"));
-  } catch {
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    console.error("AI key test failed:", message, e);
     keyTestResult.value[providerId] = "fail";
-    toastError(t("ai.testKeyFail"));
+    toastError(`${t("ai.testKeyFail")}: ${message}`);
   } finally {
     testingKey.value[providerId] = false;
   }
