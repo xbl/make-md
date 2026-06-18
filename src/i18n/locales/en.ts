@@ -93,6 +93,9 @@ export const en = {
   "settings.ai.provider.label": "Active Provider",
   "settings.ai.provider.description": "Choose which AI provider to use by default.",
   "settings.ai.model.default": "Default model",
+  "settings.ai.model.label": "Model",
+  "settings.ai.model.description": "Select or type a model name",
+  "settings.ai.baseUrl.label": "Base URL",
   // AI edit toolbar
   "ai.research": "Research",
   "ai.polish": "Polish",

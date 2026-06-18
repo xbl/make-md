@@ -9,6 +9,11 @@ import { AI_PRESETS } from "@/lib/ai/presets";
 import { generateText } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 
+const DEFAULT_BASE_URLS: Record<string, string> = {
+  openai: "https://api.openai.com/v1",
+  deepseek: "https://api.deepseek.com",
+};
+
 export function useAiRewrite() {
   const aiStore = useAiStore();
   const isRunning = ref(false);
@@ -59,7 +64,7 @@ export function useAiRewrite() {
           sectionMarkdown,
           provider,
           model: config.model,
-          baseUrl: config.baseUrl || undefined,
+          baseUrl: config.baseUrl || DEFAULT_BASE_URLS[provider],
           apiKey,
         });
       } else {
@@ -70,7 +75,7 @@ export function useAiRewrite() {
         const preset = AI_PRESETS.find((p) => p.id === presetId);
         const openai = createOpenAI({
           apiKey,
-          baseURL: config.baseUrl || undefined,
+          baseURL: config.baseUrl || DEFAULT_BASE_URLS[provider],
         });
 
         const { text } = await generateText({

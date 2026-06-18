@@ -152,46 +152,71 @@
                 </div>
               </article>
 
-              <article class="settings-panel__row" v-for="provider in providerList" :key="provider.id">
-                <div class="settings-panel__meta">
-                  <h4 class="settings-panel__command">{{ provider.label }}</h4>
-                  <p class="settings-panel__details">Default model: {{ ai.providers[provider.id].model }}</p>
-                </div>
-                <div class="settings-panel__actions">
-                  <input
-                    type="password"
-                    v-model="apiKeys[provider.id]"
-                    placeholder="API Key"
-                    class="settings-panel__capture"
-                    @input="keyTestResult[provider.id] = null"
-                  />
-                  <button
-                    class="settings-panel__secondary-action"
-                    type="button"
-                    @click="updateKey(provider.id)"
-                  >
-                    Save
-                  </button>
-                  <button
-                    class="settings-panel__secondary-action"
-                    type="button"
-                    :disabled="testingKey[provider.id]"
-                    @click="testKey(provider.id)"
-                  >
-                    {{ testingKey[provider.id] ? t("ai.testKeyTesting") : t("ai.testKey") }}
-                  </button>
-                  <span
-                    v-if="keyTestResult[provider.id] === 'success'"
-                    class="settings-panel__test-result--success"
-                    :title="t('ai.testKeySuccess')"
-                  >&#10003;</span>
-                  <span
-                    v-else-if="keyTestResult[provider.id] === 'fail'"
-                    class="settings-panel__test-result--fail"
-                    :title="t('ai.testKeyFail')"
-                  >&#10007;</span>
-                </div>
-              </article>
+              <template v-for="provider in providerList" :key="provider.id">
+                <article class="settings-panel__row">
+                  <div class="settings-panel__meta">
+                    <h4 class="settings-panel__command">{{ provider.label }} API Key</h4>
+                    <p class="settings-panel__details">
+                      <span v-if="keyTestResult[provider.id] === 'success'" class="settings-panel__test-result--success">&#10003; {{ t("ai.testKeySuccess") }}</span>
+                      <span v-else-if="keyTestResult[provider.id] === 'fail'" class="settings-panel__test-result--fail">&#10007; {{ t("ai.testKeyFail") }}</span>
+                      <span v-else>Enter your {{ provider.label }} API key</span>
+                    </p>
+                  </div>
+                  <div class="settings-panel__actions">
+                    <input
+                      type="password"
+                      v-model="apiKeys[provider.id]"
+                      placeholder="API Key"
+                      class="settings-panel__capture"
+                      @input="keyTestResult[provider.id] = null"
+                    />
+                    <button
+                      class="settings-panel__secondary-action"
+                      type="button"
+                      @click="updateKey(provider.id)"
+                    >
+                      Save
+                    </button>
+                    <button
+                      class="settings-panel__secondary-action"
+                      type="button"
+                      :disabled="testingKey[provider.id]"
+                      @click="testKey(provider.id)"
+                    >
+                      {{ testingKey[provider.id] ? t("ai.testKeyTesting") : t("ai.testKey") }}
+                    </button>
+                  </div>
+                </article>
+
+                <article class="settings-panel__row">
+                  <div class="settings-panel__meta">
+                    <h4 class="settings-panel__command">{{ t("settings.ai.model.label") }}</h4>
+                    <p class="settings-panel__details">{{ t("settings.ai.model.description") }}</p>
+                  </div>
+                  <div class="settings-panel__actions">
+                    <input
+                      type="text"
+                      :list="`model-list-${provider.id}`"
+                      :value="ai.providers[provider.id].model"
+                      placeholder="Model name"
+                      class="settings-panel__capture"
+                      @change="updateModel(provider.id, ($event.target as HTMLInputElement).value)"
+                    />
+                    <datalist :id="`model-list-${provider.id}`">
+                      <option v-for="m in MODEL_OPTIONS[provider.id]" :key="m" :value="m" />
+                    </datalist>
+                    <span class="settings-panel__details" style="margin: 0 4px;">{{ t("settings.ai.baseUrl.label") }}</span>
+                    <input
+                      type="text"
+                      :value="ai.providers[provider.id].baseUrl"
+                      :placeholder="DEFAULT_BASE_URLS[provider.id]"
+                      class="settings-panel__capture"
+                      style="min-width: 180px;"
+                      @change="updateBaseUrl(provider.id, ($event.target as HTMLInputElement).value)"
+                    />
+                  </div>
+                </article>
+              </template>
             </section>
           </div>
         </div>
@@ -236,6 +261,18 @@ async function updateKey(provider: string) {
   }
 }
 
+function updateModel(provider: string, model: string) {
+  const id = provider as keyof typeof ai.providers;
+  if (model.trim()) {
+    ai.providers[id].model = model.trim();
+  }
+}
+
+function updateBaseUrl(provider: string, baseUrl: string) {
+  const id = provider as keyof typeof ai.providers;
+  ai.providers[id].baseUrl = baseUrl.trim();
+}
+
 async function testKey(providerId: string) {
   testingKey.value[providerId] = true;
   keyTestResult.value[providerId] = null;
@@ -255,7 +292,8 @@ async function testKey(providerId: string) {
     const { createOpenAI } = await import("@ai-sdk/openai");
     const { generateText } = await import("ai");
 
-    const openai = createOpenAI({ apiKey, baseURL: config.baseUrl || undefined });
+    const baseUrl = config.baseUrl || DEFAULT_BASE_URLS[providerId];
+    const openai = createOpenAI({ apiKey, baseURL: baseUrl });
 
     await generateText({
       model: openai(config.model),
@@ -290,6 +328,16 @@ const providerList = [
   { id: "openai" as const, label: "OpenAI" },
   { id: "deepseek" as const, label: "DeepSeek" },
 ];
+
+const DEFAULT_BASE_URLS: Record<string, string> = {
+  openai: "https://api.openai.com/v1",
+  deepseek: "https://api.deepseek.com",
+};
+
+const MODEL_OPTIONS: Record<string, string[]> = {
+  openai: ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-4", "gpt-3.5-turbo", "o1", "o1-mini", "o3-mini"],
+  deepseek: ["deepseek-chat", "deepseek-reasoner"],
+};
 
 const apiKeys = ref<Record<string, string>>({});
 const testingKey = ref<Record<string, boolean>>({});

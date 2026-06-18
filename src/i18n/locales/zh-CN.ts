@@ -93,6 +93,9 @@ export const zhCN = {
   "settings.ai.provider.label": "默认服务商",
   "settings.ai.provider.description": "选择默认使用的 AI 语言模型服务商。",
   "settings.ai.model.default": "默认模型",
+  "settings.ai.model.label": "模型",
+  "settings.ai.model.description": "选择或输入模型名称",
+  "settings.ai.baseUrl.label": "基础 URL",
   // AI edit toolbar
   "ai.research": "研究",
   "ai.polish": "润色",
