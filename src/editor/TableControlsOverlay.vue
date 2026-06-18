@@ -107,10 +107,10 @@ const emit = defineEmits<{
   position: absolute;
   pointer-events: auto;
   display: flex;
-  background: var(--bg-primary, #ffffff);
-  border: 1px solid var(--border-color, #e2e8f0);
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.30);
   padding: 2px;
 }
 
@@ -137,19 +137,19 @@ const emit = defineEmits<{
   border: none;
   cursor: pointer;
   padding: 4px;
-  border-radius: 2px;
+  border-radius: 4px;
   font-size: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary, #4a5568);
+  color: rgba(255, 255, 255, 0.7);
   min-width: 20px;
   min-height: 20px;
 }
 
 .table-controls-overlay button:hover:not(:disabled) {
-  background: var(--bg-hover, #edf2f7);
-  color: var(--text-primary, #1a202c);
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
 }
 
 .table-controls-overlay button:disabled {
