@@ -5,11 +5,11 @@ export type InlineToken =
   | { type: "code"; value: string }
   | { type: "strike"; value: string }
   | { type: "link"; text: string; href: string }
-  | { type: "image"; alt: string; src: string };
+  | { type: "image"; alt: string; src: string; title?: string };
 
 /** Single source of truth for inline Markdown delimiters (parser, input rules, paste). */
 export const INLINE_MARKDOWN_PATTERN =
-  /!\[([^\]]*)\]\(([^)]+)\)|\[([^\]]*)\]\(([^)]+)\)|`([^`]+)`|\*\*([^*]+)\*\*|~~([^~]+)~~|(?<!\*)\*([^*]+)\*(?!\*)|(?<!\w)_([^_]+)_(?!\w)/g;
+  /!\[([^\]]*)\]\(([^)]+?)(?:\s+"([^"]*)")?\)|\[([^\]]*)\]\(([^)]+)\)|`([^`]+)`|\*\*([^*]+)\*\*|~~([^~]+)~~|(?<!\*)\*([^*]+)\*(?!\*)|(?<!\w)_([^_]+)_(?!\w)/g;
 
 export const INPUT_RULE_PATTERNS = {
   strong: /\*\*([^*\n]+)\*\*$/,
@@ -31,17 +31,17 @@ export function tokenizeInlineMarkdown(text: string): InlineToken[] {
     }
 
     if (match[1] !== undefined && match[2] !== undefined) {
-      tokens.push({ type: "image", alt: match[1], src: match[2] });
-    } else if (match[3] !== undefined && match[4] !== undefined) {
-      tokens.push({ type: "link", text: match[3], href: match[4] });
-    } else if (match[5] !== undefined) {
-      tokens.push({ type: "code", value: match[5] });
+      tokens.push({ type: "image", alt: match[1], src: match[2], title: match[3] || undefined });
+    } else if (match[4] !== undefined && match[5] !== undefined) {
+      tokens.push({ type: "link", text: match[4], href: match[5] });
     } else if (match[6] !== undefined) {
-      tokens.push({ type: "strong", value: match[6] });
+      tokens.push({ type: "code", value: match[6] });
     } else if (match[7] !== undefined) {
-      tokens.push({ type: "strike", value: match[7] });
-    } else if (match[8] !== undefined || match[9] !== undefined) {
-      tokens.push({ type: "em", value: match[8] ?? match[9]! });
+      tokens.push({ type: "strong", value: match[7] });
+    } else if (match[8] !== undefined) {
+      tokens.push({ type: "strike", value: match[8] });
+    } else if (match[9] !== undefined || match[10] !== undefined) {
+      tokens.push({ type: "em", value: match[9] ?? match[10]! });
     }
 
     lastIndex = match.index + match[0].length;

@@ -35,7 +35,20 @@ function serializeInline(node: PMNode): string {
     return text;
   }
   if (node.type.name === "image") {
-    return `![${node.attrs.alt ?? ""}](${node.attrs.src ?? ""})`;
+    const src = node.attrs.src ?? "";
+    const alt = node.attrs.alt ?? "";
+    const width = node.attrs.width;
+    const height = node.attrs.height;
+    const align = node.attrs.align;
+    const titleParts: string[] = [];
+    if (width != null && height != null) {
+      titleParts.push(`${width}x${height}`);
+    }
+    if (align && align !== "inline") {
+      titleParts.push(`align=${align}`);
+    }
+    const title = titleParts.length > 0 ? ` "${titleParts.join(" ")}"` : "";
+    return `![${alt}](${src}${title})`;
   }
   let output = "";
   for (let index = 0; index < node.childCount; index += 1) {

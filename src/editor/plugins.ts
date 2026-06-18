@@ -16,6 +16,7 @@ import { createInlineCodeDecorationsPlugin } from "@/editor/inline-code-decorati
 import { createEditorCommandEventsPlugin } from "@/editor/editor-command-events";
 import { createClipboardPlugin } from "@/editor/clipboard";
 import { createMarkdownPastePlugin } from "@/editor/markdown-paste";
+import { createImageToolbarPlugin } from "@/editor/image-toolbar-plugin";
 
 type PluginOptions = {
   getDocPath?: () => string | undefined;
@@ -39,6 +40,7 @@ export function createEditorPlugins(options: PluginOptions = {}) {
     }),
     createSyntaxHighlightPlugin(),
     createInlineCodeDecorationsPlugin(),
+    createImageToolbarPlugin(),
     history(),
     keymap({
       "Mod-z": undo,

@@ -52,8 +52,10 @@ describe("createImageNodeView", () => {
     });
 
     const nodeView = createImageNodeView(node, {} as EditorView, () => undefined);
-    const image = nodeView.dom as HTMLImageElement;
+    const container = nodeView.dom as HTMLElement;
+    const image = container.querySelector("img")!;
 
+    expect(image).not.toBeNull();
     expect(image.src.startsWith("asset:///")).toBe(true);
     expect(image.src).toContain("SDSP%E9%A2%86%E5%9F%9F-%E6%95%B4%E4%BD%93%E9%AB%98%E9%98%B6%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1.png");
     expect(image.alt).toBe("整体高阶架构设计");
