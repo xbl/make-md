@@ -1,7 +1,7 @@
 <template>
   <div class="status-bar">
     <span>{{ statusText }}</span>
-    <span>{{ modeText }}</span>
+    <button class="status-bar__mode-btn" @click="ui.toggleSourceMode()">{{ modeText }}</button>
     <span>{{ wordCountText }}</span>
     <span>Markdown</span>
     <span>UTF-8</span>

@@ -1740,3 +1740,20 @@ button {
   color: var(--text-muted);
   letter-spacing: 0.01em;
 }
+
+.status-bar__mode-btn {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 1px 6px;
+  cursor: pointer;
+  letter-spacing: inherit;
+}
+
+.status-bar__mode-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--border);
+  color: var(--text-secondary);
+}
