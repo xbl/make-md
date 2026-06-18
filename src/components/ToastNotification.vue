@@ -38,61 +38,62 @@ const { toasts } = useToast();
 <style scoped>
 .toast-container {
   position: fixed;
-  bottom: 48px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 16px;
+  right: 16px;
   z-index: 10000;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
   gap: 8px;
   pointer-events: none;
+  max-width: 360px;
 }
 
 .toast {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: var(--radius-md);
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 10px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  box-shadow: var(--shadow-md);
+  border-left: 4px solid var(--border-strong);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
   font-size: var(--text-sm);
   color: var(--text-primary);
   pointer-events: auto;
-  white-space: nowrap;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .toast--success {
-  border-color: #a3c9a3;
-  background: #f4faf4;
-  color: #2d5a2d;
+  border-left-color: #38a169;
+  background: color-mix(in srgb, var(--bg-elevated) 92%, #38a169);
 }
 
 .toast--error {
-  border-color: #e0b4b4;
-  background: #fdf5f5;
-  color: #8b2d2d;
+  border-left-color: #e53e3e;
+  background: color-mix(in srgb, var(--bg-elevated) 92%, #e53e3e);
 }
 
 .toast--info {
-  border-color: var(--border-strong);
+  border-left-color: var(--accent, #3182ce);
 }
 
 .toast__icon {
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  opacity: 0.85;
 }
 
 .toast__message {
   line-height: 1.4;
 }
 
-/* TransitionGroup animations */
+/* Slide-in from right */
 .toast-enter-active {
-  transition: all 0.25s ease-out;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .toast-leave-active {
@@ -101,11 +102,11 @@ const { toasts } = useToast();
 
 .toast-enter-from {
   opacity: 0;
-  transform: translateY(12px) scale(0.96);
+  transform: translateX(40px) scale(0.96);
 }
 
 .toast-leave-to {
   opacity: 0;
-  transform: translateY(-8px) scale(0.96);
+  transform: translateX(40px) scale(0.96);
 }
 </style>

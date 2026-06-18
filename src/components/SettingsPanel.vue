@@ -211,6 +211,7 @@ import { useShortcutsStore } from "@/stores/shortcuts";
 import { useUiStore } from "@/stores/ui";
 import { useAiStore } from "@/stores/ai";
 import { loadApiKey, saveApiKey } from "@/lib/file-service";
+import { toastSuccess, toastError } from "@/composables/useToast";
 
 const ui = useUiStore();
 const preferences = usePreferencesStore();
@@ -246,6 +247,7 @@ async function testKey(providerId: string) {
     }
     if (!apiKey) {
       keyTestResult.value[providerId] = "fail";
+      toastError(t("ai.testKeyFail"));
       return;
     }
 
@@ -261,8 +263,10 @@ async function testKey(providerId: string) {
     });
 
     keyTestResult.value[providerId] = "success";
+    toastSuccess(t("ai.testKeySuccess"));
   } catch {
     keyTestResult.value[providerId] = "fail";
+    toastError(t("ai.testKeyFail"));
   } finally {
     testingKey.value[providerId] = false;
   }
