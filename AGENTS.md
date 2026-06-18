@@ -24,6 +24,7 @@ Use Vitest for unit tests and Playwright for smoke/e2e coverage. Place new unit 
 Git history favors short, imperative commits with optional scope, such as `feat: add mermaid` or `fix: improve editor typography`. Keep commits focused and avoid mixing unrelated UI and Rust changes. PRs should explain the user-visible change, list verification commands run, and include screenshots or screen recordings for UI updates. Link related issues when available and call out any platform-specific behavior, especially Tauri or macOS-only flows.
 
 ## Agent Notes
+Follow the design system defined in `DESIGN.md` for all UI work. Use `var(--token)` references for colors, typography, radii, and shadows — never hardcode visual values.
 Prefer small, targeted edits. Check `README.md` and the relevant `docs/superpowers/` plan before adding new behavior, and verify changes with the narrowest useful test command first.
 When a task is completed, agents should automatically create a focused git commit before responding, unless the user explicitly says not to commit or the work is blocked.
 Maintain a product feature list document at `docs/product/feature-list.md`. Every time a feature is completed or materially changed, update the corresponding module section in that document before responding.
