@@ -2,7 +2,6 @@ mod ai;
 mod fs;
 mod i18n;
 mod menu;
-mod pdf;
 mod recent;
 mod recovery;
 mod workspace;
@@ -47,7 +46,6 @@ fn main() {
             workspace::assets::copy_image_bytes,
             workspace::file_watch::watch_file,
             workspace::file_watch::unwatch_file,
-            pdf::export_pdf,
         ])
         .run(tauri::generate_context!())
         .expect("failed to run make-md");
