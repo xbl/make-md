@@ -138,6 +138,13 @@ export function createImageToolbarPlugin(t: (key: MessageKey) => string) {
       document.addEventListener("click", onDocumentClick);
 
       return {
+        update(view, _prevState) {
+          if (!bar || bar.style.display === "none") return;
+          const pos = Number(bar.dataset.imagePos);
+          if (!isImageNode(view.state.doc.nodeAt(pos))) {
+            bar.style.display = "none";
+          }
+        },
         destroy() {
           document.removeEventListener("click", onDocumentClick);
           editorView.dom.removeEventListener("click", onEditorClick);
