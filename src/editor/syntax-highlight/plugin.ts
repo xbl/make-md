@@ -130,7 +130,7 @@ export function createSyntaxHighlightPlugin() {
         }
       }
 
-      if (blocks.length === 0) {
+      if (blocks.length === 0 || highlightedCount === blocks.length) {
         retryCount = 0;
         return;
       }

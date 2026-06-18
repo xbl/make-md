@@ -1261,6 +1261,10 @@ button {
   opacity: 0.6;
 }
 
+.editor-view .ProseMirror .code-block-wrapper {
+  position: relative;
+}
+
 .editor-view .ProseMirror pre,
 .editor-view .ProseMirror .code-block-wrapper pre {
   margin: 0;
@@ -1275,9 +1279,12 @@ button {
   white-space: pre;
 }
 
-.editor-view .ProseMirror .code-block-wrapper[data-language][data-highlighted="true"]:not([data-language="mermaid" i]):not([data-language="Mermaid" i]) pre {
+.editor-view .ProseMirror .code-block-wrapper[data-language]:not([data-language="mermaid" i]):not([data-language="Mermaid" i]) pre {
   position: relative;
   z-index: 1;
+}
+
+.editor-view .ProseMirror .code-block-wrapper[data-language][data-highlighted="true"]:not([data-language="mermaid" i]):not([data-language="Mermaid" i]) pre {
   background: transparent;
 }
 
@@ -1289,6 +1296,7 @@ button {
 .editor-view .ProseMirror .hljs-overlay {
   position: absolute;
   inset: 0;
+  z-index: 0;
   padding: 10px 12px;
   pointer-events: none;
   overflow: hidden;
@@ -1296,9 +1304,6 @@ button {
   font-size: 12px;
   line-height: 1.55;
   font-family: var(--font-mono);
-  z-index: 2;
-  border-radius: var(--radius-md);
-  background: var(--code-bg);
 }
 
 .editor-view .ProseMirror .hljs-overlay .hljs {

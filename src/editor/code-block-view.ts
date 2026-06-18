@@ -52,7 +52,6 @@ export function createCodeBlockNodeView(
     if (normalized) {
       pre.dataset.params = normalized;
       wrapper.dataset.language = normalized;
-      delete wrapper.dataset.highlighted;
     } else {
       delete pre.dataset.params;
       delete wrapper.dataset.language;
