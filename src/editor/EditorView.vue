@@ -65,7 +65,7 @@ import { useAiRewrite } from "@/composables/useAiRewrite";
 import type { AiPresetId } from "@/lib/ai/presets";
 
 const { t } = useI18n();
-const { isRunning: aiRunning, error: aiError, runPreset } = useAiRewrite();
+const { isRunning: aiRunning, error: aiError, keyConfigured, runPreset } = useAiRewrite();
 const rightClickedSvg = ref<string | null>(null);
 const rightClickedImage = ref<{ src: string; alt: string; docPath: string | undefined } | null>(null);
 let pendingImageContext: { src: string; alt: string; docPath: string | undefined } | null = null;
@@ -346,7 +346,7 @@ function updateSelectionToolbar() {
   }
 
   const { selection } = view.state;
-  if (selection.empty || selection instanceof NodeSelection) {
+  if (selection.empty || selection instanceof NodeSelection || !keyConfigured.value) {
     hideSelectionToolbar();
     return;
   }

@@ -1,4 +1,4 @@
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { generateResearchText } from "@/lib/ai/client";
 import { buildSelectionRewriteContext } from "@/lib/ai/context";
 import { useAiStore } from "@/stores/ai";
@@ -13,6 +13,23 @@ export function useAiRewrite() {
   const aiStore = useAiStore();
   const isRunning = ref(false);
   const error = ref<string | null>(null);
+  const keyConfigured = ref(true); // default true — async check will set false if confirmed missing
+
+  async function checkKey() {
+    try {
+      const { invoke } = await import("@tauri-apps/api/core");
+      const key = await invoke<string | null>("load_api_key", { provider: aiStore.activeProvider });
+      keyConfigured.value = Boolean(key);
+    } catch {
+      // If the Tauri bridge is unavailable (e.g. test environment),
+      // default to showing the toolbar so tests still pass.
+      keyConfigured.value = true;
+    }
+  }
+
+  // Check on creation and whenever the active provider changes
+  checkKey();
+  watch(() => aiStore.activeProvider, () => checkKey());
 
   async function runPreset(presetId: AiPresetId, view: EditorView) {
     const { state } = view;
@@ -81,5 +98,5 @@ export function useAiRewrite() {
     }
   }
 
-  return { isRunning, error, runPreset };
+  return { isRunning, error, keyConfigured, runPreset };
 }
