@@ -1,10 +1,11 @@
 import { Plugin, PluginKey } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
 import { resetImageSize, setImageAlign } from "@/lib/image-commands";
+import type { MessageKey } from "@/i18n/catalog";
 
 export const imageToolbarKey = new PluginKey<{ imagePos: number | null }>("imageToolbar");
 
-function buildToolbarDom(): HTMLDivElement {
+function buildToolbarDom(t: (key: MessageKey) => string): HTMLDivElement {
   const bar = document.createElement("div");
   bar.className = "editor-toolbar";
   bar.style.display = "none";
@@ -14,16 +15,16 @@ function buildToolbarDom(): HTMLDivElement {
   bar.appendChild(sizeLabel);
 
   const alignDefs = [
-    { align: "inline", label: "Inline" },
-    { align: "left", label: "Left" },
-    { align: "center", label: "Center" },
-    { align: "right", label: "Right" },
+    { align: "inline", key: "image.alignInline" as MessageKey },
+    { align: "left", key: "image.alignLeft" as MessageKey },
+    { align: "center", key: "image.alignCenter" as MessageKey },
+    { align: "right", key: "image.alignRight" as MessageKey },
   ];
-  for (const { align, label } of alignDefs) {
+  for (const { align, key } of alignDefs) {
     const btn = document.createElement("button");
     btn.className = "editor-toolbar__btn";
     btn.dataset.align = align;
-    btn.textContent = label;
+    btn.textContent = t(key);
     btn.addEventListener("mousedown", (e) => {
       e.preventDefault();
     });
@@ -32,7 +33,7 @@ function buildToolbarDom(): HTMLDivElement {
 
   const resetBtn = document.createElement("button");
   resetBtn.className = "editor-toolbar__btn";
-  resetBtn.textContent = "Reset Size";
+  resetBtn.textContent = t("image.resetSize");
   resetBtn.addEventListener("mousedown", (e) => {
     e.preventDefault();
   });
@@ -69,7 +70,7 @@ function isImageNode(node: { type: { name: string } } | null | undefined): boole
   return node?.type.name === "image";
 }
 
-export function createImageToolbarPlugin() {
+export function createImageToolbarPlugin(t: (key: MessageKey) => string) {
   let bar: HTMLDivElement | null = null;
 
   function attachBarEvents(view: EditorView) {
@@ -129,7 +130,7 @@ export function createImageToolbarPlugin() {
     key: imageToolbarKey,
     view(ev) {
       editorView = ev;
-      bar = buildToolbarDom();
+      bar = buildToolbarDom(t);
       editorView.dom.parentElement?.appendChild(bar);
       attachBarEvents(editorView);
 

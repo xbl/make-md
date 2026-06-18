@@ -429,6 +429,7 @@ function syncViewFromSession() {
     plugins: createEditorPlugins({
       getDocPath: () => activeSession.value?.path || undefined,
       onImageError: (message) => window.alert(message),
+      t,
     }),
   });
 
@@ -466,6 +467,7 @@ function mountEditor() {
     plugins: createEditorPlugins({
       getDocPath: () => activeSession.value?.path || undefined,
       onImageError: (message) => window.alert(message),
+      t,
     }),
   });
 

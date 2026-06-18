@@ -93,4 +93,17 @@ export const zhCN = {
   "settings.ai.provider.label": "默认服务商",
   "settings.ai.provider.description": "选择默认使用的 AI 语言模型服务商。",
   "settings.ai.model.default": "默认模型",
+  // AI edit toolbar
+  "ai.polish": "润色",
+  "ai.translate-en": "翻译为英文",
+  "ai.translate-zh": "翻译为中文",
+  "ai.expand": "扩展",
+  "ai.condense": "精简",
+  "ai.custom": "自定义...",
+  // Image toolbar
+  "image.alignInline": "内联",
+  "image.alignLeft": "左对齐",
+  "image.alignCenter": "居中",
+  "image.alignRight": "右对齐",
+  "image.resetSize": "重置尺寸",
 } as const;

@@ -21,6 +21,7 @@ import { createImageToolbarPlugin } from "@/editor/image-toolbar-plugin";
 type PluginOptions = {
   getDocPath?: () => string | undefined;
   onImageError?: (message: string) => void;
+  t?: (key: import("@/i18n/catalog").MessageKey) => string;
 };
 
 export function createEditorPlugins(options: PluginOptions = {}) {
@@ -40,7 +41,7 @@ export function createEditorPlugins(options: PluginOptions = {}) {
     }),
     createSyntaxHighlightPlugin(),
     createInlineCodeDecorationsPlugin(),
-    createImageToolbarPlugin(),
+    createImageToolbarPlugin(options.t ?? ((key) => key)),
     history(),
     keymap({
       "Mod-z": undo,
