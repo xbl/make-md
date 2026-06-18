@@ -94,6 +94,7 @@ export const zhCN = {
   "settings.ai.provider.description": "选择默认使用的 AI 语言模型服务商。",
   "settings.ai.model.default": "默认模型",
   // AI edit toolbar
+  "ai.research": "研究",
   "ai.polish": "润色",
   "ai.translate-en": "翻译为英文",
   "ai.translate-zh": "翻译为中文",

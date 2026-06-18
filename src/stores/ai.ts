@@ -34,11 +34,5 @@ export const useAiStore = defineStore("ai", {
     clearPreview() {
       this.preview = null;
     },
-    startSelectionRewrite() {
-      this.toolbarMode = "selection";
-    },
-    startDocumentRewrite() {
-      this.toolbarMode = "document";
-    },
   },
 });

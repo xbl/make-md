@@ -4,7 +4,12 @@
       v-if="selectionToolbar.visible"
       :left="selectionToolbar.left"
       :top="selectionToolbar.top"
+      :disabled="aiRunning"
+      @select-preset="handleToolbarPreset"
     />
+    <div v-if="aiRunning" class="editor-toolbar" :style="loadingToolbarStyle">
+      <span class="editor-toolbar__size">Generating...</span>
+    </div>
     <div ref="mountRef" class="editor-view"></div>
     <TableControlsOverlay
       :visible="tableOverlay.visible"
@@ -56,8 +61,11 @@ import { useEditorStore } from "@/stores/editor";
 import { convertSvgToPngBlob } from "@/lib/image-helpers";
 import { findImageAtClick, copyImageToClipboard, copyImageMarkdownPath, saveImageAs, revealImageInFinder } from "@/lib/image-commands";
 import { useI18n } from "@/composables/useI18n";
+import { useAiRewrite } from "@/composables/useAiRewrite";
+import type { AiPresetId } from "@/lib/ai/presets";
 
 const { t } = useI18n();
+const { isRunning: aiRunning, error: aiError, runPreset } = useAiRewrite();
 const rightClickedSvg = ref<string | null>(null);
 const rightClickedImage = ref<{ src: string; alt: string; docPath: string | undefined } | null>(null);
 let pendingImageContext: { src: string; alt: string; docPath: string | undefined } | null = null;
@@ -79,12 +87,18 @@ const mountRef = ref<HTMLDivElement | null>(null);
 const documents = useDocumentsStore();
 const editorStore = useEditorStore();
 const menu = createContextMenuController();
+interface PendingSelection { from: number; to: number; }
+const pendingSelection = ref<PendingSelection | null>(null);
 let view: PMEditorView | null = null;
 const selectionToolbar = ref({
   visible: false,
   left: 0,
   top: 0,
 });
+const loadingToolbarStyle = computed(() => ({
+  left: `${selectionToolbar.value.left}px`,
+  top: `${selectionToolbar.value.top + 48}px`,
+}));
 
 const activeSession = computed(() => documents.activeSession);
 const hasSelection = computed(() => Boolean(view && !view.state.selection.empty));
@@ -322,6 +336,7 @@ function hideSelectionToolbar() {
     left: 0,
     top: 0,
   };
+  pendingSelection.value = null;
 }
 
 function updateSelectionToolbar() {
@@ -346,12 +361,14 @@ function updateSelectionToolbar() {
       left: Math.max(16, selectionCenter - container.left),
       top: Math.max(8, Math.min(start.top, end.top) - container.top - 48),
     };
+    pendingSelection.value = { from: selection.from, to: selection.to };
   } catch {
     selectionToolbar.value = {
       visible: true,
       left: 24,
       top: 8,
     };
+    pendingSelection.value = { from: selection.from, to: selection.to };
   }
 }
 
@@ -388,6 +405,23 @@ function handleTableAction(action: TableAction) {
   if (view && activeContext) {
     applyTableAction(view, action, activeContext);
   }
+}
+
+async function handleToolbarPreset(presetId: AiPresetId) {
+  if (!view) return;
+
+  // Restore selection if toolbar click stole focus
+  const sel = pendingSelection.value;
+  if (sel && view.state.selection.from !== sel.from) {
+    const $from = view.state.doc.resolve(sel.from);
+    const $to = view.state.doc.resolve(sel.to);
+    view.dispatch(view.state.tr.setSelection(
+      TextSelection.between($from, $to),
+    ));
+  }
+
+  await runPreset(presetId, view);
+  updateSelectionToolbar();
 }
 
 function syncSessionContent() {
@@ -518,6 +552,10 @@ watch(
     syncViewFromSession();
   },
 );
+
+watch(aiError, (msg) => {
+  if (msg) window.alert(msg);
+});
 
 onBeforeUnmount(() => {
   void documents.flushAutosave();

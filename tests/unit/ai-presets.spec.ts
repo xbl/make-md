@@ -4,6 +4,7 @@ import { AI_PRESETS } from "@/lib/ai/presets";
 describe("ai presets", () => {
   it("defines the built-in rewrite presets", () => {
     expect(AI_PRESETS.map((preset) => preset.id)).toEqual([
+      "research",
       "polish",
       "translate-en",
       "translate-zh",

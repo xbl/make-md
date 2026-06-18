@@ -19,10 +19,9 @@ fn main() {
             menu::handle_menu_event(app, event);
         })
         .invoke_handler(tauri::generate_handler![
-            ai::ai_stream,
-            ai::ai_cancel,
             ai::save_api_key,
             ai::load_api_key,
+            ai::fetch_url::fetch_url,
             i18n::get_system_locale,
             fs::read_markdown_file,
             fs::read_binary_file,

@@ -94,6 +94,7 @@ export const en = {
   "settings.ai.provider.description": "Choose which AI provider to use by default.",
   "settings.ai.model.default": "Default model",
   // AI edit toolbar
+  "ai.research": "Research",
   "ai.polish": "Polish",
   "ai.translate-en": "Translate to English",
   "ai.translate-zh": "Translate to Chinese",

@@ -48,6 +48,7 @@ import { createAppCommandRuntime } from "@/lib/app-commands";
 import { useDocumentsStore } from "@/stores/documents";
 import { useEditorStore } from "@/stores/editor";
 import { usePreferencesStore } from "@/stores/preferences";
+import { useAiStore } from "@/stores/ai";
 import { useShortcutsStore } from "@/stores/shortcuts";
 import { useUiStore } from "@/stores/ui";
 import { useFolderWorkspaceStore } from "@/stores/folder-workspace";
@@ -62,6 +63,7 @@ const editorStore = useEditorStore();
 const preferences = usePreferencesStore();
 const shortcuts = useShortcutsStore();
 const ui = useUiStore();
+const ai = useAiStore();
 const folderWorkspace = useFolderWorkspaceStore();
 const { t } = useI18n();
 let unlistenClose: (() => void) | null = null;
@@ -285,6 +287,8 @@ onMounted(async () => {
     toggleSourceMode: () => ui.toggleSourceMode(),
     openSettings: () => ui.openSettings("general"),
     openAiSettings: () => ui.openSettings("ai"),
+    openAiRewriteSelection: () => { ai.toolbarMode = "selection"; },
+    openAiRewriteDocument: () => { ai.toolbarMode = "document"; },
     openCommandPalette: () => ui.openCommandPalette(),
     closeTab: () => (activeSessionId.value ? documents.closeSession(activeSessionId.value) : Promise.resolve(true)),
     canRunEditorCommand,
