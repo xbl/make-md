@@ -844,6 +844,11 @@ button {
 .editor-pane--source {
   grid-template-rows: auto minmax(0, 1fr);
   align-content: stretch;
+  padding: 28px 0 40px;
+}
+
+.editor-pane--source .source-editor {
+  margin-right: 32px;
 }
 
 .source-editor {
@@ -890,6 +895,7 @@ button {
   position: relative;
   min-width: 0;
   min-height: 0;
+  overflow: hidden;
 }
 
 .source-editor__active-line {
@@ -910,7 +916,8 @@ button {
   font: 14px/1.7 var(--font-mono);
   padding: 24px 28px 40px;
   tab-size: 2;
-  white-space: pre;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
   overflow: auto;
 }
 
