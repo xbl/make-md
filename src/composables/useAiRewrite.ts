@@ -79,7 +79,7 @@ export function useAiRewrite() {
         });
 
         const { text } = await generateText({
-          model: openai(config.model),
+          model: openai.chat(config.model),
           system:
             "You are a Markdown editing assistant. Output ONLY the modified Markdown text. Preserve formatting.",
           prompt: [

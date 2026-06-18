@@ -16,7 +16,7 @@ export async function generateResearchText(input: {
   });
 
   const { text } = await generateText({
-    model: provider(input.model),
+    model: provider.chat(input.model),
     stopWhen: stepCountIs(5),
     tools: { webSearch, webFetch },
     system:

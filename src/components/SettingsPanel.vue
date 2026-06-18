@@ -300,7 +300,7 @@ async function testKey(providerId: string) {
     const openai = createOpenAI({ apiKey, baseURL: baseUrl });
 
     await generateText({
-      model: openai(model),
+      model: openai.chat(model),
       prompt: "Hi",
     });
 

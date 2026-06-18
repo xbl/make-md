@@ -7,7 +7,9 @@ vi.mock("ai", () => ({
 }));
 
 vi.mock("@ai-sdk/openai", () => ({
-  createOpenAI: vi.fn().mockReturnValue(() => "mock-model"),
+  createOpenAI: vi.fn().mockReturnValue({
+    chat: vi.fn().mockReturnValue("mock-model"),
+  }),
 }));
 
 import { generateResearchText } from "@/lib/ai/client";
