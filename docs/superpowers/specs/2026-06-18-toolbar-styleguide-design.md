@@ -3,6 +3,11 @@
 **Date:** 2026-06-18
 **Goal:** Unify the AI Edit toolbar and Image toolbar into a single visual system with mutual exclusion — when an image node is selected, only the image toolbar appears; when text is selected, only the AI toolbar appears.
 
+**Canonical design tokens:** See [`DESIGN.md`](../../../DESIGN.md) at the
+repository root for the full project-level design system (colors,
+typography, radii, shadows, elevation). The toolbar tokens defined in this
+spec are a subset of that file.
+
 ---
 
 ## Architecture
