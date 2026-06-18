@@ -106,8 +106,8 @@ export const zhCN = {
   "ai.custom": "自定义...",
   "ai.testKey": "测试",
   "ai.testKeyTesting": "测试中...",
-  "ai.testKeySuccess": "密钥有效",
-  "ai.testKeyFail": "密钥无效",
+  "ai.testKeySuccess": "连接成功",
+  "ai.testKeyFail": "连接失败",
   // Image toolbar
   "image.alignInline": "内联",
   "image.alignLeft": "左对齐",

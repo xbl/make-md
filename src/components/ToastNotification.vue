@@ -9,17 +9,14 @@
           :class="`toast--${toast.type}`"
         >
           <span class="toast__icon">
-            <svg v-if="toast.type === 'success'" width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.1"/>
-              <path d="M4.5 7.2l1.8 1.8 3.2-3.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg v-if="toast.type === 'success'" width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M2.5 6l2.5 2.5 4.5-5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <svg v-else-if="toast.type === 'error'" width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.1"/>
-              <path d="M5 5l4 4M9 5l-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            <svg v-else-if="toast.type === 'error'" width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M3.5 3.5l5 5M8.5 3.5l-5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
             </svg>
-            <svg v-else width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.1"/>
-              <path d="M7 4.5v3M7 9.5v.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            <svg v-else width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <circle cx="6" cy="6" r="1.2" fill="currentColor"/>
             </svg>
           </span>
           <span class="toast__message">{{ toast.message }}</span>
@@ -38,75 +35,98 @@ const { toasts } = useToast();
 <style scoped>
 .toast-container {
   position: fixed;
-  top: 16px;
-  right: 16px;
+  top: 20px;
+  right: 20px;
   z-index: 10000;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 8px;
+  gap: 6px;
   pointer-events: none;
-  max-width: 360px;
+  max-width: 320px;
 }
 
 .toast {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
-  border-radius: 10px;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 7px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-left: 4px solid var(--border-strong);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
-  font-size: var(--text-sm);
+  box-shadow: 0 2px 12px rgba(28, 28, 26, 0.08);
+  font-family: var(--font-ui);
+  font-size: 12.5px;
   color: var(--text-primary);
+  line-height: 1.4;
   pointer-events: auto;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  letter-spacing: 0.01em;
 }
 
 .toast--success {
-  border-left-color: #38a169;
-  background: color-mix(in srgb, var(--bg-elevated) 92%, #38a169);
+  background: #f6f8f3;
+  border-color: #c8d6c0;
+  color: #3d5430;
+}
+
+:root[data-theme="dark"] .toast--success {
+  background: #1e241a;
+  border-color: #3d5430;
+  color: #b8ccaa;
 }
 
 .toast--error {
-  border-left-color: #e53e3e;
-  background: color-mix(in srgb, var(--bg-elevated) 92%, #e53e3e);
+  background: #faf5f5;
+  border-color: #dcc8c8;
+  color: #6b3535;
+}
+
+:root[data-theme="dark"] .toast--error {
+  background: #241a1a;
+  border-color: #543030;
+  color: #ccaaaa;
 }
 
 .toast--info {
-  border-left-color: var(--accent, #3182ce);
+  background: #f4f6f9;
+  border-color: #c4cddb;
+  color: #3a4d68;
+}
+
+:root[data-theme="dark"] .toast--info {
+  background: #1a1e24;
+  border-color: #304054;
+  color: #aab8cc;
 }
 
 .toast__icon {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  opacity: 0.85;
+  opacity: 0.7;
 }
 
 .toast__message {
-  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Slide-in from right */
 .toast-enter-active {
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .toast-leave-active {
-  transition: all 0.2s ease-in;
+  transition: all 0.18s ease-in;
 }
 
 .toast-enter-from {
   opacity: 0;
-  transform: translateX(40px) scale(0.96);
+  transform: translateX(32px);
 }
 
 .toast-leave-to {
   opacity: 0;
-  transform: translateX(40px) scale(0.96);
+  transform: translateX(24px);
 }
 </style>

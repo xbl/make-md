@@ -136,14 +136,13 @@
           <!-- AI tab -->
           <div v-else-if="ui.activeSettingsSection === 'ai'" class="settings-panel__section">
             <section class="settings-panel__category">
-              <h3 class="settings-panel__category-title">AI Provider</h3>
+              <h3 class="settings-panel__category-title">Provider</h3>
 
               <article class="settings-panel__row">
                 <div class="settings-panel__meta">
                   <h4 class="settings-panel__command">{{ t("settings.ai.provider.label") }}</h4>
                   <p class="settings-panel__details">{{ t("settings.ai.provider.description") }}</p>
                 </div>
-
                 <div class="settings-panel__actions">
                   <select v-model="ai.activeProvider" class="settings-panel__select">
                     <option value="openai">OpenAI</option>
@@ -152,71 +151,57 @@
                 </div>
               </article>
 
-              <template v-for="provider in providerList" :key="provider.id">
-                <article class="settings-panel__row">
-                  <div class="settings-panel__meta">
-                    <h4 class="settings-panel__command">{{ provider.label }} API Key</h4>
-                    <p class="settings-panel__details">
-                      <span v-if="keyTestResult[provider.id] === 'success'" class="settings-panel__test-result--success">&#10003; {{ t("ai.testKeySuccess") }}</span>
-                      <span v-else-if="keyTestResult[provider.id] === 'fail'" class="settings-panel__test-result--fail">&#10007; {{ t("ai.testKeyFail") }}</span>
-                      <span v-else>Enter your {{ provider.label }} API key</span>
-                    </p>
-                  </div>
-                  <div class="settings-panel__actions">
-                    <input
-                      type="password"
-                      v-model="apiKeys[provider.id]"
-                      placeholder="API Key"
-                      class="settings-panel__capture"
-                      @input="keyTestResult[provider.id] = null"
-                    />
-                    <button
-                      class="settings-panel__secondary-action"
-                      type="button"
-                      @click="updateKey(provider.id)"
-                    >
-                      Save
-                    </button>
-                    <button
-                      class="settings-panel__secondary-action"
-                      type="button"
-                      :disabled="testingKey[provider.id]"
-                      @click="testKey(provider.id)"
-                    >
-                      {{ testingKey[provider.id] ? t("ai.testKeyTesting") : t("ai.testKey") }}
-                    </button>
-                  </div>
-                </article>
+              <h3 class="settings-panel__category-title" style="margin-top: 12px;">API Keys</h3>
 
-                <article class="settings-panel__row">
-                  <div class="settings-panel__meta">
-                    <h4 class="settings-panel__command">{{ t("settings.ai.model.label") }}</h4>
-                    <p class="settings-panel__details">{{ t("settings.ai.model.description") }}</p>
-                  </div>
-                  <div class="settings-panel__actions">
-                    <input
-                      type="text"
-                      :list="`model-list-${provider.id}`"
-                      :value="ai.providers[provider.id].model"
-                      placeholder="Model name"
-                      class="settings-panel__capture"
-                      @change="updateModel(provider.id, ($event.target as HTMLInputElement).value)"
-                    />
-                    <datalist :id="`model-list-${provider.id}`">
-                      <option v-for="m in MODEL_OPTIONS[provider.id]" :key="m" :value="m" />
-                    </datalist>
-                    <span class="settings-panel__details" style="margin: 0 4px;">{{ t("settings.ai.baseUrl.label") }}</span>
-                    <input
-                      type="text"
-                      :value="ai.providers[provider.id].baseUrl"
-                      :placeholder="DEFAULT_BASE_URLS[provider.id]"
-                      class="settings-panel__capture"
-                      style="min-width: 180px;"
-                      @change="updateBaseUrl(provider.id, ($event.target as HTMLInputElement).value)"
-                    />
-                  </div>
-                </article>
-              </template>
+              <article class="settings-panel__row settings-panel__row--provider" v-for="provider in providerList" :key="provider.id">
+                <div class="settings-panel__meta">
+                  <h4 class="settings-panel__command">
+                    <span class="ai-status-dot" :class="{ 'ai-status-dot--ok': keyTestResult[provider.id] === 'success', 'ai-status-dot--fail': keyTestResult[provider.id] === 'fail' }"></span>
+                    {{ provider.label }}
+                  </h4>
+                  <p class="settings-panel__details">Default: {{ ai.providers[provider.id].model }}</p>
+                </div>
+                <div class="settings-panel__actions ai-provider-actions">
+                  <input
+                    type="password"
+                    v-model="apiKeys[provider.id]"
+                    placeholder="sk-..."
+                    class="settings-panel__capture ai-key-input"
+                    @input="keyTestResult[provider.id] = null"
+                  />
+                  <button class="settings-panel__secondary-action" type="button" @click="updateKey(provider.id)">
+                    Save
+                  </button>
+                  <button
+                    class="settings-panel__secondary-action"
+                    type="button"
+                    :disabled="testingKey[provider.id]"
+                    @click="testKey(provider.id)"
+                  >
+                    {{ testingKey[provider.id] ? "…" : t("ai.testKey") }}
+                  </button>
+                </div>
+                <div class="ai-provider-config">
+                  <input
+                    type="text"
+                    :list="`model-list-${provider.id}`"
+                    :value="ai.providers[provider.id].model"
+                    placeholder="Model"
+                    class="settings-panel__capture ai-config-input"
+                    @change="updateModel(provider.id, ($event.target as HTMLInputElement).value)"
+                  />
+                  <datalist :id="`model-list-${provider.id}`">
+                    <option v-for="m in MODEL_OPTIONS[provider.id]" :key="m" :value="m" />
+                  </datalist>
+                  <input
+                    type="text"
+                    :value="ai.providers[provider.id].baseUrl"
+                    :placeholder="DEFAULT_BASE_URLS[provider.id]"
+                    class="settings-panel__capture ai-config-input"
+                    @change="updateBaseUrl(provider.id, ($event.target as HTMLInputElement).value)"
+                  />
+                </div>
+              </article>
             </section>
           </div>
         </div>
@@ -310,7 +295,7 @@ async function testKey(providerId: string) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("AI key test failed:", message, e);
     keyTestResult.value[providerId] = "fail";
-    toastError(`${t("ai.testKeyFail")}: ${message}`);
+    toastError(t("ai.testKeyFail"));
   } finally {
     testingKey.value[providerId] = false;
   }
@@ -764,16 +749,70 @@ function captureChord(commandId: string, event: KeyboardEvent) {
   color: var(--text-primary);
 }
 
-.settings-panel__test-result--success {
-  color: #38a169;
-  font-size: 16px;
-  font-weight: 700;
+/* AI provider status dot */
+.ai-status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-faint);
+  margin-right: 6px;
+  vertical-align: middle;
+  transition: background 0.3s ease;
 }
 
-.settings-panel__test-result--fail {
-  color: #e53e3e;
-  font-size: 16px;
-  font-weight: 700;
+.ai-status-dot--ok {
+  background: #7a9a60;
+}
+
+:root[data-theme="dark"] .ai-status-dot--ok {
+  background: #8db870;
+}
+
+.ai-status-dot--fail {
+  background: #c47070;
+}
+
+:root[data-theme="dark"] .ai-status-dot--fail {
+  background: #cc7777;
+}
+
+.ai-provider-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-key-input {
+  width: 200px;
+}
+
+.ai-provider-config {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  width: 100%;
+}
+
+.ai-config-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Expand provider row to wrap config */
+.settings-panel__row--provider {
+  flex-wrap: wrap;
+}
+
+.settings-panel__row--provider .settings-panel__meta {
+  flex: 1 1 auto;
+}
+
+.settings-panel__row--provider .ai-provider-actions {
+  flex: 0 0 auto;
 }
 
 .settings-panel__hint {
