@@ -230,7 +230,6 @@ function selectedText() {
 }
 
 function findNext() {
-  syncPluginState();
   if (!query.value) {
     return;
   }
@@ -250,7 +249,7 @@ function findNext() {
   }
 
   const view = editorStore.view;
-  if (!view) {
+  if (!view || !view.dom.parentNode) {
     return;
   }
   const next = findNextMatch(view.state, query.value, options(), view.state.selection.to + 1)
@@ -261,7 +260,6 @@ function findNext() {
 }
 
 function findPrevious() {
-  syncPluginState();
   if (!query.value) {
     return;
   }
@@ -281,10 +279,11 @@ function findPrevious() {
   }
 
   const view = editorStore.view;
-  if (!view) {
+  if (!view || !view.dom.parentNode) {
     return;
   }
   const matches = collectMatches();
+  if (matches.length === 0) return;
   const current = view.state.selection.from;
   const previous = [...matches].reverse().find((match) => match.from < current) ?? matches[matches.length - 1];
   if (previous) {
@@ -293,7 +292,6 @@ function findPrevious() {
 }
 
 function replaceOne() {
-  syncPluginState();
   if (ui.sourceMode) {
     const sourceEditor = editorStore.sourceEditor;
     const selection = sourceEditor?.getSelection();
@@ -324,7 +322,6 @@ function replaceOne() {
 }
 
 function replaceAll() {
-  syncPluginState();
   if (ui.sourceMode) {
     const sourceEditor = editorStore.sourceEditor;
     const text = sourceEditor?.getValue() ?? "";

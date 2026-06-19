@@ -168,7 +168,7 @@ describe("SettingsPanel", () => {
     expect(ui.activeSettingsSection).toBe("ai");
     expect(wrapper.text()).toContain("Active Provider");
     expect(wrapper.text()).toContain("DeepSeek");
-    expect(wrapper.text()).toContain("Default model: deepseek-chat");
+    expect(wrapper.text()).toContain("Default: deepseek-chat");
   });
 
   it("renders left navigation and switches between general and shortcuts", async () => {
