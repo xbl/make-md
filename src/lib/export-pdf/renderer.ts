@@ -466,7 +466,7 @@ function renderListGroup(
     engine.drawText(
       marker,
       config.contentLeft + levelIndent,
-      engine.currentY - fonts.body.heightAtSize(fontSize) * 0.8,
+      engine.currentY,
       fonts.body,
       fontSize,
     );

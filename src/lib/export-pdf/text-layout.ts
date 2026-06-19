@@ -197,34 +197,7 @@ export function wrapLines(runs: FormattedRun[], maxWidth: number): LayoutLine[] 
     currentHeight = 0;
   }
 
-  for (const run of runs) {
-    // Handle explicit newlines
-    if (run.text.includes("\n")) {
-      const parts = run.text.split("\n");
-      for (let pi = 0; pi < parts.length; pi++) {
-        const part = parts[pi]!;
-        if (part.length > 0) {
-          const partRun: FormattedRun = { ...run, text: part };
-          const partW = measureText(partRun.font, partRun.text, partRun.fontSize);
-          const partH = lineHeightAtSize(partRun.font, partRun.fontSize);
-          if (currentWidth + partW <= maxWidth || currentLine.length === 0) {
-            currentLine.push(partRun);
-            currentWidth += partW;
-            currentHeight = Math.max(currentHeight, partH);
-          } else {
-            commitLine();
-            currentLine.push(partRun);
-            currentWidth = partW;
-            currentHeight = partH;
-          }
-        }
-        if (pi < parts.length - 1) {
-          commitLine();
-        }
-      }
-      continue;
-    }
-
+  function placeRunOrBreak(run: FormattedRun): void {
     const runWidth = measureText(run.font, run.text, run.fontSize);
     const runHeight = lineHeightAtSize(run.font, run.fontSize);
 
@@ -233,60 +206,66 @@ export function wrapLines(runs: FormattedRun[], maxWidth: number): LayoutLine[] 
       currentLine.push(run);
       currentWidth += runWidth;
       currentHeight = Math.max(currentHeight, runHeight);
-    } else if (currentLine.length === 0) {
-      // Empty line but run exceeds maxWidth — force break within the run
-      const breakIdx = findBreakIndex(run.text, run.font, run.fontSize, maxWidth);
+      return;
+    }
+
+    if (currentLine.length > 0) {
+      // Line has room — try to split the run at the boundary
+      const remaining = maxWidth - currentWidth;
+      const breakIdx = findBreakIndex(run.text, run.font, run.fontSize, remaining);
       if (breakIdx > 0) {
         const firstPart = run.text.slice(0, breakIdx);
         currentLine.push({ ...run, text: firstPart });
         currentWidth += measureText(run.font, firstPart, run.fontSize);
         currentHeight = Math.max(currentHeight, runHeight);
         commitLine();
-
         const remainder = run.text.slice(breakIdx);
         if (remainder.length > 0) {
-          const remainRun: FormattedRun = { ...run, text: remainder };
-          currentLine.push(remainRun);
-          currentWidth = measureText(remainRun.font, remainder, remainRun.fontSize);
-          currentHeight = runHeight;
+          placeRunOrBreak({ ...run, text: remainder });
         }
-      } else {
-        // Can't break at all — place the whole run on the line
-        currentLine.push(run);
-        currentWidth += runWidth;
-        currentHeight = Math.max(currentHeight, runHeight);
+        return;
       }
-    } else {
-      // Line has room + run doesn't fit — split or wrap
-      const remaining = maxWidth - currentWidth;
-      const breakIdx = findBreakIndex(run.text, run.font, run.fontSize, remaining);
+      // Can't split — move entire run to next line
+      commitLine();
+    }
 
+    // Empty line: break run across potentially many lines
+    let remainingText = run.text;
+    while (remainingText.length > 0) {
+      const breakIdx = findBreakIndex(remainingText, run.font, run.fontSize, maxWidth);
       if (breakIdx > 0) {
-        const firstPart = run.text.slice(0, breakIdx);
-        const secondPart = run.text.slice(breakIdx);
-
-        const firstRun: FormattedRun = { ...run, text: firstPart };
-        currentLine.push(firstRun);
-        currentWidth += measureText(firstRun.font, firstPart, firstRun.fontSize);
+        const firstPart = remainingText.slice(0, breakIdx);
+        currentLine.push({ ...run, text: firstPart });
+        currentWidth += measureText(run.font, firstPart, run.fontSize);
         currentHeight = Math.max(currentHeight, runHeight);
         commitLine();
-
-        // Process the remainder as a new run
-        if (secondPart.length > 0) {
-          const secondRun: FormattedRun = { ...run, text: secondPart };
-          const secondW = measureText(secondRun.font, secondPart, secondRun.fontSize);
-          currentLine.push(secondRun);
-          currentWidth = secondW;
-          currentHeight = runHeight;
-        }
+        remainingText = remainingText.slice(breakIdx);
       } else {
-        // Can't break within the run, move to next line
-        commitLine();
-        currentLine.push(run);
-        currentWidth = runWidth;
-        currentHeight = runHeight;
+        // Can't break further — place what remains
+        currentLine.push({ ...run, text: remainingText });
+        currentWidth += measureText(run.font, remainingText, run.fontSize);
+        currentHeight = Math.max(currentHeight, runHeight);
+        break;
       }
     }
+  }
+
+  for (const run of runs) {
+    if (run.text.includes("\n")) {
+      const parts = run.text.split("\n");
+      for (let pi = 0; pi < parts.length; pi++) {
+        const part = parts[pi]!;
+        if (part.length > 0) {
+          placeRunOrBreak({ ...run, text: part });
+        }
+        if (pi < parts.length - 1) {
+          commitLine();
+        }
+      }
+      continue;
+    }
+
+    placeRunOrBreak(run);
   }
 
   commitLine();
