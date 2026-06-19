@@ -216,17 +216,25 @@ export async function markdownToPdfPayload(
       }
 
       case "table": {
-        const headerRowCount = token.header.length;
-        const rows: string[][] = [];
-        for (const row of [...token.header, ...token.rows]) {
+        // marked v18: token.header is a flat array of CELLS, token.rows is an array of ROW arrays
+        const headerRow: string[] = token.header.map(
+          (cell: { text?: string }) => cell.text ?? "",
+        );
+        const dataRows: string[][] = [];
+        for (const row of token.rows) {
           if (Array.isArray(row)) {
-            rows.push(row.map((cell: unknown) => (cell as { text?: string }).text ?? ""));
+            dataRows.push(
+              row.map((cell: unknown) => (cell as { text?: string }).text ?? ""),
+            );
           } else {
-            const tableRow = row as { tokens?: unknown[]; text?: string };
-            rows.push((tableRow.tokens ?? []).map((cell: unknown) => (cell as { text?: string }).text ?? ""));
+            // Fallback: row is an object with numeric keys
+            const rowObj = row as Record<string, { text?: string }>;
+            dataRows.push(
+              Object.values(rowObj).map((cell) => cell.text ?? ""),
+            );
           }
         }
-        blocks.push({ type: "table", rows, headerRowCount });
+        blocks.push({ type: "table", rows: [headerRow, ...dataRows], headerRowCount: 1 });
         break;
       }
 
@@ -277,7 +285,10 @@ export async function exportMarkdownToPdf(
   const engine = new PageEngine(pdfDoc, fonts, PAGE_CONFIG);
   await renderBlocks(payload, { engine, fonts, config: PAGE_CONFIG });
 
-  // 4. Serialize and write
+  // 4. Yield before CPU-intensive save
+  await new Promise((r) => setTimeout(r, 0));
+
+  // 5. Serialize and write
   const pdfBytes = await pdfDoc.save();
   await writeBinaryFile(path, Array.from(pdfBytes));
 

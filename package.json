@@ -49,9 +49,17 @@
     "@vue/test-utils": "^2.4.11",
     "eslint": "^10.4.1",
     "jsdom": "^29.1.1",
+    "lint-staged": "^17.0.7",
+    "simple-git-hooks": "^2.13.1",
     "typescript": "^6.0.3",
     "vite": "^8.0.16",
     "vitest": "^4.1.8",
     "vue-tsc": "^3.3.3"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged && pnpm typecheck"
+  },
+  "lint-staged": {
+    "*.{ts,vue,js}": "pnpm lint"
   }
 }

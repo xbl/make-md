@@ -302,8 +302,8 @@ export async function markdownToWordPayload(
           type: "table",
           headerRowCount: token.header.length > 0 ? 1 : 0,
           rows: [
-            token.header.map((cell) => normalizeText(stripTags(cell.text))),
-            ...token.rows.map((row) => row.map((cell) => normalizeText(stripTags(cell.text)))),
+            token.header.map((cell: { text: string }) => normalizeText(stripTags(cell.text))),
+            ...token.rows.map((row: { text: string }[]) => row.map((cell: { text: string }) => normalizeText(stripTags(cell.text)))),
           ],
         });
         break;

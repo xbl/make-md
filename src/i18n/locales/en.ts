@@ -108,6 +108,9 @@ export const en = {
   "ai.testKeyTesting": "Testing...",
   "ai.testKeySuccess": "Connected",
   "ai.testKeyFail": "Connection failed",
+  "ai.keySaved": "Key saved",
+  "ai.keyEmpty": "Enter a key first",
+  "ai.keySaveFailed": "Save failed",
   // Image toolbar
   "image.alignInline": "Inline",
   "image.alignLeft": "Left",

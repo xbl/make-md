@@ -2,6 +2,7 @@ import { ref, watch } from "vue";
 import { generateResearchText } from "@/lib/ai/client";
 import { buildSelectionRewriteContext } from "@/lib/ai/context";
 import { useAiStore } from "@/stores/ai";
+import { useUiStore } from "@/stores/ui";
 import type { EditorView } from "prosemirror-view";
 import { applySelectionRewrite } from "@/editor/ai-edit/apply";
 import type { AiPresetId } from "@/lib/ai/presets";
@@ -23,11 +24,16 @@ export function useAiRewrite() {
   async function checkKey() {
     try {
       const { invoke } = await import("@tauri-apps/api/core");
-      const key = await invoke<string | null>("load_api_key", { provider: aiStore.activeProvider });
-      keyConfigured.value = Boolean(key);
+      // Check ALL providers — toolbar should show if any key is configured
+      for (const providerId of Object.keys(aiStore.providers)) {
+        const key = await invoke<string | null>("load_api_key", { provider: providerId });
+        if (key) {
+          keyConfigured.value = true;
+          return;
+        }
+      }
+      keyConfigured.value = false;
     } catch {
-      // If the Tauri bridge is unavailable (e.g. test environment),
-      // default to showing the toolbar so tests still pass.
       keyConfigured.value = true;
     }
   }
@@ -35,6 +41,11 @@ export function useAiRewrite() {
   // Check on creation and whenever the active provider changes
   checkKey();
   watch(() => aiStore.activeProvider, () => checkKey());
+  const uiStore = useUiStore();
+  // Re-check when settings panel closes (user may have saved a new key)
+  watch(() => uiStore.settingsOpen, (open) => {
+    if (!open) checkKey();
+  });
 
   async function runPreset(presetId: AiPresetId, view: EditorView) {
     const { state } = view;

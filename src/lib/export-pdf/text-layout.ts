@@ -228,12 +228,36 @@ export function wrapLines(runs: FormattedRun[], maxWidth: number): LayoutLine[] 
     const runWidth = measureText(run.font, run.text, run.fontSize);
     const runHeight = lineHeightAtSize(run.font, run.fontSize);
 
-    if (currentWidth + runWidth <= maxWidth || currentLine.length === 0) {
+    if (currentWidth + runWidth <= maxWidth) {
+      // Fits on current line
       currentLine.push(run);
       currentWidth += runWidth;
       currentHeight = Math.max(currentHeight, runHeight);
+    } else if (currentLine.length === 0) {
+      // Empty line but run exceeds maxWidth — force break within the run
+      const breakIdx = findBreakIndex(run.text, run.font, run.fontSize, maxWidth);
+      if (breakIdx > 0) {
+        const firstPart = run.text.slice(0, breakIdx);
+        currentLine.push({ ...run, text: firstPart });
+        currentWidth += measureText(run.font, firstPart, run.fontSize);
+        currentHeight = Math.max(currentHeight, runHeight);
+        commitLine();
+
+        const remainder = run.text.slice(breakIdx);
+        if (remainder.length > 0) {
+          const remainRun: FormattedRun = { ...run, text: remainder };
+          currentLine.push(remainRun);
+          currentWidth = measureText(remainRun.font, remainder, remainRun.fontSize);
+          currentHeight = runHeight;
+        }
+      } else {
+        // Can't break at all — place the whole run on the line
+        currentLine.push(run);
+        currentWidth += runWidth;
+        currentHeight = Math.max(currentHeight, runHeight);
+      }
     } else {
-      // Need to break — split the run
+      // Line has room + run doesn't fit — split or wrap
       const remaining = maxWidth - currentWidth;
       const breakIdx = findBreakIndex(run.text, run.font, run.fontSize, remaining);
 
@@ -328,14 +352,8 @@ export function layoutRichText(
   const runs = flattenInlineTokens(text, fonts, fontSize, font, color);
   const lines = wrapLines(runs, maxWidth);
 
-  // Use the font's actual height for the base line height
-  const baseHeight = lineHeightAtSize(fonts.body, fontSize);
-  const lineSpacing = baseHeight * (lineHeightFactor - 1);
-  const lineAdvance = baseHeight + lineSpacing;
-
-  const totalHeight = lines.reduce((sum, l) => {
-    return sum + (l.height > 0 ? l.height + lineSpacing : lineAdvance);
-  }, 0);
+  const lineAdvance = lineHeightAtSize(fonts.body, fontSize) * lineHeightFactor;
+  const totalHeight = lines.length > 0 ? lines.length * lineAdvance : 0;
 
   return { lines, totalHeight };
 }

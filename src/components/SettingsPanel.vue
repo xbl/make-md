@@ -169,8 +169,13 @@
                     class="settings-panel__capture ai-key-input"
                     @input="keyTestResult[provider.id] = null"
                   />
-                  <button class="settings-panel__secondary-action" type="button" @click="updateKey(provider.id)">
-                    Save
+                  <button
+                    class="settings-panel__secondary-action"
+                    type="button"
+                    :disabled="savingKey[provider.id]"
+                    @click="updateKey(provider.id)"
+                  >
+                    {{ savingKey[provider.id] ? "…" : "Save" }}
                   </button>
                   <button
                     class="settings-panel__secondary-action"
@@ -238,11 +243,23 @@ async function loadKeys() {
   }
 }
 
+const savingKey = ref<Record<string, boolean>>({});
+
 async function updateKey(provider: string) {
-  const key = apiKeys.value[provider];
-  if (key) {
+  const key = (apiKeys.value[provider] ?? "").trim();
+  if (!key) {
+    toastError(t("ai.keyEmpty"));
+    return;
+  }
+  savingKey.value[provider] = true;
+  try {
     await saveApiKey(provider, key);
     keyTestResult.value[provider] = null;
+    toastSuccess(t("ai.keySaved"));
+  } catch (e) {
+    toastError(t("ai.keySaveFailed"));
+  } finally {
+    savingKey.value[provider] = false;
   }
 }
 

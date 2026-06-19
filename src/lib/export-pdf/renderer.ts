@@ -73,7 +73,7 @@ function drawRichText(
   font: "body" | "bodyBold" | "mono" = "body",
   color?: RgbColor,
 ): number {
-  const { lines } = layoutRichText(text, fonts, fontSize, maxWidth, lineHeightFactor, font, color);
+  const { lines, totalHeight } = layoutRichText(text, fonts, fontSize, maxWidth, lineHeightFactor, font, color);
   const lineAdvance = measureLineHeight(fonts, fontSize, lineHeightFactor);
   let lineY = y;
 
@@ -82,7 +82,7 @@ function drawRichText(
     lineY -= lineAdvance;
   }
 
-  return lines.length * lineAdvance;
+  return totalHeight;
 }
 
 function measureRichTextHeight(
@@ -362,11 +362,11 @@ function renderTable(
       const cellText = row[ci] ?? "";
       const cellFont = isHeader ? fonts.bodyBold : fonts.body;
       const cellW = colWidths[ci]! - cellPadX * 2;
-      const textBottom = rowY - cellPadY - cellFont.heightAtSize(fontSize) * 0.2;
+      const firstBaseline = rowY - cellPadY - cellFont.heightAtSize(fontSize) * 0.8;
 
       drawRichText(
         engine, fonts, cellText, fontSize,
-        textBottom, Math.max(1, cellW), 1.4,
+        firstBaseline, Math.max(1, cellW), 1.4,
         isHeader ? "bodyBold" : "body",
       );
     }
@@ -485,6 +485,11 @@ export async function renderBlocks(payload: PdfExportPayload, ctx: RenderContext
 
   while (i < blocks.length) {
     const block = blocks[i]!;
+
+    // Yield to the browser every 8 blocks to avoid freezing the UI
+    if (i > 0 && i % 8 === 0) {
+      await new Promise((r) => setTimeout(r, 0));
+    }
 
     // Group consecutive list items
     if (block.type === "listItem") {

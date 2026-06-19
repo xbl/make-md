@@ -56,8 +56,8 @@ export const PAGE_CONFIG: PageConfig = {
   contentHeight: 648,
   contentLeft: 72,
   contentRight: 540,
-  contentTop: 72,
-  contentBottom: 720,
+  contentTop: 720,   // pageHeight - marginTop
+  contentBottom: 72, // marginBottom
   bodyFontSize: 11,
   bodyLineHeight: 19.58, // 11 * 1.78
   codeFontSize: 9,

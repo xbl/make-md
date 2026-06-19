@@ -129,8 +129,8 @@ export function createCodeBlockNodeView(
       }
       return controls.contains(target);
     },
-    ignoreMutation(mutation) {
-      return (
+    ignoreMutation(mutation): boolean {
+      return !!(
         controls.contains(mutation.target) ||
         isOverlayMutationTarget(mutation.target) ||
         isWrapperMutationTarget(mutation.target)
