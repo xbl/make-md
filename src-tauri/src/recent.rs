@@ -1,11 +1,12 @@
 use std::fs;
 use std::path::PathBuf;
 
-use tauri::{path::BaseDirectory, Manager};
+use crate::menu;
+use tauri::{path::BaseDirectory, Manager, Runtime};
 
 const MAX_RECENT: usize = 10;
 
-fn recent_file_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
+fn recent_file_path<R: Runtime>(app: &tauri::AppHandle<R>) -> Result<PathBuf, String> {
     let dir = app
         .path()
         .resolve("recent.json", BaseDirectory::AppLocalData)
@@ -36,7 +37,7 @@ pub fn clear_recent_paths(_recent: Vec<String>) -> Vec<String> {
     Vec::new()
 }
 
-fn save_recent_files(app: &tauri::AppHandle, recent: &[String]) -> Result<(), String> {
+fn save_recent_files<R: Runtime>(app: &tauri::AppHandle<R>, recent: &[String]) -> Result<(), String> {
     fs::write(
         recent_file_path(app)?,
         serde_json::to_string_pretty(recent).map_err(|err| err.to_string())?,
@@ -58,7 +59,7 @@ pub fn filter_existing_paths(paths: Vec<String>) -> (Vec<String>, bool) {
 }
 
 #[tauri::command]
-pub fn load_recent_files(app: tauri::AppHandle) -> Result<Vec<String>, String> {
+pub fn load_recent_files<R: Runtime>(app: tauri::AppHandle<R>) -> Result<Vec<String>, String> {
     let path = recent_file_path(&app)?;
     if !path.exists() {
         return Ok(Vec::new());
@@ -76,25 +77,28 @@ pub fn load_recent_files(app: tauri::AppHandle) -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
-pub fn save_recent_file(app: tauri::AppHandle, path: String) -> Result<Vec<String>, String> {
+pub fn save_recent_file<R: Runtime>(app: tauri::AppHandle<R>, path: String) -> Result<Vec<String>, String> {
     let recent = load_recent_files(app.clone())?;
     let next = add_recent_path(recent, path, MAX_RECENT);
     save_recent_files(&app, &next)?;
+    let _ = menu::sync_menu_after_recent_change(&app);
     Ok(next)
 }
 
 #[tauri::command]
-pub fn remove_recent_file(app: tauri::AppHandle, path: String) -> Result<Vec<String>, String> {
+pub fn remove_recent_file<R: Runtime>(app: tauri::AppHandle<R>, path: String) -> Result<Vec<String>, String> {
     let recent = load_recent_files(app.clone())?;
     let next = remove_recent_path(recent, path);
     save_recent_files(&app, &next)?;
+    let _ = menu::sync_menu_after_recent_change(&app);
     Ok(next)
 }
 
 #[tauri::command]
-pub fn clear_recent_files(app: tauri::AppHandle) -> Result<Vec<String>, String> {
+pub fn clear_recent_files<R: Runtime>(app: tauri::AppHandle<R>) -> Result<Vec<String>, String> {
     let next = clear_recent_paths(load_recent_files(app.clone())?);
     save_recent_files(&app, &next)?;
+    let _ = menu::sync_menu_after_recent_change(&app);
     Ok(next)
 }
 

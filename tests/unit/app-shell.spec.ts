@@ -38,6 +38,10 @@ vi.mock("@tauri-apps/api/window", () => ({
   getCurrentWindow: tauriMocks.getCurrentWindow,
 }));
 
+vi.mock("@tauri-apps/api/event", () => ({
+  listen: vi.fn(async () => () => {}),
+}));
+
 vi.mock("@/lib/menu-bridge", () => ({
   startMenuBridge: vi.fn(async () => () => {}),
 }));

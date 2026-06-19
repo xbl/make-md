@@ -52,9 +52,10 @@ import { useAiStore } from "@/stores/ai";
 import { useShortcutsStore } from "@/stores/shortcuts";
 import { useUiStore } from "@/stores/ui";
 import { useFolderWorkspaceStore } from "@/stores/folder-workspace";
-import { pickFolder } from "@/lib/file-service";
+import { pickFolder, clearRecentFiles } from "@/lib/file-service";
 import { createShortcutDispatcher, type ShortcutDispatcher } from "@/lib/shortcuts/dispatcher";
 import { startMenuBridge } from "@/lib/menu-bridge";
+import { listen } from "@tauri-apps/api/event";
 import { onWorkspaceChanged } from "@/lib/workspace-service";
 import { onFileChanged } from "@/lib/file-watch";
 
@@ -68,6 +69,7 @@ const folderWorkspace = useFolderWorkspaceStore();
 const { t } = useI18n();
 let unlistenClose: (() => void) | null = null;
 let unlistenDragDrop: (() => void) | null = null;
+let unlistenOpenRecent: (() => void) | null = null;
 let stopWorkspaceChangeWatch: (() => void) | null = null;
 let stopFileChangeWatch: (() => void) | null = null;
 const activeSessionId = computed(() => documents.activeSessionId);
@@ -339,8 +341,18 @@ onMounted(async () => {
   }
 
   stopMenuBridge = await startMenuBridge((commandId) => {
+    if (commandId === "recent.clear") {
+      void clearRecentFiles();
+      return;
+    }
     void dispatcher?.run(commandId);
   });
+
+  if (isTauri()) {
+    unlistenOpenRecent = await listen<string>("app://open-recent-file", (event) => {
+      void documents.openFile(event.payload);
+    });
+  }
   stopWorkspaceChangeWatch = await onWorkspaceChanged(async () => {
     await refreshOpenSessionsFromDisk();
   });
@@ -356,6 +368,7 @@ onBeforeUnmount(() => {
   stopFileChangeWatch?.();
   unlistenDragDrop?.();
   unlistenClose?.();
+  unlistenOpenRecent?.();
   void documents.flushAutosave();
 });
 </script>

@@ -1,8 +1,13 @@
 use crate::i18n::{menu_label, DEFAULT_LOCALE};
+use crate::recent;
+use std::sync::Mutex;
 use tauri::menu::{AboutMetadata, Menu, MenuItem, PredefinedMenuItem, Submenu};
-use tauri::{App, AppHandle, Emitter, Runtime};
+use tauri::{App, AppHandle, Emitter, Manager, Runtime};
 
 pub const MENU_EVENT_NAME: &str = "app://menu-command";
+const OPEN_RECENT_EVENT: &str = "app://open-recent-file";
+
+pub struct MenuLocale(pub Mutex<String>);
 
 const COMMANDS: &[(&str, &str, &str, bool, Option<&str>)] = &[
     ("file.new", "menu.file.new", "file", true, Some("CmdOrCtrl+N")),
@@ -53,22 +58,63 @@ const COMMANDS: &[(&str, &str, &str, bool, Option<&str>)] = &[
 pub fn install_menu<R: Runtime>(app: &mut App<R>) -> tauri::Result<()> {
     let menu = build_menu_for_locale(app.handle(), DEFAULT_LOCALE)?;
     app.set_menu(menu)?;
+    app.manage(MenuLocale(Mutex::new(DEFAULT_LOCALE.to_string())));
     Ok(())
+}
+
+fn get_stored_locale<R: Runtime>(app: &AppHandle<R>) -> String {
+    app.try_state::<MenuLocale>()
+        .map(|state| state.0.lock().unwrap().clone())
+        .unwrap_or_else(|| DEFAULT_LOCALE.to_string())
 }
 
 #[tauri::command]
 pub fn sync_menu_locale(app: tauri::AppHandle, locale: String) -> Result<(), String> {
-    let menu = build_menu_for_locale(&app, &locale).map_err(|err| err.to_string())?;
+    if let Some(state) = app.try_state::<MenuLocale>() {
+        *state.0.lock().unwrap() = locale.clone();
+    }
+    let recent_files = recent::load_recent_files(app.clone()).unwrap_or_default();
+    let menu = build_menu_for_locale_with_recent(&app, &locale, &recent_files)
+        .map_err(|err| err.to_string())?;
+    app.set_menu(menu).map_err(|err| err.to_string())?;
+    Ok(())
+}
+
+pub fn sync_menu_after_recent_change<R: Runtime>(app: &AppHandle<R>) -> Result<(), String> {
+    let locale = get_stored_locale(app);
+    let recent_files = recent::load_recent_files(app.clone()).unwrap_or_default();
+    let menu = build_menu_for_locale_with_recent(app, &locale, &recent_files)
+        .map_err(|err| err.to_string())?;
     app.set_menu(menu).map_err(|err| err.to_string())?;
     Ok(())
 }
 
 pub fn handle_menu_event<R: Runtime>(app: &AppHandle<R>, event: tauri::menu::MenuEvent) {
     let command_id = event.id().0.as_str();
+
+    if let Some(path) = command_id.strip_prefix("recent.open.") {
+        let _ = app.emit(OPEN_RECENT_EVENT, path.to_string());
+        return;
+    }
+
+    if command_id == "recent.clear" {
+        let _ = app.emit(MENU_EVENT_NAME, command_id);
+        return;
+    }
+
     let _ = app.emit(MENU_EVENT_NAME, command_id);
 }
 
 fn build_menu_for_locale<R: Runtime>(app: &AppHandle<R>, locale: &str) -> tauri::Result<Menu<R>> {
+    let recent_files = recent::load_recent_files(app.clone()).unwrap_or_default();
+    build_menu_for_locale_with_recent(app, locale, &recent_files)
+}
+
+fn build_menu_for_locale_with_recent<R: Runtime>(
+    app: &AppHandle<R>,
+    locale: &str,
+    recent_files: &[String],
+) -> tauri::Result<Menu<R>> {
     let mut top_level: Vec<Submenu<R>> = Vec::new();
 
     #[cfg(target_os = "macos")]
@@ -82,6 +128,10 @@ fn build_menu_for_locale<R: Runtime>(app: &AppHandle<R>, locale: &str) -> tauri:
         ("view", menu_label(locale, "menu.view")),
         ("export", menu_label(locale, "menu.export")),
     ] {
+        if category == "file" {
+            top_level.push(build_file_submenu(app, label, locale, recent_files)?);
+            continue;
+        }
         if category == "edit" {
             top_level.push(build_edit_submenu(app, label, locale)?);
             continue;
@@ -157,6 +207,75 @@ fn build_command_items<R: Runtime>(
             MenuItem::with_id(app, *id, menu_label(locale, item_key), *enabled, *accelerator)
         })
         .collect()
+}
+
+fn build_file_submenu<R: Runtime>(
+    app: &AppHandle<R>,
+    label: &str,
+    locale: &str,
+    recent_files: &[String],
+) -> tauri::Result<Submenu<R>> {
+    let file_commands = build_command_items(app, "file", locale)?;
+    let recent_submenu = build_recent_submenu(app, locale, recent_files)?;
+    let separator = PredefinedMenuItem::separator(app)?;
+
+    let mut refs: Vec<&dyn tauri::menu::IsMenuItem<R>> = Vec::new();
+    for item in &file_commands {
+        refs.push(item as &dyn tauri::menu::IsMenuItem<R>);
+    }
+    refs.push(&separator as &dyn tauri::menu::IsMenuItem<R>);
+    refs.push(&recent_submenu as &dyn tauri::menu::IsMenuItem<R>);
+
+    Submenu::with_items(app, label, true, &refs)
+}
+
+fn build_recent_submenu<R: Runtime>(
+    app: &AppHandle<R>,
+    locale: &str,
+    recent_files: &[String],
+) -> tauri::Result<Submenu<R>> {
+    let open_recent_label = menu_label(locale, "menu.file.openRecent");
+
+    if recent_files.is_empty() {
+        let no_files_label = menu_label(locale, "menu.file.noRecentFiles");
+        let no_files_item =
+            MenuItem::with_id(app, "recent.empty", no_files_label, false, None::<&str>)?;
+        return Submenu::with_items(
+            app,
+            open_recent_label,
+            true,
+            &[&no_files_item as &dyn tauri::menu::IsMenuItem<R>],
+        );
+    }
+
+    let mut items: Vec<MenuItem<R>> = Vec::new();
+    for path in recent_files {
+        let basename = std::path::Path::new(path)
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_else(|| path.clone());
+        let command_id = format!("recent.open.{}", path);
+        items.push(MenuItem::with_id(
+            app,
+            command_id,
+            basename,
+            true,
+            None::<&str>,
+        )?);
+    }
+
+    let separator = PredefinedMenuItem::separator(app)?;
+    let clear_label = menu_label(locale, "menu.file.clearRecent");
+    let clear_item = MenuItem::with_id(app, "recent.clear", clear_label, true, None::<&str>)?;
+
+    let mut refs: Vec<&dyn tauri::menu::IsMenuItem<R>> = Vec::new();
+    for item in &items {
+        refs.push(item as &dyn tauri::menu::IsMenuItem<R>);
+    }
+    refs.push(&separator as &dyn tauri::menu::IsMenuItem<R>);
+    refs.push(&clear_item as &dyn tauri::menu::IsMenuItem<R>);
+
+    Submenu::with_items(app, open_recent_label, true, &refs)
 }
 
 fn build_edit_submenu<R: Runtime>(

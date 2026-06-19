@@ -113,6 +113,12 @@ pub fn menu_label<'a>(locale: &str, key: &'a str) -> &'a str {
         ("en", "menu.export.html") => "Export HTML",
         ("en", "menu.export.pdf") => "Export PDF",
         ("en", "menu.export.word") => "Export Word",
+        ("zh-CN", "menu.file.openRecent") => "打开最近文件",
+        ("zh-CN", "menu.file.clearRecent") => "清空最近文件",
+        ("zh-CN", "menu.file.noRecentFiles") => "没有最近文件",
+        ("en", "menu.file.openRecent") => "Open Recent",
+        ("en", "menu.file.clearRecent") => "Clear Recently Opened",
+        ("en", "menu.file.noRecentFiles") => "No Recent Files",
         _ => key,
     }
 }
