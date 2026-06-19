@@ -50,8 +50,9 @@ function drawLayoutLine(
   engine: PageEngine,
   line: LayoutLine,
   y: number,
+  xOffset = 0,
 ): void {
-  let x = engine.contentLeft;
+  let x = engine.contentLeft + xOffset;
   for (const run of line.runs) {
     const runWidth = run.font.widthOfTextAtSize(run.text, run.fontSize);
     engine.drawText(run.text, x, y, run.font, run.fontSize, run.color);
@@ -72,13 +73,14 @@ function drawRichText(
   lineHeightFactor: number,
   font: "body" | "bodyBold" | "mono" = "body",
   color?: RgbColor,
+  xOffset = 0,
 ): number {
   const { lines, totalHeight } = layoutRichText(text, fonts, fontSize, maxWidth, lineHeightFactor, font, color);
   const lineAdvance = measureLineHeight(fonts, fontSize, lineHeightFactor);
   let lineY = y;
 
   for (const line of lines) {
-    drawLayoutLine(engine, line, lineY);
+    drawLayoutLine(engine, line, lineY, xOffset);
     lineY -= lineAdvance;
   }
 
@@ -363,11 +365,13 @@ function renderTable(
       const cellFont = isHeader ? fonts.bodyBold : fonts.body;
       const cellW = colWidths[ci]! - cellPadX * 2;
       const firstBaseline = rowY - cellPadY - cellFont.heightAtSize(fontSize) * 0.8;
+      const cellX = (colX[ci]! - tableLeft) + cellPadX;
 
       drawRichText(
         engine, fonts, cellText, fontSize,
         firstBaseline, Math.max(1, cellW), 1.4,
         isHeader ? "bodyBold" : "body",
+        undefined, cellX,
       );
     }
 
@@ -385,7 +389,8 @@ function renderBlockquote(
   const { engine, fonts, config } = ctx;
   const indent = 12;
   const borderWidth = 3;
-  const textWidth = config.contentWidth - borderWidth - indent;
+  const textIndent = borderWidth + indent;
+  const textWidth = config.contentWidth - textIndent;
   const textHeight = measureRichTextHeight(fonts, block.text, config.bodyFontSize, textWidth);
 
   engine.ensureSpace(16 + textHeight + 14);
@@ -394,7 +399,7 @@ function renderBlockquote(
   const topY = engine.currentY;
   const consumed = drawRichText(
     engine, fonts, block.text, config.bodyFontSize,
-    topY, textWidth, 1.78, "body", COLORS.quoteText,
+    topY, textWidth, 1.78, "body", COLORS.quoteText, textIndent,
   );
   const bottomY = topY - consumed;
 
@@ -466,8 +471,8 @@ function renderListGroup(
       fontSize,
     );
 
-    // Draw item text
-    drawRichText(engine, fonts, item.text, fontSize, engine.currentY, Math.max(1, textWidth), 1.78);
+    // Draw item text (indented after bullet/number)
+    drawRichText(engine, fonts, item.text, fontSize, engine.currentY, Math.max(1, textWidth), 1.78, "body", undefined, levelIndent + bulletWidth);
 
     engine.advanceY(itemH + itemSpacing);
   }

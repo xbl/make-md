@@ -50,7 +50,7 @@
 | --- | --- | --- |
 | 查找栏 | `complete` | 已有文内查找 UI 和状态插件。 |
 | 替换栏 | `complete` | 已支持替换一个与全部替换。 |
-| 查找下一个 / 上一个命令 | `complete` | 已通过编辑器命令事件驱动前后跳转。 |
+| 查找下一个 / 上一个命令 | `complete` | 已通过编辑器命令事件驱动前后跳转。**已知问题:** 搜索框内回车偶发不跳转到匹配位置，匹配计数 "0/N" 不正确；已移除冗余 state dispatch，增加 editor 未挂载守卫。 |
 | 区分大小写搜索 | `complete` | 查找替换 UI 已支持。 |
 | 整词匹配搜索 | `complete` | 查找替换 UI 已支持。 |
 
@@ -121,7 +121,7 @@
 | 功能 | 状态 | 说明 |
 | --- | --- | --- |
 | 导出 HTML | `complete` | 已支持独立 HTML 导出。 |
-| 导出 PDF | `complete` | 已支持 PDF 导出，README 中注明 macOS 浏览器依赖。 |
+| 导出 PDF | `complete` | 已支持 PDF 导出，README 中注明 macOS 浏览器依赖。已通过 Web Worker 将 PDF 渲染与序列化移到主线程外，避免导出大文档时冻结 UI；已修复表格、项目符号、序号列表和引用块的缩进渲染错位问题。 |
 | 导出 Word | `complete` | 已支持导出 `.docx`；Mermaid 默认导出为 PNG 图片，可在导出保存面板中勾选是否额外导出 Mermaid 代码；Markdown 图片会解析为嵌入图片导出，表格会导出为带边框的 Word 表格，而不是保留 Markdown 文本；并已补齐 `word/numbering.xml` 的 content type 声明，避免 Word 打开时提示修复文档。本地 PNG/JPG/GIF/WebP 图片现已优先走文件系统字节读取并直接嵌入，不再依赖浏览器 `fetch` 或图片解码成功后才导出。 |
 | 带语法高亮的 HTML 导出 | `partial` | 设计期望与编辑器高亮保持一致，当前仍需持续核对实现对齐情况。 |
 | 导出图片 (PNG/JPEG) | `not_started` | 将当前文档渲染导出为图片。 |
@@ -158,8 +158,8 @@
 
 | 功能 | 状态 | 说明 |
 | --- | --- | --- |
-| AI 配置与多 Provider 接入 | `partial` | 已有 AI 设置面板、Provider/Model 基础状态，以及 Rust 侧 provider、keychain 和流式命令壳子；现已支持按 provider 测试 API Key、通过后保存到系统 keychain，并在启动时回填已配置状态。 |
-| 选区 AI 改写 | `partial` | 已有 preset、context、orchestrator、toolbar 和 preview state 基础结构；AI 工具条现仅在富文本 Markdown 编辑器中选中文本且当前 provider 已配置有效 Key 时浮动出现，实际流式替换与接受/拒绝仍需继续打磨。 |
+| AI 配置与多 Provider 接入 | `partial` | 已有 AI 设置面板、Provider/Model 基础状态。已支持：模型选择（下拉+手动输入）、API Key 测试/保存/反馈（含 toast 提示）、文件持久化回退（keychain + JSON config）、全部 provider 的 key 检测（而非仅 active provider）。 |
+| 选区 AI 改写 | `partial` | 已有 preset、context、toolbar、preview state，以及 `applySelectionRewrite` 完整流程；已修复 AI 返回 Markdown 被当作纯文本插入导致格式丢失的问题（改为通过 `parseMarkdown` → `replaceSelection` 插入，保留粗体/斜体/标题/列表等格式）。`keyConfigured` 现检查所有 provider 而不仅是当前激活 provider，设置面板关闭后会自动重检。 |
 | 全文 AI 改写 | `partial` | 已有全文模式状态与命令入口，截断逻辑已实现；完整预览和应用流程仍待补齐。 |
 | AGENTS.md / Skill 自动注入 | `partial` | 已有 AGENTS merge、skill 解析与匹配基础能力，并已接入 orchestrator 的 system prompt 组装。 |
 

@@ -1,13 +1,10 @@
-import { PDFDocument } from "pdf-lib";
 import mermaid from "mermaid";
 import { marked } from "marked";
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { pickSavePdfFile, readBinaryFile, writeBinaryFile } from "@/lib/file-service";
 import { resolveMarkdownImageDisplaySrc } from "@/lib/markdown-image-src";
 import { resolveMarkdownImagePath } from "@/lib/markdown-image-src";
-import { loadPdfFonts } from "./font-loader";
-import { PageEngine } from "./page-engine";
-import { renderBlocks } from "./renderer";
+import { readFirstAvailable, BODY_CANDIDATES, MONO_CANDIDATES } from "./font-loader";
 import type { PfdBlock, PdfExportPayload } from "./renderer";
 import { PAGE_CONFIG } from "./types";
 
@@ -274,22 +271,59 @@ export async function exportMarkdownToPdf(
     throw new Error("PDF export requires the desktop app");
   }
 
-  // 1. Parse markdown to blocks (with image/mermaid resolution)
+  // 1. Parse markdown to blocks (with image/mermaid resolution) — main thread only
   const payload = await markdownToPdfPayload(markdown, { title, docPath });
 
-  // 2. Create PDF and embed fonts
-  const pdfDoc = await PDFDocument.create();
-  const fonts = await loadPdfFonts(pdfDoc);
+  // 2. Read font bytes on main thread (worker can't access filesystem)
+  const [bodyFontBytes, monoFontBytes] = await Promise.all([
+    readFirstAvailable(BODY_CANDIDATES),
+    readFirstAvailable(MONO_CANDIDATES),
+  ]);
 
-  // 3. Render blocks into pages
-  const engine = new PageEngine(pdfDoc, fonts, PAGE_CONFIG);
-  await renderBlocks(payload, { engine, fonts, config: PAGE_CONFIG });
+  // 3. Render PDF off the main thread via Web Worker
+  const pdfBytes = await new Promise<Uint8Array>((resolve, reject) => {
+    const worker = new Worker(
+      new URL("./render-worker.ts", import.meta.url),
+      { type: "module" },
+    );
 
-  // 4. Yield before CPU-intensive save
-  await new Promise((r) => setTimeout(r, 0));
+    worker.onmessage = (e: MessageEvent) => {
+      worker.terminate();
+      if (e.data.error) {
+        reject(new Error(e.data.error));
+      } else {
+        resolve(new Uint8Array(e.data.pdfBytes));
+      }
+    };
 
-  // 5. Serialize and write
-  const pdfBytes = await pdfDoc.save();
+    worker.onerror = (err: ErrorEvent) => {
+      worker.terminate();
+      reject(new Error(err.message));
+    };
+
+    // Transfer font ArrayBuffers to avoid copying large font files
+    const bodyBuf = bodyFontBytes.buffer.slice(
+      bodyFontBytes.byteOffset,
+      bodyFontBytes.byteOffset + bodyFontBytes.byteLength,
+    );
+    const monoBuf = monoFontBytes.buffer.slice(
+      monoFontBytes.byteOffset,
+      monoFontBytes.byteOffset + monoFontBytes.byteLength,
+    );
+
+    worker.postMessage(
+      {
+        blocks: payload.blocks,
+        title: payload.title,
+        bodyFontBytes: bodyBuf,
+        monoFontBytes: monoBuf,
+        config: PAGE_CONFIG,
+      },
+      [bodyBuf, monoBuf],
+    );
+  });
+
+  // 4. Write PDF bytes to file
   await writeBinaryFile(path, Array.from(pdfBytes));
 
   return path;
