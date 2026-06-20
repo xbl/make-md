@@ -117,18 +117,12 @@ function collectMatches() {
     if (!node.isTextblock) {
       return;
     }
-    node.forEach((child, offset) => {
-      if (!child.isText || !child.text) {
-        return;
+    for (const match of findMatches(node.textContent, query.value, options())) {
+      const range = resolveTextRange(node, pos, match, query.value.length);
+      if (range) {
+        matches.push(range);
       }
-      for (const match of findMatches(child.text, query.value, options())) {
-        const from = pos + offset + 1 + match;
-        matches.push({
-          from,
-          to: from + query.value.length,
-        });
-      }
-    });
+    }
   });
 
   return matches;
@@ -372,4 +366,41 @@ watch(
     }
   },
 );
+
+function resolveTextRange(
+  node: import("prosemirror-model").Node,
+  pos: number,
+  matchIndex: number,
+  matchLength: number,
+): { from: number; to: number } | null {
+  let startOffset: number | null = null;
+  let endOffset: number | null = null;
+  let cursor = 0;
+
+  node.forEach((child, offset) => {
+    if (!child.isText || !child.text) {
+      return;
+    }
+    const nextCursor = cursor + child.text.length;
+    if (startOffset === null && matchIndex >= cursor && matchIndex < nextCursor) {
+      startOffset = offset + 1 + (matchIndex - cursor);
+    }
+    if (endOffset === null && matchIndex + matchLength > cursor && matchIndex + matchLength <= nextCursor) {
+      endOffset = offset + 1 + (matchIndex + matchLength - cursor);
+    }
+    cursor = nextCursor;
+  });
+
+  if (startOffset === null) {
+    return null;
+  }
+  if (endOffset === null) {
+    endOffset = startOffset + matchLength;
+  }
+
+  return {
+    from: pos + startOffset,
+    to: pos + endOffset,
+  };
+}
 </script>

@@ -45,24 +45,21 @@ export function createFindReplacePlugin() {
           if (!node.isTextblock) {
             return;
           }
-          node.forEach((child, offset) => {
-            if (!child.isText || !child.text) {
-              return;
+          const matches = findMatches(node.textContent, pluginState.query, options);
+          for (const match of matches) {
+            const range = resolveTextRange(node, pos, match, pluginState.query.length);
+            if (!range) {
+              continue;
             }
-            const matches = findMatches(child.text, pluginState.query, options);
-            for (const match of matches) {
-              const from = pos + offset + 1 + match;
-              const to = from + pluginState.query.length;
-              const isActive =
-                from === state.selection.from
-                && to === state.selection.to;
-              decorations.push(
-                Decoration.inline(from, to, {
-                  class: isActive ? "find-match find-match--active" : "find-match",
-                }),
-              );
-            }
-          });
+            const isActive =
+              range.from === state.selection.from
+              && range.to === state.selection.to;
+            decorations.push(
+              Decoration.inline(range.from, range.to, {
+                class: isActive ? "find-match find-match--active" : "find-match",
+              }),
+            );
+          }
         });
 
         return DecorationSet.create(state.doc, decorations);
@@ -112,23 +109,19 @@ export function replaceAllInDocument(
     if (!node.isTextblock) {
       return;
     }
-    node.forEach((child, offset) => {
-      if (!child.isText || !child.text) {
-        return;
+    const matches = findMatches(node.textContent, query, options);
+    for (let i = matches.length - 1; i >= 0; i -= 1) {
+      const match = matches[i]!;
+      const range = resolveTextRange(node, pos, match, query.length);
+      if (!range) {
+        continue;
       }
-      const nextText = child.text;
-      const matches = findMatches(nextText, query, options);
-      for (let i = matches.length - 1; i >= 0; i -= 1) {
-        const match = matches[i]!;
-        const from = pos + offset + 1 + match;
-        const to = from + query.length;
-        ranges.push({
-          from,
-          to,
-          text: replacement,
-        });
-      }
-    });
+      ranges.push({
+        from: range.from,
+        to: range.to,
+        text: replacement,
+      });
+    }
   });
 
   ranges.sort((a, b) => b.from - a.from);
@@ -152,21 +145,55 @@ export function findNextMatch(
     if (result || !node.isTextblock) {
       return;
     }
-    node.forEach((child, offset) => {
-      if (result || !child.isText || !child.text) {
+    const matches = findMatches(node.textContent, query, options);
+    for (const match of matches) {
+      const range = resolveTextRange(node, pos, match, query.length);
+      if (!range) {
+        continue;
+      }
+      if (range.from >= from) {
+        result = range;
         return;
       }
-      const matches = findMatches(child.text, query, options);
-      for (const match of matches) {
-        const start = pos + offset + 1 + match;
-        const end = start + query.length;
-        if (start >= from) {
-          result = { from: start, to: end };
-          return;
-        }
-      }
-    });
+    }
   });
 
   return result;
+}
+
+function resolveTextRange(
+  node: import("prosemirror-model").Node,
+  pos: number,
+  matchIndex: number,
+  matchLength: number,
+): { from: number; to: number } | null {
+  let startOffset: number | null = null;
+  let endOffset: number | null = null;
+  let cursor = 0;
+
+  node.forEach((child, offset) => {
+    if (!child.isText || !child.text) {
+      return;
+    }
+    const nextCursor = cursor + child.text.length;
+    if (startOffset === null && matchIndex >= cursor && matchIndex < nextCursor) {
+      startOffset = offset + 1 + (matchIndex - cursor);
+    }
+    if (endOffset === null && matchIndex + matchLength > cursor && matchIndex + matchLength <= nextCursor) {
+      endOffset = offset + 1 + (matchIndex + matchLength - cursor);
+    }
+    cursor = nextCursor;
+  });
+
+  if (startOffset === null) {
+    return null;
+  }
+  if (endOffset === null) {
+    endOffset = startOffset + matchLength;
+  }
+
+  return {
+    from: pos + startOffset,
+    to: pos + endOffset,
+  };
 }
