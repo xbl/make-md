@@ -91,6 +91,18 @@ describe("AppShell", () => {
     expect(wrapper.find("[data-testid='status-bar']").exists()).toBe(true);
   });
 
+  it("hides sidebar by default (clean editor)", () => {
+    const wrapper = mount(AppShell, {
+      global: {
+        plugins: [createPinia()],
+      },
+    });
+
+    // Sidebar element is in DOM (uses v-show, not v-if) but the collapsed class is present
+    expect(wrapper.find("[data-testid='sidebar']").exists()).toBe(true);
+    expect(wrapper.find(".app-shell--sidebar-collapsed").exists()).toBe(true);
+  });
+
   it("initializes locale preferences on mount", async () => {
     const wrapper = mount(AppShell, {
       global: {
