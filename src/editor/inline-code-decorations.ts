@@ -1,4 +1,4 @@
-import { Plugin } from "prosemirror-state";
+import { Plugin, type EditorState } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import type { Node as PMNode } from "prosemirror-model";
 
@@ -110,8 +110,19 @@ function classForKind(kind: InlineCodeTokenKind): string {
   }
 }
 
-function buildInlineCodeDecorations(doc: PMNode): DecorationSet {
+function cursorInCodeMark(state: EditorState): boolean {
+  const { $from, empty } = state.selection;
+  if (!empty) return false;
+  return $from.marks().some((m) => m.type.name === "code");
+}
+
+function buildInlineCodeDecorations(state: EditorState): DecorationSet {
+  if (cursorInCodeMark(state)) {
+    return DecorationSet.empty;
+  }
+
   const decorations: Decoration[] = [];
+  const { doc } = state;
 
   doc.descendants((node, pos) => {
     if (!node.isText) {
@@ -141,7 +152,7 @@ export function createInlineCodeDecorationsPlugin() {
   return new Plugin({
     props: {
       decorations(state) {
-        return buildInlineCodeDecorations(state.doc);
+        return buildInlineCodeDecorations(state);
       },
     },
   });
