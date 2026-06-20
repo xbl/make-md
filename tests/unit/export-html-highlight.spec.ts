@@ -32,4 +32,13 @@ describe("markdownToHtml highlight", () => {
     expect(html).toContain('class="mermaid"');
     expect(html).not.toContain('class="hljs language-mermaid"');
   });
+
+  it("does not leak renderer state between consecutive exports", () => {
+    const first = markdownToHtml("```mermaid\ngraph TD\n```", "First");
+    const second = markdownToHtml("```js\nconst x = 1\n```", "Second");
+
+    expect(first).toContain('class="mermaid"');
+    expect(second).toContain("language-javascript");
+    expect(second).not.toContain("mermaid.esm.min.mjs");
+  });
 });

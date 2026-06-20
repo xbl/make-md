@@ -1,4 +1,4 @@
-import { marked } from "marked";
+import { Marked } from "marked";
 import highlightStyles from "highlight.js/styles/github.min.css?inline";
 import {
   highlightCode,
@@ -27,8 +27,9 @@ function encodeMarkdownImageUrls(markdown: string) {
 export function markdownToHtml(markdown: string, title = "Document", docPath?: string): string {
   let hasMermaid = false;
   const normalizedMarkdown = encodeMarkdownImageUrls(markdown);
+  const markedInstance = new Marked();
 
-  marked.use({
+  markedInstance.use({
     renderer: {
       code({ text, lang }) {
         if (lang && isMermaidLanguage(lang)) {
@@ -49,7 +50,7 @@ export function markdownToHtml(markdown: string, title = "Document", docPath?: s
     },
   });
 
-  const body = marked.parse(normalizedMarkdown, { async: false }) as string;
+  const body = markedInstance.parse(normalizedMarkdown, { async: false }) as string;
 
   const mermaidScript = hasMermaid
     ? `<script type="module">
