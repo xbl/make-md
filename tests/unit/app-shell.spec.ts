@@ -11,6 +11,7 @@ import { usePreferencesStore } from "../../src/stores/preferences";
 const tauriMocks = vi.hoisted(() => {
   const onCloseRequested = vi.fn(async () => () => {});
   const onDragDropEvent = vi.fn(async () => () => {});
+  const destroy = vi.fn(async () => {});
   const invoke = vi.fn(async (command: string) => {
     if (command === "load_recent_files") {
       return [];
@@ -22,10 +23,12 @@ const tauriMocks = vi.hoisted(() => {
     getCurrentWindow: vi.fn(() => ({
       onCloseRequested,
       onDragDropEvent,
+      destroy,
     })),
     invoke,
     onCloseRequested,
     onDragDropEvent,
+    destroy,
   };
 });
 
@@ -67,6 +70,12 @@ vi.mock("@/lib/system-locale", () => ({
 describe("AppShell", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    tauriMocks.getCurrentWindow.mockClear();
+    tauriMocks.isTauri.mockClear();
+    tauriMocks.invoke.mockClear();
+    tauriMocks.onCloseRequested.mockClear();
+    tauriMocks.onDragDropEvent.mockClear();
+    tauriMocks.destroy.mockClear();
     tauriMocks.isTauri.mockReturnValue(false);
     tauriMocks.invoke.mockImplementation(async (command: string) => {
       if (command === "load_recent_files") {
@@ -74,6 +83,7 @@ describe("AppShell", () => {
       }
       return undefined;
     });
+    tauriMocks.destroy.mockImplementation(async () => {});
     tauriMocks.onCloseRequested.mockImplementation(async () => () => {});
     tauriMocks.onDragDropEvent.mockImplementation(async () => () => {});
     document.body.innerHTML = "";
@@ -189,6 +199,66 @@ describe("AppShell", () => {
     await nextTick();
 
     expect(event.defaultPrevented).toBe(false);
+  });
+
+  it("lets the native window close continue when confirmBeforeQuit allows it", async () => {
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    tauriMocks.isTauri.mockReturnValue(true);
+
+    const documents = useDocumentsStore();
+    const confirmBeforeQuit = vi.spyOn(documents, "confirmBeforeQuit").mockResolvedValue(true);
+
+    mount(AppShell, {
+      attachTo: document.body,
+      global: {
+        plugins: [pinia],
+      },
+    });
+    await nextTick();
+    await Promise.resolve();
+
+    expect(tauriMocks.onCloseRequested).toHaveBeenCalledTimes(1);
+    const handler = tauriMocks.onCloseRequested.mock.calls[0]?.[0] as
+      | ((event: { preventDefault: () => void }) => Promise<void>)
+      | undefined;
+    const preventDefault = vi.fn();
+
+    await handler?.({ preventDefault });
+
+    expect(confirmBeforeQuit).toHaveBeenCalledTimes(1);
+    expect(preventDefault).not.toHaveBeenCalled();
+    expect(tauriMocks.destroy).not.toHaveBeenCalled();
+  });
+
+  it("prevents the native window close when confirmBeforeQuit cancels it", async () => {
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    tauriMocks.isTauri.mockReturnValue(true);
+
+    const documents = useDocumentsStore();
+    const confirmBeforeQuit = vi.spyOn(documents, "confirmBeforeQuit").mockResolvedValue(false);
+
+    mount(AppShell, {
+      attachTo: document.body,
+      global: {
+        plugins: [pinia],
+      },
+    });
+    await nextTick();
+    await Promise.resolve();
+
+    expect(tauriMocks.onCloseRequested).toHaveBeenCalledTimes(1);
+    const handler = tauriMocks.onCloseRequested.mock.calls[0]?.[0] as
+      | ((event: { preventDefault: () => void }) => Promise<void>)
+      | undefined;
+    const preventDefault = vi.fn();
+
+    await handler?.({ preventDefault });
+
+    expect(confirmBeforeQuit).toHaveBeenCalledTimes(1);
+    expect(preventDefault).toHaveBeenCalledTimes(1);
+    expect(tauriMocks.destroy).not.toHaveBeenCalled();
   });
 
   it("toggles source mode when the view.source command is dispatched", async () => {

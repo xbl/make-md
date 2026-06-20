@@ -333,11 +333,10 @@ onMounted(async () => {
         const ok = await documents.confirmBeforeQuit();
         if (!ok) {
           event.preventDefault();
-        } else {
-          await appWindow.destroy();
         }
       } catch (err) {
-        console.error("close handler failed, destroying window:", err);
+        console.error("close handler failed, preventing window close:", err);
+        event.preventDefault();
       }
     });
   }
