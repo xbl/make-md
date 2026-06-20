@@ -11,7 +11,7 @@
       @dragleave="onDragLeave"
       @drop.prevent="onDrop"
     >
-      <span class="file-tree__chevron" :class="{ 'file-tree__chevron--open': expanded }">›</span>
+      <FileIcon kind="folder" :open="expanded" />
       <span class="file-tree__label">{{ node.name }}</span>
     </button>
     <button
@@ -25,6 +25,7 @@
       @contextmenu.prevent="openMenu($event, 'file')"
       @dragstart="onDragStart"
     >
+      <FileIcon kind="file" :ext="fileExt" />
       <span class="file-tree__label">{{ node.name }}</span>
     </button>
 
@@ -52,6 +53,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import ContextMenu from "@/components/ContextMenu.vue";
+import FileIcon from "@/components/FileIcon.vue";
 import {
   createContextMenuController,
   type ContextMenuActionItem,
@@ -83,6 +85,14 @@ const documents = useDocumentsStore();
 const menu = createContextMenuController();
 
 const expanded = computed(() => folderWorkspace.isExpanded(props.node.path));
+
+const fileExt = computed(() => {
+  if (props.node.kind !== "file") return undefined;
+  const name = props.node.name;
+  const dot = name.lastIndexOf(".");
+  if (dot === -1 || dot === name.length - 1) return undefined;
+  return name.slice(dot + 1).toLowerCase();
+});
 const menuItems = computed<ContextMenuItem[]>(() =>
   props.node.kind === "folder"
     ? [

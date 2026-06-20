@@ -651,16 +651,10 @@ button {
   margin: 0;
 }
 
-.file-tree__chevron {
-  display: inline-block;
-  width: 10px;
-  font-size: 10px;
-  color: var(--text-faint);
-  transition: transform 0.15s ease;
-}
-
-.file-tree__chevron--open {
-  transform: rotate(90deg);
+.file-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
 }
 
 .file-tree__label {
