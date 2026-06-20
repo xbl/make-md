@@ -329,13 +329,15 @@ onMounted(async () => {
     });
 
     unlistenClose = await appWindow.onCloseRequested(async (event) => {
+      event.preventDefault();
       try {
         const ok = await documents.confirmBeforeQuit();
-        if (!ok) {
-          event.preventDefault();
+        if (ok) {
+          await appWindow.destroy();
         }
       } catch (err) {
-        console.error("close handler failed, allowing window to close:", err);
+        console.error("close handler failed, destroying window:", err);
+        await appWindow.destroy();
       }
     });
   }
