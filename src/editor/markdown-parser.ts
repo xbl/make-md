@@ -102,14 +102,23 @@ export function parseMarkdown(source: string, docPath?: string): PMNode {
   const lines = source.split(/\r?\n/);
   const blocks: PMNode[] = [];
   let index = 0;
+  let pendingBlankLines = 0;
 
   while (index < lines.length) {
     const line = lines[index];
 
     if (!line.trim()) {
+      pendingBlankLines += 1;
       index += 1;
       continue;
     }
+
+    if (pendingBlankLines > 1 && blocks.length > 0) {
+      for (let count = 2; count < pendingBlankLines; count += 1) {
+        blocks.push(paragraphFromMarkdown(""));
+      }
+    }
+    pendingBlankLines = 0;
 
     const headingMatch = line.match(/^(#{1,6})\s+(.*)$/);
     if (headingMatch) {

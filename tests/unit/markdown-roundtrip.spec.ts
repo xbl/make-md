@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import { parseMarkdown } from "../../src/editor/markdown-parser";
 import { serializeMarkdown } from "../../src/editor/markdown-serializer";
 import { markdownToHtml } from "../../src/lib/export-html";
+import { markdownSchema } from "../../src/editor/schema";
 
 describe("markdown round trip", () => {
   it("preserves headings, lists, and code blocks", () => {
@@ -56,6 +57,29 @@ describe("markdown round trip", () => {
     const output = serializeMarkdown(parseMarkdown(source));
 
     expect(output).toContain("alpha<br>beta");
+  });
+
+  it("preserves a single blank paragraph between blocks", () => {
+    const source = "alpha\n\nbeta";
+    const output = serializeMarkdown(parseMarkdown(source));
+
+    expect(output).toBe(source);
+  });
+
+  it("round-trips an empty paragraph created in the editor", () => {
+    const doc = markdownSchema.node("doc", null, [
+      markdownSchema.node("paragraph", null, [markdownSchema.text("alpha")]),
+      markdownSchema.node("paragraph"),
+      markdownSchema.node("paragraph", null, [markdownSchema.text("beta")]),
+    ]);
+
+    const output = serializeMarkdown(doc);
+    const reparsed = parseMarkdown(output);
+
+    expect(output).toBe("alpha\n\n\n\nbeta");
+    expect(reparsed.childCount).toBe(3);
+    expect(reparsed.child(1)?.type.name).toBe("paragraph");
+    expect(reparsed.child(1)?.textContent).toBe("");
   });
 
   it("resolves markdown image display paths with spaces and chinese characters", () => {

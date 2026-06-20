@@ -146,4 +146,19 @@ describe("documents handleExternalFileChange", () => {
     store.createNewDocument();
     expect(fileWatch.watchFile).not.toHaveBeenCalled();
   });
+
+  it("preserves blank paragraphs when a new untitled document is first saved", async () => {
+    const fileService = await import("@/lib/file-service");
+    const store = useDocumentsStore();
+
+    const session = store.createNewDocument();
+    session.updateContent("alpha\n\n\n\nbeta");
+
+    vi.mocked(fileService.pickSaveMarkdownFile).mockResolvedValueOnce("/tmp/new-note.md");
+    await store.saveAsDialog();
+
+    expect(fileService.writeMarkdownFile).toHaveBeenCalledWith("/tmp/new-note.md", "alpha\n\n\n\nbeta");
+    expect(store.activeSession?.content).toBe("alpha\n\n\n\nbeta");
+    expect(store.activeSession?.path).toBe("/tmp/new-note.md");
+  });
 });
