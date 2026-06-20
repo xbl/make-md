@@ -6,6 +6,7 @@ describe("resolveHighlightLanguage", () => {
     expect(resolveHighlightLanguage("ts")).toBe("typescript");
     expect(resolveHighlightLanguage("js")).toBe("javascript");
     expect(resolveHighlightLanguage("py")).toBe("python");
+    expect(resolveHighlightLanguage("yml")).toBe("yaml");
   });
 
   it("falls back to plaintext for unknown", () => {

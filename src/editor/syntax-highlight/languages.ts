@@ -8,6 +8,7 @@ import json from "highlight.js/lib/languages/json";
 import xml from "highlight.js/lib/languages/xml";
 import css from "highlight.js/lib/languages/css";
 import markdown from "highlight.js/lib/languages/markdown";
+import yaml from "highlight.js/lib/languages/yaml";
 
 const ALIASES: Record<string, string> = {
   js: "javascript",
@@ -34,7 +35,7 @@ export function ensureHighlightLanguagesRegistered() {
     return;
   }
 
-  for (const lang of [javascript, typescript, python, rust, bash, json, xml, css, markdown]) {
+  for (const lang of [javascript, typescript, python, rust, bash, json, xml, css, markdown, yaml]) {
     hljs.registerLanguage(lang.name, lang);
   }
 

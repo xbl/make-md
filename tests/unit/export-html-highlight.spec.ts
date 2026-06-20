@@ -9,6 +9,12 @@ describe("markdownToHtml highlight", () => {
     expect(html).toContain("<style>");
   });
 
+  it("highlights yaml fences with the registered yaml language", () => {
+    const html = markdownToHtml("```yml\nname: demo\n```", "Test");
+    expect(html).toContain("language-yaml");
+    expect(html).toContain("hljs-attr");
+  });
+
   it("leaves mermaid as pre.mermaid", () => {
     const html = markdownToHtml("```mermaid\ngraph TD\n```", "Test");
     expect(html).toContain('class="mermaid"');
