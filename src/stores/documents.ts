@@ -345,7 +345,7 @@ export const useDocumentsStore = defineStore("documents", {
       }
 
       const title = session.path ? session.path.split("/").pop() ?? "Document" : "Untitled";
-      const html = markdownToHtml(session.content, title);
+      const html = markdownToHtml(session.content, title, session.path || undefined);
       const defaultPath = session.path ? session.path.replace(/\.md$/i, ".html") : "untitled.html";
       const path = await pickSaveHtmlFile(defaultPath);
       if (!path) {

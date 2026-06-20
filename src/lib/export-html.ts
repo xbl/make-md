@@ -5,6 +5,7 @@ import {
   isMermaidLanguage,
   resolveHighlightLanguage,
 } from "@/editor/syntax-highlight/languages";
+import { resolveMarkdownImageDisplaySrc } from "@/lib/markdown-image-src";
 
 function escapeHtml(value: string) {
   return value
@@ -14,8 +15,18 @@ function escapeHtml(value: string) {
     .replace(/"/g, "&quot;");
 }
 
-export function markdownToHtml(markdown: string, title = "Document"): string {
+function encodeMarkdownImageUrls(markdown: string) {
+  return markdown.replace(/!\[([^\]]*)\]\(([^)\s]+(?:\s[^)\s]+)*)(?:\s+"([^"]*)")?\)/g, (_match, alt, src, title) => {
+    const encodedSrc = encodeURI(String(src)).replace(/#/g, "%23");
+    return title
+      ? `![${alt}](${encodedSrc} "${title}")`
+      : `![${alt}](${encodedSrc})`;
+  });
+}
+
+export function markdownToHtml(markdown: string, title = "Document", docPath?: string): string {
   let hasMermaid = false;
+  const normalizedMarkdown = encodeMarkdownImageUrls(markdown);
 
   marked.use({
     renderer: {
@@ -29,10 +40,16 @@ export function markdownToHtml(markdown: string, title = "Document"): string {
         const highlighted = highlightCode(text, language);
         return `<pre><code class="hljs language-${escapeHtml(language)}">${highlighted}</code></pre>`;
       },
+      image({ href, title, text }) {
+        const resolvedSrc = resolveMarkdownImageDisplaySrc(href, docPath);
+        const alt = escapeHtml(text ?? "");
+        const safeTitle = title ? ` title="${escapeHtml(title)}"` : "";
+        return `<img src="${escapeHtml(resolvedSrc)}" alt="${alt}"${safeTitle} />`;
+      },
     },
   });
 
-  const body = marked.parse(markdown, { async: false }) as string;
+  const body = marked.parse(normalizedMarkdown, { async: false }) as string;
 
   const mermaidScript = hasMermaid
     ? `<script type="module">

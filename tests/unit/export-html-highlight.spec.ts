@@ -15,6 +15,18 @@ describe("markdownToHtml highlight", () => {
     expect(html).toContain("hljs-attr");
   });
 
+  it("resolves local markdown image paths when a document path is available", () => {
+    const html = markdownToHtml(
+      "![架构图](../概要设计 images/image 3.png)",
+      "Test",
+      "/Users/blxie/Documents/make-md/docs/specs/设计说明.md",
+    );
+
+    expect(html).toContain("<img ");
+    expect(html).toContain("file:///Users/blxie/Documents/make-md/docs/");
+    expect(html).toContain("image%203.png");
+  });
+
   it("leaves mermaid as pre.mermaid", () => {
     const html = markdownToHtml("```mermaid\ngraph TD\n```", "Test");
     expect(html).toContain('class="mermaid"');
