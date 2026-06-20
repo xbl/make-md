@@ -19,7 +19,7 @@
       type="button"
       class="file-tree__row file-tree__row--file"
       :class="{ 'nav-item--active': node.path === documents.activeSessionId }"
-      :style="{ paddingLeft: `${depth * 12 + 20}px` }"
+      :style="{ paddingLeft: `${depth * 12 + 8}px` }"
       draggable="true"
       @click="openFile"
       @contextmenu.prevent="openMenu($event, 'file')"
