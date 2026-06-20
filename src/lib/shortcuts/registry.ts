@@ -15,6 +15,7 @@ export type CommandHandlerDeps = {
   toggleSidebar: () => void;
   toggleFocusMode: () => void;
   toggleSourceMode: () => void;
+  showSidebarTab: (tab: "files" | "outline") => void;
   openSettings: () => void;
   openAiSettings: () => void;
   openAiRewriteSelection: () => void;
@@ -168,8 +169,8 @@ export function createCommandHandlers(deps: CommandHandlerDeps): Record<string, 
     "paragraph.table": editor("paragraph.table"),
 
     "view.sidebar": () => deps.toggleSidebar(),
-    "view.outline": editor("view.outline"),
-    "view.files": editor("view.files"),
+    "view.outline": () => deps.showSidebarTab("outline"),
+    "view.files": () => deps.showSidebarTab("files"),
     "view.focus": () => deps.toggleFocusMode(),
     "view.source": () => deps.toggleSourceMode(),
     "view.aiSettings": () => deps.openAiSettings(),

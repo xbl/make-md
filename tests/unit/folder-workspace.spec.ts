@@ -50,4 +50,15 @@ describe("folder workspace store", () => {
     expect(uiStore.sidebarCollapsed).toBe(false);
     expect(folderStore.rootPath).toBe("/tmp/test");
   });
+
+  it("shows the sidebar when switching to a sidebar tab", () => {
+    const folderStore = useFolderWorkspaceStore();
+    const uiStore = useUiStore();
+
+    uiStore.sidebarCollapsed = true;
+    folderStore.showSidebarTab("outline");
+
+    expect(uiStore.sidebarCollapsed).toBe(false);
+    expect(folderStore.activeTab).toBe("outline");
+  });
 });

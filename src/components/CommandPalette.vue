@@ -86,6 +86,7 @@ const runtime = createAppCommandRuntime({
   toggleSidebar: () => ui.toggleSidebar(),
   toggleFocusMode: () => ui.toggleFocusMode(),
   toggleSourceMode: () => ui.toggleSourceMode(),
+  showSidebarTab: (tab) => folderWorkspace.showSidebarTab(tab),
   openSettings: () => ui.openSettings("general"),
   openAiSettings: () => ui.openSettings("ai"),
   openAiRewriteSelection: () => { ai.toolbarMode = "selection"; },
@@ -94,14 +95,6 @@ const runtime = createAppCommandRuntime({
   closeTab: () => (documents.activeSessionId ? documents.closeSession(documents.activeSessionId) : Promise.resolve(true)),
   canRunEditorCommand,
   runEditorCommand: (commandId: string) => {
-    if (commandId === "view.outline") {
-      folderWorkspace.setActiveTab("outline");
-      return true;
-    }
-    if (commandId === "view.files") {
-      folderWorkspace.setActiveTab("files");
-      return true;
-    }
     if (!editorStore.view) {
       return false;
     }

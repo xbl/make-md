@@ -159,16 +159,6 @@ function runEditorCommand(commandId: string) {
     return false;
   }
 
-  if (commandId === "view.outline") {
-    folderWorkspace.setActiveTab("outline");
-    return true;
-  }
-
-  if (commandId === "view.files") {
-    folderWorkspace.setActiveTab("files");
-    return true;
-  }
-
   if (commandId === "view.source") {
     ui.toggleSourceMode();
     return true;
@@ -287,6 +277,7 @@ onMounted(async () => {
     toggleSidebar: () => ui.toggleSidebar(),
     toggleFocusMode: () => ui.toggleFocusMode(),
     toggleSourceMode: () => ui.toggleSourceMode(),
+    showSidebarTab: (tab) => folderWorkspace.showSidebarTab(tab),
     openSettings: () => ui.openSettings("general"),
     openAiSettings: () => ui.openSettings("ai"),
     openAiRewriteSelection: () => { ai.toolbarMode = "selection"; },

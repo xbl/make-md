@@ -1,6 +1,6 @@
 # 产品功能清单
 
-#### 最后更新：2026-06-19
+#### 最后更新：2026-06-20
 
 状态说明：
 
@@ -109,7 +109,7 @@
 | 专注模式 | `complete` | 已交付。 |
 | 侧边栏显示切换 | `complete` | 已交付。 |
 | 命令面板快捷键 | `complete` | 快捷键与处理逻辑已存在。 |
-| Files / Outline 聚焦命令 | `partial` | View 类命令 ID 已存在，但端到端行为仍需继续验证。 |
+| Files / Outline 聚焦命令 | `complete` | View 类命令已接通为“展开侧边栏并切换到 Files / Outline 标签”，避免侧边栏折叠时命令执行后界面无可见变化。 |
 | 主题切换 | `complete` | 亮色/暗色双主题，通过 `Mod+Shift+L` 切换，持久化到 localStorage。 |
 | 主题 CSS 变量系统 | `complete` | 基于 `:root` / `[data-theme="dark"]` 的 CSS 自定义属性体系，覆盖背景、文字、边框、阴影、代码块、高亮色等 40+ 变量。Editorial Paper 亮色主基调。 |
 | 代码块/Mermaid 主题跟随 | `complete` | 代码高亮和 Mermaid 图表渲染随亮/暗主题自动切换配色。 |

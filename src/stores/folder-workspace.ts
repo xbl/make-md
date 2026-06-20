@@ -64,6 +64,10 @@ export const useFolderWorkspaceStore = defineStore("folder-workspace", {
     setActiveTab(tab: SidebarTab) {
       this.activeTab = tab;
     },
+    showSidebarTab(tab: SidebarTab) {
+      useUiStore().sidebarCollapsed = false;
+      this.activeTab = tab;
+    },
     setSelectedPath(path: string) {
       this.selectedPath = path;
     },
