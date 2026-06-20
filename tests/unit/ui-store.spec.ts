@@ -13,4 +13,11 @@ describe("useUiStore", () => {
     expect(store.theme).toBe("light");
     expect(() => store.toggleTheme()).not.toThrow();
   });
+
+  it("defaults sidebar to collapsed (hidden)", () => {
+    vi.stubGlobal("localStorage", undefined);
+    setActivePinia(createPinia());
+    const store = useUiStore();
+    expect(store.sidebarCollapsed).toBe(true);
+  });
 });

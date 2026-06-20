@@ -18,7 +18,7 @@ export const useUiStore = defineStore("ui", {
     settingsOpen: false,
     activeSettingsSection: "general" as SettingsSection,
     settingsShortcutRecording: false,
-    sidebarCollapsed: false,
+    sidebarCollapsed: true,
     focusMode: false,
     sourceMode: false,
     findReplaceOpen: false,
