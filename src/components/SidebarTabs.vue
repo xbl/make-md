@@ -28,14 +28,28 @@
             type="button"
             class="panel__action"
             data-testid="recent-clear"
+            title="Clear Recent Files"
             @click="clearRecent"
           >
-            {{ t("common.clear") }}
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2 4h12M5 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1M6 4v8a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V4M3 7h10" />
+            </svg>
           </button>
-          <button type="button" class="panel__action" @click="newFile">{{ t("common.new") }}</button>
-          <button type="button" class="panel__action" @click="openFolder">Folder</button>
-          <button v-if="!folderWorkspace.hasFolder" type="button" class="panel__action" @click="openFile">
-            {{ t("common.open") }}
+          <button type="button" class="panel__action" title="New File" @click="newFile">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 2.5h6l3 3v8a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-11a1 1 0 0 1 1-1h2z" />
+              <path d="M8 7v4M6 9h4" />
+            </svg>
+          </button>
+          <button type="button" class="panel__action" title="Open Folder" @click="openFolder">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2 5.5V3.5a1 1 0 0 1 1-1h2.2l1.6 2h6.2a1 1 0 0 1 1 1V12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5.5z" />
+            </svg>
+          </button>
+          <button v-if="!folderWorkspace.hasFolder" type="button" class="panel__action" title="Open File" @click="openFile">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 8.5V3.5a1 1 0 0 1 1-1h6l3 3v7a1 1 0 0 1-1 1H7.5M3 8.5l2.5 2.5M3 8.5l2.5-2.5" />
+            </svg>
           </button>
         </div>
       </div>
