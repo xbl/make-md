@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { listMarkdownTree, startFolderWatch, stopFolderWatch, type TreeNode } from "@/lib/workspace-service";
+import { useUiStore } from "@/stores/ui";
 
 export type SidebarTab = "files" | "outline";
 
@@ -47,6 +48,7 @@ export const useFolderWorkspaceStore = defineStore("folder-workspace", {
       stopFolderWatch();
       this.rootPath = root;
       this.expandedPaths = [root];
+      useUiStore().sidebarCollapsed = false;
       await this.refreshTree();
       await startFolderWatch(root, async () => {
         await this.refreshTree();

@@ -1,6 +1,18 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { setActivePinia, createPinia } from "pinia";
 import { useFolderWorkspaceStore } from "../../src/stores/folder-workspace";
+import { useUiStore } from "../../src/stores/ui";
+
+vi.mock("@/lib/workspace-service", () => ({
+  listMarkdownTree: vi.fn(async () => ({
+    name: "test",
+    path: "/tmp/test",
+    kind: "folder" as const,
+    children: [],
+  })),
+  startFolderWatch: vi.fn(async () => {}),
+  stopFolderWatch: vi.fn(),
+}));
 
 describe("folder workspace store", () => {
   beforeEach(() => {
@@ -25,5 +37,17 @@ describe("folder workspace store", () => {
       ],
     };
     expect(store.findNode("/tmp/root/a.md")?.name).toBe("a.md");
+  });
+
+  it("shows sidebar when setRootPath is called", async () => {
+    const folderStore = useFolderWorkspaceStore();
+    const uiStore = useUiStore();
+
+    expect(uiStore.sidebarCollapsed).toBe(true);
+
+    await folderStore.setRootPath("/tmp/test");
+
+    expect(uiStore.sidebarCollapsed).toBe(false);
+    expect(folderStore.rootPath).toBe("/tmp/test");
   });
 });
